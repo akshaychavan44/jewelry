@@ -1,0 +1,279 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Loupe design tokens
+   Palette derived from the brand reference: warm ivory grounds, sage actions,
+   burnished-gold certification accents. Type: Gilda Display (display),
+   Jost (UI & body), DM Mono (hallmarks, report numbers), Pinyon Script
+   (engraving & signature accents).
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  --color-ivory: #faf7f2;
+  --color-porcelain: #fdfcf9;
+  --color-parchment: #f2ece3;
+  --color-sand: #ebe3d6;
+  --color-greige: #e7e4dc;
+  --color-line: #e4ddd1;
+  --color-line-strong: #d2c8b8;
+
+  --color-ink: #2f2c28;
+  --color-ink-soft: #57524a;
+  --color-muted: #857e73;
+
+  --color-sage: #7b8069;
+  --color-sage-deep: #5f644f;
+  --color-sage-mist: #e8eae0;
+
+  --color-gold: #a8864f;
+  --color-gold-deep: #86683a;
+  --color-gold-mist: #efe5d2;
+
+  --color-rosewood: #9b4f45;
+  --color-rosewood-mist: #f6e7e3;
+  --color-amber: #a8742a;
+  --color-amber-mist: #f6ecd9;
+  --color-moss: #56704f;
+  --color-moss-mist: #e5ecdf;
+  --color-slate: #5b6573;
+  --color-slate-mist: #e7eaee;
+
+  --font-display: var(--font-gilda), "Didot", "Bodoni 72", Georgia, serif;
+  --font-sans: var(--font-jost), "Futura", "Avenir Next", system-ui, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", monospace;
+  --font-script: var(--font-pinyon), "Snell Roundhand", cursive;
+
+  --tracking-caps: 0.16em;
+  --tracking-wordmark: 0.34em;
+
+  --shadow-soft: 0 1px 2px rgb(47 44 40 / 0.04), 0 10px 30px -18px rgb(47 44 40 / 0.18);
+  --shadow-lift: 0 2px 6px rgb(47 44 40 / 0.05), 0 24px 48px -24px rgb(47 44 40 / 0.28);
+
+  --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-fade-up: fade-up 0.6s var(--ease-silk) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  ::selection {
+    background: var(--color-gold-mist);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-sage-deep);
+    outline-offset: 2px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Tabular figures wherever numbers are compared. */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+
+@utility shell {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= 48rem) {
+    padding-inline: 2rem;
+  }
+}
+
+@utility shell-narrow {
+  width: 100%;
+  max-width: 880px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= 48rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* ── Typography ─────────────────────────────────────────────────────────────── */
+
+/* Small tracked capitals — navigation, eyebrows, buttons. */
+@utility caps {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+@utility display-xl {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.5rem, 1.6rem + 3.4vw, 4.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+}
+
+@utility display-lg {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 1.5rem + 1.8vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+}
+
+@utility display-md {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.625rem, 1.35rem + 0.9vw, 2.125rem);
+  line-height: 1.15;
+}
+
+@utility display-sm {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.25;
+}
+
+/* Hallmark / report-number data. */
+@utility data {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility hairline {
+  border-color: var(--color-line);
+}
+
+@utility link-quiet {
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease;
+  &:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── Prose (policies, guides, product descriptions) ─────────────────────────── */
+
+@utility prose-loupe {
+  color: var(--color-ink-soft);
+  font-size: 15px;
+  line-height: 1.75;
+  & p + p {
+    margin-top: 1em;
+  }
+  & h2,
+  & h3 {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    font-weight: 400;
+    margin-top: 1.8em;
+    margin-bottom: 0.5em;
+    line-height: 1.2;
+  }
+  & h2 {
+    font-size: 1.6rem;
+  }
+  & h3 {
+    font-size: 1.25rem;
+  }
+  & ul {
+    list-style: disc;
+    padding-left: 1.25em;
+    margin-top: 0.75em;
+  }
+  & li + li {
+    margin-top: 0.35em;
+  }
+  & strong {
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+  & a {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}

@@ -1,0 +1,61 @@
+.hero { position: relative; height: auto; background: var(--color-ivory); }
+.hero[data-scroll-ready="true"] { height: 350svh; }
+.scene { --progress: 0; --prompt-opacity: 1; --skip-opacity: 1; position: sticky; top: 0; height: 100svh; min-height: 100vh; overflow: hidden; isolation: isolate; color: #fffaf3; background: #1a1816; }
+.media { position: absolute; inset: 0; height: 100%; overflow: hidden; background: url('/media/loupe-entrance-poster-1080p.jpg') center / cover no-repeat; animation: entrance 1.7s var(--ease-silk) both; }
+.video { position: absolute; max-width: none; object-fit: fill; opacity: 0; }
+.hero[data-media-ready="true"] .video { opacity: 1; }
+.shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 70%, rgba(0, 0, 0, 0.35) 100%); }
+.promptMask { position: absolute; top: calc(var(--media-height, 80svh) * .81); left: 50%; width: min(360px, 80%); height: 160px; transform: translateX(-50%); backdrop-filter: blur(22px); mask-image: radial-gradient(ellipse, black 40%, transparent 72%); opacity: var(--prompt-opacity); pointer-events: none; }
+.intro { position: absolute; inset: auto 20px 80px; text-align: center; opacity: var(--prompt-opacity); pointer-events: none; }
+.eyebrow { font-size: 10px; letter-spacing: .22em; text-transform: uppercase; }
+.tagline { margin-top: 12px; font-family: var(--font-display); font-size: clamp(22px, 2.4vw, 34px); line-height: 1.2; }
+.shop { display: inline-flex; align-items: center; gap: 18px; margin-top: 22px; padding: 14px 22px; background: var(--color-ivory); color: var(--color-ink); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; pointer-events: auto; transition: background .2s; }
+.shop:hover { background: white; }
+
+.skipButton {
+  position: absolute;
+  bottom: 24px;
+  right: 28px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 250, 243, 0.35);
+  background: rgba(26, 24, 22, 0.55);
+  color: #fffaf3;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(14px);
+  opacity: var(--skip-opacity, 1);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: auto;
+}
+.skipButton:hover {
+  background: rgba(26, 24, 22, 0.85);
+  border-color: rgba(255, 250, 243, 0.7);
+  color: #ffffff;
+  transform: scale(1.04);
+}
+.scene a:focus-visible, .scene button:focus-visible { outline-color: currentColor; outline-offset: 5px; }
+.progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: rgb(255 250 243 / 20%); }
+.progress span { display: block; height: 100%; background: var(--color-gold); transform: scaleX(var(--progress)); transform-origin: left; }
+.hero[data-failed="true"] .video { display: none; }
+@keyframes entrance { from { opacity: .5; transform: scale(1.015); } to { opacity: 1; transform: scale(1); } }
+@media (width < 48rem) {
+  .hero[data-scroll-ready="true"] { height: 270svh; }
+  .scene { top: 0; height: 100svh; min-height: 100vh; background: #1a1816; }
+  .media { height: 100%; }
+  .shade { background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.45) 100%); }
+  .intro { bottom: 90px; }
+  .skipButton { bottom: 16px; right: 16px; padding: 8px 14px; font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero, .hero[data-scroll-ready="true"] { height: auto; }
+  .scene { position: relative; top: 0; }
+  .media { animation: none; }
+  .progress { display: none; }
+}

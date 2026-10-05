@@ -1,55 +1,47 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { SocialIcon } from "@/components/brand/trust";
 import { footerNav, siteConfig } from "@/config/site";
 import { NewsletterForm } from "./newsletter-form";
+import { FooterBackToTop } from "./footer-back-to-top";
+import styles from "./footer.module.css";
 
 export function SiteFooter() {
   return (
-    <footer className="bg-greige">
-      <div className="shell grid gap-12 py-16 md:grid-cols-[1.2fr_repeat(3,minmax(0,0.8fr))_1.4fr] md:gap-10">
-        <div className="flex flex-col items-start">
-          <Logo />
-          <p className="mt-5 max-w-[16rem] text-[13.5px] leading-relaxed text-ink-soft">
-            Fine, high and vintage jewelry from verified independent jewelers.
-          </p>
-          <div className="mt-6 flex gap-4 text-ink-soft">
-            {(["instagram", "pinterest", "tiktok"] as const).map((name) => (
-              <a key={name} href={siteConfig.social[name]} className="hover:text-ink" aria-label={name} rel="noreferrer" target="_blank">
-                <SocialIcon name={name} />
-              </a>
-            ))}
-          </div>
-        </div>
-
-        {footerNav.map((group) => (
-          <div key={group.title}>
-            <h3 className="caps mb-4 text-ink">{group.title}</h3>
-            <ul className="space-y-2.5">
-              {group.links.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-[14px] text-ink-soft transition-colors hover:text-ink">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-
-        <div>
-          <h3 className="caps mb-4 text-ink">Join the list</h3>
-          <p className="mb-4 text-[14px] leading-relaxed text-ink-soft">New arrivals from our jewelers, private sales and the occasional buying guide.</p>
+    <footer id="site-footer" className={styles.footer}>
+      <Image src="/media/footer-jewelry.webp" alt="" fill sizes="100vw" className={styles.background} />
+      <div className={styles.content}>
+        <section className={styles.newsletter} aria-labelledby="newsletter-heading">
+          <h2 id="newsletter-heading">Join the list</h2>
+          <p>New arrivals from our jewelers, private sales and<br className={styles.desktopBreak} /> the occasional buying guide.</p>
           <NewsletterForm />
+        </section>
+        <div className={styles.columns}>
+          <div className={styles.brand}>
+            <Logo className={styles.logo} />
+            <p>Fine, high and vintage jewelry from verified independent jewelers.</p>
+            <div className={styles.socials}>
+              {(["instagram", "pinterest", "tiktok"] as const).map((name) => (
+                <a key={name} href={siteConfig.social[name]} aria-label={name} rel="noreferrer" target="_blank"><SocialIcon name={name} /></a>
+              ))}
+            </div>
+          </div>
+          {footerNav.map((group) => (
+            <nav key={group.title} aria-label={`Footer ${group.title}`} className={styles.navigation}>
+              <h3>{group.title}</h3>
+              <ul>{group.links.map((link) => <li key={link.href}><Link href={link.href}>{link.label}</Link></li>)}</ul>
+            </nav>
+          ))}
         </div>
-      </div>
-      <div className="border-t border-line-strong/50">
-        <div className="shell flex flex-col gap-2 py-5 text-[12.5px] text-muted md:flex-row md:items-center md:justify-between">
+        <div className={styles.wordmark} aria-hidden="true"><span>{siteConfig.name}</span><p>{siteConfig.descriptor}</p></div>
+        <div className={styles.bottom}>
           <p>© {new Date().getFullYear()} {siteConfig.name}. Prices exclude taxes and duties, calculated at checkout.</p>
-          <div className="flex gap-5">
-            <Link href="/help/terms" className="hover:text-ink">Terms</Link>
-            <Link href="/help/privacy" className="hover:text-ink">Privacy</Link>
-            <Link href="/sell" className="hover:text-ink">Sell on {siteConfig.name}</Link>
+          <div className={styles.legal}>
+            <Link href="/help/terms">Terms</Link>
+            <Link href="/help/privacy">Privacy</Link>
+            <Link href="/sell">Sell on {siteConfig.name}</Link>
+            <FooterBackToTop />
           </div>
         </div>
       </div>

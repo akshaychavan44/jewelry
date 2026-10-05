@@ -135,6 +135,20 @@
 
 /* ── Layout ─────────────────────────────────────────────────────────────────── */
 
+/* Warm cream and champagne accents throughout the storefront. */
+.storefront {
+  --color-ivory: #fcf7ee;
+  --color-porcelain: #fffaf3;
+  --color-parchment: #f4eadb;
+  --color-sand: #eadcc8;
+  --color-greige: #f0e7da;
+  --color-line: #e8ddcc;
+  --color-sage: #8c704b;
+  --color-sage-deep: #735a38;
+  --color-sage-mist: #f2e8d8;
+  background: var(--color-ivory);
+}
+
 @utility shell {
   width: 100%;
   max-width: 1320px;

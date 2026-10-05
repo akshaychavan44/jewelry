@@ -1,8 +1,8 @@
 /* Loupe seed — builds a complete, internally consistent demo marketplace. */
 import { createCipheriv, createHash, randomBytes } from "node:crypto";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { createNeonDbClient } from "../../src/server/db/neon-client";
 import bcrypt from "bcryptjs";
-import { type Prisma, PrismaClient } from "../../src/generated/prisma/client";
+import { type Prisma } from "../../src/generated/prisma/client";
 import type {
   Carrier,
   CertificateLab,
@@ -31,14 +31,15 @@ import { CATEGORY_TREE, type ProductSpec, SELLERS, type SellerSpec } from "./dat
 import { ADMINS, BUYERS, type BuyerSpec, DEMO_PASSWORD, REVIEW_SNIPPETS } from "./data/people";
 import { writeSampleKycDocument } from "./documents";
 import { addHours, chance, code, daysAgo, daysFromNow, img, int, now, pick, random, shuffle } from "./lib";
+import type { PrismaClient } from "../../src/generated/prisma/client";
 
 try {
   process.loadEnvFile(".env");
 } catch {
-  /* env provided by the Prisma CLI */
+  // env already provided
 }
 
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+const prisma: PrismaClient = createNeonDbClient(process.env.DATABASE_URL) as unknown as PrismaClient;
 
 // ── Market data ───────────────────────────────────────────────────────────────
 

@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+import { CollectionInvitation } from "@/components/home/landing-collections";
+import { LandingExperience } from "@/components/home/landing-experience";
+import styles from "@/components/home/landing.module.css";
 import { ProductGrid } from "@/components/catalog/product-card";
 import { ClarityGuide, GoldPurityChart } from "@/components/home/education";
 import {
@@ -8,7 +12,6 @@ import {
   KindWords,
   SellerShowcase,
   StorySection,
-  StyledGallery,
   ValueStrip,
 } from "@/components/home/sections";
 import { buttonVariants } from "@/components/ui/button";
@@ -53,27 +56,28 @@ export default async function HomePage() {
   const pureGoldPerGram = convertMinor((gold?.usdPerGram ?? 0) * 100, "USD", ctx.currency, ctx.rates, "exact");
 
   return (
-    <>
+    <LandingExperience>
       <Hero stats={stats} />
       <StorySection stats={stats} />
       <CategoryRow categories={categories} />
 
-      <section className="shell pb-20 md:pb-24" aria-labelledby="featured-heading">
-        <h2 id="featured-heading" className="caps mb-10 text-center text-ink">
-          Featured pieces
-        </h2>
-        <ProductGrid products={featured} savedIds={saved} columns="six" />
-        <div className="mt-12 flex justify-center">
-          <Link href="/shop" className={buttonVariants({ size: "lg" })}>
+      <section className={`${styles.section} ${styles.featured}`} aria-labelledby="featured-heading">
+        <div className={`${styles.sectionHeading} ${styles.featuredHeading}`}>
+          <div><p className="eyebrow">Considered, collected, cherished</p><h2 id="featured-heading">Pieces to fall for.</h2></div>
+          <Link href="/shop">Explore all jewelry <ArrowUpRight size={16} aria-hidden /></Link>
+        </div>
+        <CollectionInvitation />
+        <div className={styles.collectionAction}>
+          <Link href="/shop" className={`${buttonVariants({ size: "lg" })} ${styles.collectionButton}`}>
             View full collection
           </Link>
         </div>
       </section>
 
       <ValueStrip />
-      <SellerShowcase sellers={sellers} />
+      {sellers.length > 0 && <SellerShowcase sellers={sellers} />}
 
-      <section className="border-t border-line bg-porcelain/50 py-20 md:py-24" aria-labelledby="trending-heading">
+      {trending.length > 0 && <section className="border-t border-line bg-porcelain/50 py-20 md:py-24" aria-labelledby="trending-heading">
         <div className="shell">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -88,24 +92,25 @@ export default async function HomePage() {
           </div>
           <ProductGrid products={trending} savedIds={saved} />
         </div>
-      </section>
+      </section>}
 
-      <section className="shell py-20 md:py-28" aria-labelledby="learn-heading">
-        <div className="mb-10 max-w-2xl">
-          <p className="eyebrow mb-3">Buy with knowledge</p>
-          <h2 id="learn-heading" className="display-lg text-ink">
-            Know what you&rsquo;re looking at
+      <section className={`${styles.section} ${styles.journal}`} aria-labelledby="learn-heading">
+        <div className={styles.knowledgeContainer}>
+        <div className={styles.knowledgeHeading}>
+          <h2 id="learn-heading">
+            A little knowledge. A lasting choice.
           </h2>
         </div>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <GoldPurityChart pureGoldPerGram={pureGoldPerGram} currency={ctx.currency} updatedLabel={gold ? `Spot · ${formatDate(gold.fetchedAt, "dayMonth")}` : ""} />
-          <ClarityGuide />
+        <div className={styles.knowledgeGrid}>
+          <GoldPurityChart editorial pureGoldPerGram={pureGoldPerGram} currency={ctx.currency} updatedLabel={gold ? `Spot · ${formatDate(gold.fetchedAt, "dayMonth")}` : ""} />
+          <ClarityGuide editorial />
+        </div>
+        {featured.length > 0 && <ProductGrid products={featured} savedIds={saved} columns="three" className="mt-14" />}
         </div>
       </section>
 
-      <StyledGallery />
       <CustomOrderBand />
       <KindWords />
-    </>
+    </LandingExperience>
   );
 }

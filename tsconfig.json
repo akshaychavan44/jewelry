@@ -16,7 +16,10 @@
     "noUncheckedIndexedAccess": false,
     "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@prisma/client/runtime/client": ["./src/generated/prisma/runtime.ts"],
+      "@prisma/client": ["./src/generated/prisma/client.ts"],
+      "@prisma/client/*": ["./src/generated/prisma/*"]
     }
   },
   "include": [
@@ -26,5 +29,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "data", "storage"]
+  "exclude": ["node_modules", "data", "storage", "prisma.config.ts"]
 }

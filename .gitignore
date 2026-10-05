@@ -7,9 +7,6 @@
 next-env.d.ts
 *.tsbuildinfo
 
-# prisma generated client
-/src/generated/
-
 # local embedded postgres cluster + dev file storage
 /data/
 /storage/

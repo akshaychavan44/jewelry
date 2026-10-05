@@ -1,24 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { CLARITY_SCALE, GOLD_PURITY } from "@/lib/jewelry";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import styles from "./education.module.css";
 
 /** Karat → purity bars with today's price per gram at each purity. */
-export function GoldPurityChart({ pureGoldPerGram, currency, updatedLabel, guideLink = true }: { pureGoldPerGram: number; currency: string; updatedLabel: string; guideLink?: boolean }) {
+export function GoldPurityChart({ pureGoldPerGram, currency, updatedLabel, guideLink = true, editorial = false }: { pureGoldPerGram: number; currency: string; updatedLabel: string; guideLink?: boolean; editorial?: boolean }) {
   const [active, setActive] = useState<string>("18k");
   const current = GOLD_PURITY.find((k) => k.karat === active)!;
   return (
-    <div className="flex h-full flex-col rounded-[3px] border border-line bg-porcelain p-6 md:p-8">
-      <div className="flex items-baseline justify-between gap-4">
+    <div className={cn("flex h-full flex-col rounded-[3px] border border-line bg-porcelain p-6 md:p-8", editorial && styles.goldCard)}>
+      <div className={cn("flex items-baseline justify-between gap-4", styles.goldHeading)}>
         <h3 className="display-sm text-ink">Gold purity chart</h3>
-        <span className="font-mono text-[10.5px] tracking-[0.1em] text-muted uppercase">{updatedLabel}</span>
+        {!editorial && <span className="font-mono text-[10.5px] tracking-[0.1em] text-muted uppercase">{updatedLabel}</span>}
       </div>
       <p className="mt-2 text-[14px] text-ink-soft">Karat measures how much of a piece is pure gold. The hallmark number is the same thing in parts per thousand.</p>
 
-      <ul className="mt-6 space-y-2.5" role="list">
+      <ul className={cn("mt-6 space-y-2.5", styles.purityRows)} role="list">
         {GOLD_PURITY.map((k) => {
           const selected = k.karat === active;
           return (
@@ -43,7 +44,7 @@ export function GoldPurityChart({ pureGoldPerGram, currency, updatedLabel, guide
         })}
       </ul>
 
-      <div className="mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-[1fr_auto]">
+      <div className={cn("mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-[1fr_auto]", styles.goldSummary)} aria-live="polite">
         <div>
           <p className="text-[14px] text-ink">{current.note}</p>
           <p className="mt-1 text-[13px] text-muted">Typical use: {current.use}</p>
@@ -53,6 +54,7 @@ export function GoldPurityChart({ pureGoldPerGram, currency, updatedLabel, guide
           <p className="tabular font-display text-[26px] text-ink">{formatMoney(Math.round(pureGoldPerGram * (current.percent / 100)), currency, { exact: true })}</p>
         </div>
       </div>
+      {editorial && updatedLabel && <span className={styles.updated}>{updatedLabel}</span>}
       {guideLink && (
         <Link href="/guides/gold-purity" className="link-quiet mt-5 self-start text-[14px] text-ink">
           Read the gold guide
@@ -62,44 +64,46 @@ export function GoldPurityChart({ pureGoldPerGram, currency, updatedLabel, guide
   );
 }
 
-function DiamondGlyph({ inclusions }: { inclusions: number }) {
+function DiamondGlyph({ inclusions, editorial = false }: { inclusions: number; editorial?: boolean }) {
+  const facetId = useId();
   // Deterministic inclusion marks, increasing through the clarity scale.
   const spots = [
     [44, 44], [60, 38], [52, 58], [38, 56], [66, 54], [48, 32], [58, 66], [34, 42], [70, 44], [42, 66], [56, 48], [62, 60],
   ].slice(0, inclusions);
   return (
-    <svg viewBox="0 0 100 100" className="size-36 md:size-40" aria-hidden>
+    <svg viewBox={editorial ? "15 14 70 76" : "0 0 100 100"} className={cn("size-36 md:size-40", editorial && styles.diamond)} aria-hidden>
       <defs>
-        <linearGradient id="facet" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#e9e4da" />
+        <linearGradient id={facetId} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor={editorial ? "#665038" : "#ffffff"} />
+          <stop offset="1" stopColor={editorial ? "#2b2119" : "#e9e4da"} />
         </linearGradient>
       </defs>
-      <polygon points="20,34 34,18 66,18 80,34 50,86" fill="url(#facet)" stroke="#a8864f" strokeWidth="0.8" />
+      <polygon points="20,34 34,18 66,18 80,34 50,86" fill={`url(#${facetId})`} stroke={editorial ? "#d9b77b" : "#a8864f"} strokeWidth="0.55" />
+      {editorial && <g fill="#f2d69c" opacity="0.07"><polygon points="34,18 50,18 42,34" /><polygon points="50,18 66,18 58,34" /><polygon points="42,34 58,34 50,86" /></g>}
       <polyline points="20,34 80,34" fill="none" stroke="#a8864f" strokeWidth="0.6" />
       <polyline points="34,18 42,34 50,18 58,34 66,18" fill="none" stroke="#a8864f" strokeWidth="0.5" opacity="0.8" />
       <polyline points="20,34 50,86 42,34 50,86 58,34 50,86 80,34" fill="none" stroke="#a8864f" strokeWidth="0.45" opacity="0.6" />
       {spots.map(([x, y], i) => (
-        <g key={i} opacity={0.35 + (i / 12) * 0.5}>
-          <circle cx={x} cy={y} r={0.9 + (i % 3) * 0.5} fill="#57524a" />
-          {i % 4 === 3 && <line x1={x - 3} y1={y + 1} x2={x + 3} y2={y - 1} stroke="#57524a" strokeWidth="0.6" />}
+        <g key={i} opacity={editorial ? 0.9 : 0.35 + (i / 12) * 0.5}>
+          <circle cx={x} cy={y} r={0.9 + (i % 3) * 0.5} fill={editorial ? "#ffebba" : "#57524a"} />
+          {i % 4 === 3 && <line x1={x - 3} y1={y + 1} x2={x + 3} y2={y - 1} stroke={editorial ? "#ffebba" : "#57524a"} strokeWidth="0.6" />}
         </g>
       ))}
     </svg>
   );
 }
 
-export function ClarityGuide({ guideLink = true }: { guideLink?: boolean }) {
+export function ClarityGuide({ guideLink = true, editorial = false }: { guideLink?: boolean; editorial?: boolean }) {
   const [index, setIndex] = useState(5);
   const grade = CLARITY_SCALE[index];
   return (
-    <div className="flex h-full flex-col rounded-[3px] border border-line bg-porcelain p-6 md:p-8">
+    <div className={cn("flex h-full flex-col rounded-[3px] border border-line bg-porcelain p-6 md:p-8", editorial && styles.clarityCard)}>
       <h3 className="display-sm text-ink">Diamond clarity guide</h3>
       <p className="mt-2 text-[14px] text-ink-soft">Clarity grades how many inclusions a gemologist sees at 10× magnification — under a loupe.</p>
 
-      <div className="mt-4 flex flex-1 flex-col items-center gap-6 sm:flex-row sm:items-center">
-        <DiamondGlyph inclusions={index} />
-        <div className="w-full">
+      <div className={cn("mt-4 flex flex-1 flex-col items-center gap-6 sm:flex-row sm:items-center", styles.clarityPreview)}>
+        <DiamondGlyph inclusions={editorial ? Math.max(0, index - 2) : index} editorial={editorial} />
+        <div className="w-full" aria-live="polite">
           <p className="font-mono text-[12px] tracking-[0.1em] text-gold-deep">{grade.grade}</p>
           <p className="font-display text-[22px] leading-tight text-ink">{grade.name}</p>
           <p className="mt-2 text-[14px] text-ink-soft">{grade.detail}</p>
@@ -107,14 +111,24 @@ export function ClarityGuide({ guideLink = true }: { guideLink?: boolean }) {
       </div>
 
       <div className="mt-6" role="radiogroup" aria-label="Clarity grade">
-        <div className="grid grid-cols-11 gap-1">
+        <div className={cn("grid grid-cols-11 gap-1", styles.gradeSelector)}>
           {CLARITY_SCALE.map((g, i) => (
             <button
               key={g.grade}
               type="button"
               role="radio"
               aria-checked={i === index}
+              tabIndex={i === index ? 0 : -1}
               onClick={() => setIndex(i)}
+              onKeyDown={(event) => {
+                const direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+                if (!direction && event.key !== "Home" && event.key !== "End") return;
+                event.preventDefault();
+                const next = event.key === "Home" ? 0 : event.key === "End" ? CLARITY_SCALE.length - 1 : (index + direction + CLARITY_SCALE.length) % CLARITY_SCALE.length;
+                setIndex(next);
+                const buttons = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button");
+                buttons?.[next]?.focus();
+              }}
               className={cn(
                 "h-9 rounded-[2px] font-mono text-[10px] transition-colors md:text-[11px]",
                 i === index ? "bg-ink text-ivory" : "bg-parchment text-ink-soft hover:bg-sand",
@@ -124,7 +138,7 @@ export function ClarityGuide({ guideLink = true }: { guideLink?: boolean }) {
             </button>
           ))}
         </div>
-        <div className="mt-2 flex justify-between text-[11px] tracking-[0.08em] text-muted uppercase">
+        <div className={cn("mt-2 flex justify-between text-[11px] tracking-[0.08em] text-muted uppercase", styles.scaleLegend)}>
           <span>Flawless</span>
           <span>Eye-clean to about SI1</span>
           <span>Included</span>

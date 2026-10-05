@@ -1,0 +1,55 @@
+.section { max-width: 1760px; margin-inline: auto; padding: 50px clamp(24px, 6.9vw, 122px) 16px; scroll-margin-top: 100px; }
+.heading { display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-bottom: 32px; }
+.heading h2 { font-family: var(--font-display); font-size: clamp(42px, 4.7vw, 80px); line-height: 1.12; letter-spacing: -.03em; }
+.arrows { display: flex; gap: 14px; flex-shrink: 0; }
+.arrows button { display: grid; place-items: center; width: 49px; height: 49px; border: 1px solid #bc9859; border-radius: 50%; color: #a98237; transition: background .25s, color .25s, transform .25s; }
+.arrows button:hover { background: #b58f48; color: #fffaf3; transform: translateY(-2px); }
+.track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px 1px 20px; overscroll-behavior-x: contain; }
+.track::-webkit-scrollbar { display: none; }
+.card { flex: 0 0 calc((100% - 48px) / 3); min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 9px 9px 24px; border: 1px solid #e5d8c2; border-radius: 9px; text-align: center; background: #fffaf3; scroll-snap-align: start; transition: border-color .4s, box-shadow .4s; }
+.card[data-active="true"] { border-color: #af883e; box-shadow: 0 10px 22px rgb(115 86 38 / 10%); }
+.photo { position: relative; width: 100%; aspect-ratio: 2.4 / 1; overflow: hidden; border-radius: 5px; background: #e8dac6; }
+.image { object-fit: cover; transition: transform .8s var(--ease-silk); }
+.card:hover .image { transform: scale(1.035); }
+.quoteMark { font-family: var(--font-display); color: #b28b3e; font-size: 54px; line-height: 1; height: 48px; margin-top: 18px; }
+.card blockquote { flex: 1; margin: 0; padding-inline: clamp(14px, 2.2vw, 38px); font-family: var(--font-display); font-size: clamp(17px, 1.2vw, 21px); line-height: 1.4; color: #393a3d; }
+.stars { margin-top: 22px; gap: 5px; color: #b28b3e; }
+.card figcaption { margin-top: 12px; }
+.name { display: block; font-family: var(--font-display); font-size: 20px; line-height: 1.3; color: var(--color-ink); }
+.detail { display: block; margin-top: 4px; font-size: 16px; line-height: 1.5; color: #808080; }
+.dots { display: flex; justify-content: center; gap: 0; }
+.dots button { display: grid; place-items: center; width: 32px; height: 44px; }
+.dots span { width: 12px; height: 12px; border-radius: 50%; background: #e9e1d4; transition: background .3s, transform .3s; }
+.dots button[aria-pressed="true"] span { background: #b18a3d; }
+.dots button:hover span { transform: scale(1.15); }
+.arrows button:focus-visible, .dots button:focus-visible { outline: 2px solid #a78034; outline-offset: 4px; }
+.section[data-entered="true"] .card { animation: story-arrive .7s var(--ease-silk) both; }
+.section[data-entered="true"] .card:nth-child(2) { animation-delay: .1s; }
+.section[data-entered="true"] .card:nth-child(3) { animation-delay: .2s; }
+@keyframes story-arrive { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+@media (width < 64rem) {
+ .section { padding-inline: 28px; }
+ .card { flex-basis: calc((100% - 24px) / 2); }
+ .card blockquote { font-size: 18px; padding-inline: 16px; }
+ .detail { font-size: 14px; }
+}
+@media (width < 40rem) {
+ .section { padding: 48px 20px 18px; }
+ .heading { align-items: end; gap: 12px; margin-bottom: 26px; }
+ .heading h2 { font-size: clamp(36px, 9vw, 48px); max-width: 230px; }
+ .arrows { gap: 8px; }
+ .arrows button { width: 44px; height: 44px; }
+ .track { gap: 16px; margin-right: -20px; padding-right: 20px; scroll-padding-right: 20px; }
+ .card { flex-basis: calc(100% - 38px); padding-bottom: 24px; }
+ .duplicate { display: none; }
+ .photo { aspect-ratio: 2 / 1; }
+ .card blockquote { font-size: 18px; min-height: 175px; }
+ .name { font-size: 20px; }
+ .quoteMark { margin-top: 16px; }
+ .stars { margin-top: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+ .section[data-entered="true"] .card { animation: none; }
+ .card, .image, .arrows button, .dots span { transition: none; }
+ .card:hover .image, .arrows button:hover, .dots button:hover span { transform: none; }
+}

@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // A stray lockfile in a parent directory would otherwise confuse root detection.
   turbopack: { root: import.meta.dirname },
   images: {

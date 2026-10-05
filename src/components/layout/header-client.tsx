@@ -48,18 +48,29 @@ const navLink = "caps text-ink/85 transition-colors hover:text-ink";
 
 export function HeaderClient({ categories, cartCount, currency, user }: Props) {
   const pathname = usePathname();
+  const isHome = pathname === "/";
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [heroPassed, setHeroPassed] = useState(!isHome);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    if (!isHome) {
+      setHeroPassed(true);
+      return;
+    }
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8);
+      // Reveal navbar right as the user scrolls past the cinematic hero scroll track
+      const heroThreshold = Math.max(400, window.innerHeight * 1.6);
+      setHeroPassed(window.scrollY > heroThreshold);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isHome]);
 
   useEffect(() => {
     setMegaOpen(false);
@@ -74,8 +85,17 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
     closeTimer.current = setTimeout(() => setMegaOpen(false), 140);
   };
 
+  const isVisible = !isHome || heroPassed;
+
   return (
-    <header className={cn("sticky top-0 z-40 border-b bg-ivory/95 backdrop-blur-md transition-colors", scrolled || megaOpen ? "border-line" : "border-transparent")}>
+    <header
+      className={cn(
+        isHome ? "fixed top-0 inset-x-0 z-40" : "sticky top-0 z-40",
+        "border-b bg-ivory/95 backdrop-blur-md transition-all duration-700 ease-silk",
+        scrolled || megaOpen ? "border-line shadow-soft" : "border-transparent",
+        isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+      )}
+    >
       <div className="shell grid h-[72px] grid-cols-[1fr_auto_1fr] items-center md:h-[84px]">
         {/* Left: navigation */}
         <div className="flex items-center gap-7">

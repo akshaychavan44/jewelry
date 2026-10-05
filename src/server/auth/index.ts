@@ -97,7 +97,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
         token.role = user.role ?? "BUYER";
       }
       if (trigger === "update" && token.uid) {
-        const fresh = await db.user.findUnique({ where: { id: token.uid }, select: { role: true, name: true, image: true } });
+        const fresh = await db.user.findUnique({ where: { id: token.uid as string }, select: { role: true, name: true, image: true } });
         if (fresh) {
           token.role = fresh.role;
           token.name = fresh.name;

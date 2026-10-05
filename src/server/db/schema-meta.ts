@@ -13,6 +13,7 @@ export interface RelationMeta {
 export interface ModelMeta {
   table: string;
   primaryKey: string;
+  autoIncrement?: boolean;
   jsonFields?: Set<string>;
   arrayFields?: Set<string>;
   bigintFields?: Set<string>;
@@ -602,6 +603,7 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   AnalyticsEvent: {
     table: "AnalyticsEvent",
     primaryKey: "id",
+    autoIncrement: true,
     jsonFields: new Set(["metadata"]),
     relations: {},
   },

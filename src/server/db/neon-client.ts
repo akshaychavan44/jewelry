@@ -71,6 +71,36 @@ export function createNeonDbClient(connectionString?: string) {
         return rows as T;
       },
 
+      $executeRaw: async (stringsOrSql: TemplateStringsArray | string, ...values: unknown[]): Promise<number> => {
+        let sqlText = "";
+        let params: unknown[] = [];
+
+        if (Array.isArray(stringsOrSql) && "raw" in stringsOrSql) {
+          const strings = stringsOrSql as TemplateStringsArray;
+          sqlText = strings[0] ?? "";
+          for (let i = 0; i < values.length; i++) {
+            params.push(values[i]);
+            sqlText += `$${params.length}` + (strings[i + 1] ?? "");
+          }
+        } else {
+          sqlText = String(stringsOrSql);
+          params = values;
+        }
+
+        const rows = await executor.query(sqlText, params);
+        return rows.length;
+      },
+
+      $queryRawUnsafe: async <T = unknown>(sql: string, ...values: unknown[]): Promise<T> => {
+        const rows = await executor.query(sql, values);
+        return rows as T;
+      },
+
+      $executeRawUnsafe: async (sql: string, ...values: unknown[]): Promise<number> => {
+        const rows = await executor.query(sql, values);
+        return rows.length;
+      },
+
       $transaction: async <T>(
         fnOrArray: ((tx: any) => Promise<T>) | Promise<unknown>[]
       ): Promise<T> => {

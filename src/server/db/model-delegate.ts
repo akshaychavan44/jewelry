@@ -110,14 +110,8 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     include?: Record<string, unknown>;
   }): Promise<TModel> {
     const data = { ...args.data };
-    if (!data[this.meta.primaryKey] && this.meta.primaryKey === "id") {
+    if (!data[this.meta.primaryKey] && this.meta.primaryKey === "id" && !this.meta.autoIncrement) {
       data.id = generateId();
-    }
-    if ("createdAt" in data === false) {
-      data.createdAt = new Date();
-    }
-    if ("updatedAt" in data === false) {
-      data.updatedAt = new Date();
     }
 
     // Separate direct scalar columns from nested relations

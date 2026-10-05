@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
 const cartouche = "[clip-path:polygon(4px_0,calc(100%-4px)_0,100%_4px,100%_calc(100%-4px),calc(100%-4px)_100%,4px_100%,0_calc(100%-4px),0_4px)]";
 
 export function Hallmark({ metal, className, tone = "light" }: { metal: MetalType; className?: string; tone?: "light" | "glass" }) {
+  if (!metal) return null;
   const info = METALS[metal];
-  if (!info.fineness) return null;
+  if (!info?.fineness) return null;
   return (
     <span
       title={`${info.label} · ${info.purity ? `${(info.purity * 100).toFixed(1)}% pure` : ""}`}
@@ -35,8 +36,9 @@ export function Hallmark({ metal, className, tone = "light" }: { metal: MetalTyp
 }
 
 export function LabMark({ lab, className, tone = "light" }: { lab: CertificateLab; className?: string; tone?: "light" | "glass" }) {
-  const info = LABS[lab];
-  const short = lab === "BIS_HALLMARK" ? "BIS" : lab === "ASSAY_OFFICE" ? "UK HM" : info.name.toUpperCase();
+  if (!lab) return null;
+  const info = LABS[lab] ?? { name: String(lab), full: String(lab) };
+  const short = lab === "BIS_HALLMARK" ? "BIS" : lab === "ASSAY_OFFICE" ? "UK HM" : (info.name || String(lab)).toUpperCase();
   return (
     <span
       title={`Certified · ${info.full}`}

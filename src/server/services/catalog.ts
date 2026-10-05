@@ -62,16 +62,17 @@ export const cardSelect = {
 type CardRow = Prisma.ProductGetPayload<{ select: typeof cardSelect }>;
 
 export function toCard(p: CardRow, ctx: PriceContext): ProductCard {
-  const [first, second] = p.images;
+  const images = p.images ?? [];
+  const [first, second] = images;
   return {
     id: p.id,
     slug: p.slug,
     title: p.title,
-    seller: { name: p.seller.storeName, slug: p.seller.slug },
+    seller: { name: p.seller?.storeName ?? "Fine Jeweler", slug: p.seller?.slug ?? "" },
     image: { url: first?.url ?? "", alt: first?.alt ?? p.title },
     hoverImage: second ? { url: second.url, alt: second.alt ?? p.title } : null,
     metal: p.primaryMetal,
-    labs: p.certificationLabs,
+    labs: Array.isArray(p.certificationLabs) ? p.certificationLabs : [],
     price: toDisplay(p.basePriceMinor, p.currency, ctx),
     compareAt: p.compareAtPriceMinor ? toDisplay(p.compareAtPriceMinor, p.currency, ctx) : null,
     condition: p.condition,
@@ -81,7 +82,7 @@ export function toCard(p: CardRow, ctx: PriceContext): ProductCard {
     livePrice: p.pricingMode === "METAL_SPOT",
     inStock: p.inStock,
     sold: p.status === "SOLD",
-    rating: { average: p.ratingAverage, count: p.ratingCount },
+    rating: { average: p.ratingAverage ?? 0, count: p.ratingCount ?? 0 },
   };
 }
 

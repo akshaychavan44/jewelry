@@ -55,6 +55,26 @@ export function normalizeRow(row: Record<string, unknown>, meta?: ModelMeta): Re
       }
     }
 
+    // If arrayField was returned as Postgres string format e.g. "{GIA,IGI}", parse it into string[]
+    if (meta?.arrayFields?.has(key)) {
+      if (Array.isArray(val)) {
+        result[key] = val;
+      } else if (typeof val === "string") {
+        try {
+          result[key] = JSON.parse(val);
+        } catch {
+          if (val.startsWith("{") && val.endsWith("}")) {
+            result[key] = val.slice(1, -1).split(",").filter(Boolean);
+          } else {
+            result[key] = [val];
+          }
+        }
+      } else {
+        result[key] = [];
+      }
+      continue;
+    }
+
     // Ensure Dates are real Date objects
     if (val instanceof Date) {
       result[key] = val;

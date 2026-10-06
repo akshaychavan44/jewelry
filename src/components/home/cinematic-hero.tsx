@@ -47,7 +47,8 @@ export function CinematicHero({ jewelers }: { jewelers: number }) {
       scene.style.setProperty("--progress", String(current));
       scene.style.setProperty("--prompt-opacity", String(1 - ease(current / 0.08)));
       const focus = 0.5 - 0.34 * ease((current - 0.17) / 0.15) + 0.56 * ease((current - 0.62) / 0.14);
-      video.style.left = `${-horizontalCrop * focus}px`;
+      const xOffset = Math.round(-horizontalCrop * focus);
+      video.style.transform = `translate3d(${xOffset}px, 0, 0)`;
       if (introRef.current) introRef.current.inert = current > 0.08;
       desiredTime = motion.matches ? 0 : 0.65 + current * Math.max(0, (Number.isFinite(video.duration) ? video.duration : 10) - 0.7);
       seek();
@@ -65,15 +66,18 @@ export function CinematicHero({ jewelers }: { jewelers: number }) {
       const top = Number.parseFloat(getComputedStyle(scene).top) || 0;
       const travel = section.offsetHeight - scene.offsetHeight;
       target = motion.matches || travel <= 0 ? 0 : clamp((top - section.getBoundingClientRect().top) / travel);
-      // Crop the recorded header, scrollbar and footer; preserve the actual film.
       const media = video.parentElement;
       const mediaHeight = media?.clientHeight ?? scene.clientHeight;
+      const sceneWidth = scene.clientWidth;
       scene.style.setProperty("--media-height", `${mediaHeight}px`);
-      const scale = Math.max(scene.clientWidth / 1270, mediaHeight / 560);
-      horizontalCrop = 1270 * scale - scene.clientWidth;
-      video.style.width = `${1280 * scale}px`;
-      video.style.height = `${720 * scale}px`;
-      video.style.top = `${(mediaHeight - 560 * scale) / 2 - 100 * scale}px`;
+      // Native 1080p (1920x1080) Full HD cover calculation
+      const scale = Math.max(sceneWidth / 1920, mediaHeight / 1080);
+      const videoWidth = Math.ceil(1920 * scale);
+      const videoHeight = Math.ceil(1080 * scale);
+      horizontalCrop = Math.max(0, videoWidth - sceneWidth);
+      video.style.width = `${videoWidth}px`;
+      video.style.height = `${videoHeight}px`;
+      video.style.top = `${Math.round((mediaHeight - videoHeight) / 2)}px`;
       if (motion.matches) {
         opening = false;
         manualRef.current = false;

@@ -47,7 +47,7 @@ async function main() {
       if (code === 0) {
         const state = await databaseState();
         if (!state.seeded) code = await run("prisma", ["db", "seed"]);
-        else console.log("[db] Database already seeded — skipping (use npm run db:reset to start over).");
+        else console.log("[db] Database already seeded — skipping (use pnpm run db:seed to re-seed).");
       }
       await db.stop();
       process.exit(code);

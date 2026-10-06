@@ -23,6 +23,26 @@ async function runMigrations() {
       "prisma/migrations/20260930092708_integrity_checks/migration.sql",
     ];
 
+    // Check if initial tables already exist
+    const { rows: tableRows } = await client.query(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'User'"
+    );
+
+    if (tableRows.length === 0) {
+      console.log("Applying initial migrations to Neon PostgreSQL...");
+      for (const relPath of migrationFiles) {
+        const fullPath = path.resolve(process.cwd(), relPath);
+        if (existsSync(fullPath)) {
+          console.log(`Applying ${relPath}...`);
+          const sql = readFileSync(fullPath, "utf8");
+          await client.query(sql);
+        }
+      }
+      console.log("Migrations applied successfully!");
+    } else {
+      console.log("Database tables already present. Checking timestamp defaults...");
+    }
+
     console.log("Setting default timestamps on all updatedAt and createdAt columns...");
     await client.query(`
       DO $$

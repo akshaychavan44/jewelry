@@ -82,7 +82,7 @@ const VALUES = [
 
 export function ValueStrip() {
   return (
-    <section className="bg-[#FAF7F2] py-10 md:py-14">
+    <section className="bg-[#FAF7F2] pt-8 pb-3 md:pt-10 md:pb-4">
       <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 md:px-10 lg:px-14">
         {/* 3 Value Cards fitting screen width */}
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6 lg:gap-8">
@@ -119,7 +119,7 @@ export function ValueStrip() {
 
 export function SellerShowcase({ sellers }: { sellers: Awaited<ReturnType<typeof getShowcaseSellers>> }) {
   return (
-    <section className="shell py-20 md:py-28" aria-labelledby="jewelers-heading">
+    <section className="shell pt-8 md:pt-12 pb-16 md:pb-24" aria-labelledby="jewelers-heading">
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow mb-3">Certified sellers</p>

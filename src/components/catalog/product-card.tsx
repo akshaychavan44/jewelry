@@ -12,8 +12,12 @@ export function ProductCard({ product: p, saved = false, priority, className, si
     <article className={cn("group relative", className)}>
       <Link href={`/product/${p.slug}`} className="block outline-none focus-visible:ring-2 focus-visible:ring-sage/40">
         <div className="relative aspect-[4/5] overflow-hidden bg-sand">
-          <Image src={p.image.url} alt={p.image.alt} fill priority={priority} sizes={sizes} className={cn("object-cover transition duration-700 ease-silk group-hover:scale-[1.03]", p.sold && "grayscale-[35%]")} />
-          {p.hoverImage && (
+          {p.image.url?.trim() ? (
+            <Image src={p.image.url} alt={p.image.alt} fill priority={priority} sizes={sizes} className={cn("object-cover transition duration-700 ease-silk group-hover:scale-[1.03]", p.sold && "grayscale-[35%]")} />
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center p-4 text-center text-[13px] text-muted">Photograph coming soon</span>
+          )}
+          {p.hoverImage?.url?.trim() && (
             <Image src={p.hoverImage.url} alt="" fill sizes={sizes} className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           )}
           <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">

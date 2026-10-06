@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// `npm run dev` — start Next.js development server with Neon PostgreSQL backend.
+// `pnpm run dev` — start Next.js development server with Neon PostgreSQL backend.
 
 import { spawn } from "node:child_process";
 import { loadEnv } from "./lib/database.mjs";

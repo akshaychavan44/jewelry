@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 
-export default function ErrorBoundary({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function ErrorBoundary({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -17,7 +17,7 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
         Nothing you did caused this, and nothing in your cart or orders has changed. Try again — if it keeps happening, our team has already been alerted.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Button onClick={reset}>Try again</Button>
+        <Button onClick={() => retry()}>Try again</Button>
         <Link href="/" className={buttonVariants({ variant: "outline" })}>
           Go to the homepage
         </Link>

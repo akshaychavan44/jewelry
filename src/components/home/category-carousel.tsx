@@ -1,10 +1,11 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import styles from "./category-carousel.module.css";
 
 interface CategoryItem {
   slug: string;
@@ -30,14 +31,34 @@ const CATEGORY_HD_IMAGES: Record<string, string> = {
 // Repeat the array 5 times to enable seamless infinite circular wrapping
 const REPEATS = 5;
 
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  rings: "A promise, a milestone, a little everyday brilliance. Find the ring that tells your story.",
+  necklaces: "Delicate chains and extraordinary pendants. Discover a piece to keep close.",
+  earrings: "From quiet sparkle to a statement silhouette. The finishing touch, beautifully considered.",
+  bracelets: "Precious details for every gesture. Explore fine chains, sculptural cuffs and timeless bracelets.",
+  "high-jewelry": "Exceptional stones. Remarkable craftsmanship. Discover jewelry with an extraordinary presence.",
+  vintage: "Treasures with a past and a future. Discover distinctive pieces ready for their next chapter.",
+};
+
 export function CategoryCarousel({ categories }: CategoryCarouselProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
+  const expandedHeadingId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const originRef = useRef<DOMRect | null>(null);
+  const originFocusRef = useRef<HTMLAnchorElement | null>(null);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const n = categories.length;
   const middleSetOffset = Math.floor(REPEATS / 2) * n;
 
   const [isInView, setIsInView] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<CategoryItem | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
   const [activeNormalizedIndex, setActiveNormalizedIndex] = useState(0);
   const [currentVirtualIndex, setCurrentVirtualIndex] = useState(middleSetOffset);
   const isScrollingProgrammatically = useRef(false);
@@ -50,9 +71,9 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
+        setIsVisible(entry.isIntersecting);
         if (entry.isIntersecting) {
           setIsInView(true);
-          observer.disconnect();
         }
       },
       { threshold: 0.15 }
@@ -60,6 +81,47 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
 
     observer.observe(section);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!expandedCategory) return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    const origin = originRef.current;
+    if (origin) {
+      dialog.style.setProperty("--expand-x", `${origin.x + origin.width / 2 - window.innerWidth / 2}px`);
+      dialog.style.setProperty("--expand-y", `${origin.y + origin.height / 2 - window.innerHeight / 2}px`);
+      dialog.style.setProperty("--expand-scale-x", String(origin.width / dialog.offsetWidth));
+      dialog.style.setProperty("--expand-scale-y", String(origin.height / dialog.offsetHeight));
+    }
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog.close();
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [expandedCategory]);
+
+  const closeExpanded = useCallback(() => {
+    if (closeTimeout.current) return;
+    setIsClosing(true);
+    closeTimeout.current = setTimeout(() => {
+      dialogRef.current?.close();
+      originFocusRef.current?.focus({ preventScroll: true });
+      setExpandedCategory(null);
+      setIsClosing(false);
+      setIsInteracting(false);
+      closeTimeout.current = null;
+    }, reducedMotion ? 0 : 220);
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
   }, []);
 
   // Flatten repeated items with unique keys and HD imagery
@@ -94,16 +156,24 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
 
       container.scrollTo({
         left: targetScrollLeft,
-        behavior,
+        behavior: reducedMotion ? "instant" : behavior,
       });
 
       // Release lock after smooth scroll animation settles
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       scrollTimeout.current = setTimeout(() => {
         isScrollingProgrammatically.current = false;
+        if (virtualIdx < n || virtualIdx >= (REPEATS - 1) * n) {
+          const centered = middleSetOffset + ((virtualIdx % n) + n) % n;
+          const middleCard = container.querySelector<HTMLElement>(`[data-virtual-index="${centered}"]`);
+          if (middleCard) {
+            container.scrollTo({ left: middleCard.offsetLeft + middleCard.offsetWidth / 2 - container.clientWidth / 2, behavior: "instant" });
+            setCurrentVirtualIndex(centered);
+          }
+        }
       }, 550);
     },
-    [n]
+    [n, middleSetOffset, reducedMotion]
   );
 
   // Initialize scroll position to the center set once on mount
@@ -112,6 +182,12 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
     const initialIndex = middleSetOffset;
     scrollToVirtualIndex(initialIndex, "instant" as ScrollBehavior);
   }, [middleSetOffset, n, scrollToVirtualIndex]);
+
+  useEffect(() => {
+    const recenter = () => scrollToVirtualIndex(currentVirtualIndex, "instant");
+    window.addEventListener("resize", recenter);
+    return () => window.removeEventListener("resize", recenter);
+  }, [currentVirtualIndex, scrollToVirtualIndex]);
 
   // Handle auto infinite wrap repositioning and real-time active center tracking
   const handleScroll = useCallback(() => {
@@ -131,8 +207,6 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
       const distance = Math.abs(containerCenter - cardCenter);
       if (distance < minDistance) {
         minDistance = distance;
-      }
-      if (distance < minDistance || closestCard === null) {
         closestCard = card;
       }
     });
@@ -161,21 +235,39 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
     }, 180);
   }, [currentVirtualIndex, middleSetOffset, n, scrollToVirtualIndex]);
 
+  useEffect(() => {
+    if (n < 2 || !isVisible || isPaused || isInteracting || reducedMotion || expandedCategory) return;
+    const timer = setInterval(() => {
+      if (!document.hidden) scrollToVirtualIndex(currentVirtualIndex + 1);
+    }, 4200);
+    return () => clearInterval(timer);
+  }, [n, isVisible, isPaused, isInteracting, reducedMotion, expandedCategory, currentVirtualIndex, scrollToVirtualIndex]);
+
+  useEffect(() => () => {
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    if (closeTimeout.current) clearTimeout(closeTimeout.current);
+  }, []);
+
   const handleNext = () => {
-    const nextIdx = currentVirtualIndex + 1;
+    const nextIdx = currentVirtualIndex >= REPEATS * n - 1 ? middleSetOffset : currentVirtualIndex + 1;
     scrollToVirtualIndex(nextIdx, "smooth");
   };
 
   const handlePrev = () => {
-    const prevIdx = currentVirtualIndex - 1;
+    const prevIdx = currentVirtualIndex <= 0 ? middleSetOffset + n - 1 : currentVirtualIndex - 1;
     scrollToVirtualIndex(prevIdx, "smooth");
   };
 
-  // When user clicks a card: if not centered, center it instantly; if already centered, navigate to page
-  const handleCardClick = (e: React.MouseEvent, virtualIdx: number, isActive: boolean) => {
+  // Center a side card first; expand the centered card before exploring its collection.
+  const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>, virtualIdx: number, isActive: boolean, category: CategoryItem) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
     if (!isActive) {
-      e.preventDefault();
       scrollToVirtualIndex(virtualIdx, "smooth");
+    } else {
+      originFocusRef.current = e.currentTarget;
+      originRef.current = e.currentTarget.querySelector(`.${styles.frame}`)?.getBoundingClientRect() ?? null;
+      setExpandedCategory(category);
     }
   };
 
@@ -184,9 +276,18 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden py-12 md:py-20"
+      className={styles.section}
       aria-labelledby={headingId}
+      aria-roledescription="carousel"
+      data-expanded={expandedCategory ? "true" : undefined}
+      onMouseEnter={() => setIsInteracting(true)}
+      onMouseLeave={() => setIsInteracting(false)}
+      onFocusCapture={() => setIsInteracting(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setIsInteracting(false);
+      }}
     >
+      <div className={styles.studio} aria-hidden="true"><span /><span /><span /></div>
       {/* Scoped CSS for Entrance Staggered Bottom-to-Top Rise & Gold Shimmer */}
       <style>{`
         @keyframes loupeRiseBottom {
@@ -232,7 +333,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
       `}</style>
 
       {/* Header Container */}
-      <div className="shell relative mb-6 md:mb-10">
+      <div className={styles.heading}>
         <div className="flex flex-col items-center justify-center text-center">
           <p className="eyebrow mb-2.5 text-gold-deep">Discover your next heirloom</p>
           <h2 id={headingId} className="font-display text-[32px] leading-tight text-ink md:text-[46px]">
@@ -261,11 +362,13 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
         </div>
       </div>
 
+      <div className={styles.stage}>
+      <div className={styles.orbit} aria-hidden="true" />
       {/* Infinite Horizontal Scroll Track with Refined 3D Circular Arc */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="scrollbar-none flex snap-x snap-mandatory gap-4 overflow-x-auto px-[calc(50vw-120px)] py-10 scroll-smooth sm:gap-6 sm:px-[calc(50vw-140px)] md:gap-7 md:px-[calc(50vw-155px)] md:py-12"
+        className={cn("scrollbar-none", styles.track)}
         style={{
           scrollPadding: "0 calc(50vw - 150px)",
           perspective: "1400px",
@@ -312,7 +415,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
               key={c.uniqueKey}
               data-virtual-index={c.virtualIndex}
               className={cn(
-                "w-[240px] shrink-0 snap-center sm:w-[270px] md:w-[295px]",
+                styles.card,
                 c.isInitialSet && "loupe-stagger-card",
                 c.isInitialSet && isInView && "is-revealed"
               )}
@@ -326,7 +429,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
             >
               {/* 3D Circular Arc Wrapper with Zoom & Curvature */}
               <div
-                className="transition-all duration-550 ease-silk"
+                className={styles.arc}
                 style={{
                   transform: `translateY(${translateY}px) scale(${scale}) rotateY(${rotateY}deg)`,
                   opacity,
@@ -336,13 +439,17 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
               >
                 <Link
                   href={`/shop/${c.slug}`}
-                  onClick={(e) => handleCardClick(e, c.virtualIndex, isActive)}
-                  className="group flex flex-col items-center text-center focus:outline-none"
+                  onClick={(e) => handleCardClick(e, c.virtualIndex, isActive, c)}
+                  className={cn("group", styles.link)}
+                  tabIndex={absOffset <= 2 ? 0 : -1}
+                  aria-current={isActive ? "true" : undefined}
+                  aria-haspopup="dialog"
+                  aria-label={`Preview ${c.name}`}
                 >
                   {/* Outer Frame with Arched Border */}
                   <div
                     className={cn(
-                      "relative w-full overflow-hidden rounded-t-full rounded-b-[26px] p-[2.5px] transition-all duration-550 ease-silk",
+                      styles.frame,
                       isActive
                         ? "bg-gradient-to-b from-[#f0d8a8] via-[#cda260] to-[#8a6835] shadow-[0_20px_50px_-10px_rgba(168,134,79,0.48)]"
                         : "bg-gradient-to-b from-[#d5c3ab]/60 via-[#c4b197]/40 to-[#baa58a]/30 shadow-soft hover:bg-gradient-to-b hover:from-[#e5ca93]/80 hover:via-[#b58f55]/60 hover:to-[#785b30]/50 hover:shadow-[0_12px_30px_-8px_rgba(168,134,79,0.3)]"
@@ -359,20 +466,20 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
                     {/* Active Halo Shimmer */}
                     <div
                       className={cn(
-                        "pointer-events-none absolute inset-0 rounded-t-full rounded-b-[26px] transition-opacity duration-550 z-10",
+                        "pointer-events-none absolute inset-0 rounded-full transition-opacity duration-550 z-10",
                         isActive
-                          ? "opacity-100 ring-1 ring-gold-mist/70 animate-pulse"
+                          ? "opacity-100 ring-1 ring-gold-mist/70"
                           : "opacity-0 group-hover:opacity-70 ring-1 ring-gold-mist/40"
                       )}
                     />
 
                     {/* Arched Image Container with HD Jewelry Imagery */}
-                    <div className="relative h-[340px] sm:h-[390px] md:h-[440px] w-full overflow-hidden rounded-t-full rounded-b-[24px] bg-sand">
+                    <div className={styles.image}>
                       <Image
                         src={c.displayImage}
                         alt={c.name}
                         fill
-                        sizes="(min-width: 768px) 295px, (min-width: 640px) 270px, 240px"
+                        sizes="(min-width: 1440px) 260px, (min-width: 768px) 20vw, 200px"
                         className={cn(
                           "object-cover transition-transform duration-700 ease-silk",
                           isActive ? "scale-104" : "group-hover:scale-108"
@@ -384,11 +491,11 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
                   </div>
 
                   {/* Category Text & Action */}
-                  <div className="mt-4 flex flex-col items-center">
+                  <div className={styles.caption}>
                     <p
                       className={cn(
                         "font-display text-[22px] text-ink transition-colors duration-300 md:text-[26px]",
-                        isActive ? "text-ink font-semibold" : "text-ink-soft group-hover:text-ink"
+                        isActive ? "text-ink" : "text-ink-soft group-hover:text-ink"
                       )}
                     >
                       {c.name}
@@ -411,7 +518,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
                           : "-translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
                       )}
                     >
-                      Explore {c.name} ↗
+                      Discover {c.name} →
                     </span>
                   </div>
                 </Link>
@@ -420,9 +527,10 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
           );
         })}
       </div>
+      </div>
 
       {/* Luxury Progress Bar Track */}
-      <div className="mt-6 flex justify-center">
+      <div className={styles.footer}>
         <div className="relative h-[2px] w-48 overflow-hidden rounded-full bg-line-strong/40">
           <div
             className="h-full bg-gold-deep transition-transform duration-500 ease-silk"
@@ -432,7 +540,27 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
             }}
           />
         </div>
+        {!reducedMotion && <button type="button" className={styles.playback} onClick={() => setIsPaused((paused) => !paused)} aria-label={isPaused ? "Resume automatic rotation" : "Pause automatic rotation"}>
+          {isPaused ? <Play size={13} /> : <Pause size={13} />}
+        </button>}
       </div>
+      {expandedCategory && <dialog
+        ref={dialogRef}
+        className={styles.expanded}
+        data-closing={isClosing ? "true" : undefined}
+        aria-labelledby={expandedHeadingId}
+        onCancel={(event) => { event.preventDefault(); closeExpanded(); }}
+      >
+        <Image src={CATEGORY_HD_IMAGES[expandedCategory.slug] || expandedCategory.imageUrl || CATEGORY_HD_IMAGES.rings} alt={expandedCategory.name} fill sizes="(min-width: 768px) 820px, 95vw" className={styles.expandedImage} />
+        <div className={styles.expandedShade} />
+        <button type="button" className={styles.close} aria-label="Close category preview" onClick={closeExpanded} autoFocus><X size={18} /></button>
+        <div className={styles.expandedCopy}>
+          <p className={styles.expandedEyebrow}>The Loupe collection</p>
+          <h3 id={expandedHeadingId}>{expandedCategory.name}</h3>
+          <p>{CATEGORY_DESCRIPTIONS[expandedCategory.slug] ?? "Discover beautifully considered jewelry from independent jewelers."}</p>
+          <Link href={`/shop/${expandedCategory.slug}`} className={styles.explore}>Explore {expandedCategory.name} <ArrowRight size={15} aria-hidden="true" /></Link>
+        </div>
+      </dialog>}
     </section>
   );
 }

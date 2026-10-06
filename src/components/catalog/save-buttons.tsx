@@ -52,8 +52,13 @@ export function WishlistButton({ productId, saved, className, variant = "icon" }
   );
 }
 
-export function FollowStoreButton({ sellerId, following, className }: { sellerId: string; following: boolean; className?: string }) {
+export function FollowStoreButton({ sellerId, following, className, variant = "full", storeName }: { sellerId: string; following: boolean; className?: string; variant?: "full" | "icon"; storeName?: string }) {
   const { active, pending, toggle } = useToggle(following, () => toggleFavoriteStore(sellerId), { on: "Added to your favourite jewelers", off: "Removed from your favourite jewelers" });
+  if (variant === "icon") return (
+    <button type="button" onClick={toggle} disabled={pending} aria-pressed={active} aria-label={(active ? "Unfollow " : "Follow ") + (storeName ?? "jeweler")} className={cn("grid size-9 place-items-center rounded-lg bg-ink/40 text-white backdrop-blur-sm transition hover:bg-ink/60 disabled:opacity-60", className)}>
+      <Heart size={19} className={cn(active && "fill-white")} strokeWidth={1.6} aria-hidden />
+    </button>
+  );
   return (
     <Button type="button" variant={active ? "subtle" : "outline"} size="sm" onClick={toggle} disabled={pending} className={className} aria-pressed={active}>
       <Heart className={cn(active && "fill-rosewood text-rosewood")} strokeWidth={1.6} />

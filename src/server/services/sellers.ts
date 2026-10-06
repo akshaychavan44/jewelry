@@ -13,10 +13,27 @@ export const DIRECTORY_SORTS = {
 } as const;
 export type DirectorySort = keyof typeof DIRECTORY_SORTS;
 
-export async function listJewelers(opts: { q?: string; country?: string; sort?: DirectorySort }) {
+export async function listJewelers(opts: { q?: string; country?: string; sort?: DirectorySort; category?: string }) {
+  let categorySellerIds: string[] | undefined;
+  if (opts.category && opts.category !== "custom-orders") {
+    const category = await db.category.findUnique({
+      where: { slug: opts.category },
+      select: { id: true, children: { select: { id: true } } },
+    });
+    const products = category ? await db.product.findMany({
+      where: { status: "ACTIVE", deletedAt: null, categoryId: { in: [category.id, ...category.children.map((child) => child.id)] } },
+      select: { sellerId: true },
+    }) : [];
+    categorySellerIds = [...new Set(products.map((product) => product.sellerId))];
+  }
   const where: Prisma.SellerProfileWhereInput = {
     verificationStatus: "APPROVED",
     ...(opts.country ? { country: opts.country } : {}),
+    ...(opts.category === "custom-orders"
+      ? { acceptsCustomOrders: true }
+      : categorySellerIds
+        ? { id: { in: categorySellerIds } }
+        : {}),
     ...(opts.q
       ? {
           OR: [
@@ -59,17 +76,22 @@ export async function listJewelers(opts: { q?: string; country?: string; sort?: 
         responseTimeMinutes: true,
         activeListingCount: true,
         locations: { select: { city: true, appointmentOnly: true } },
-        products: {
-          where: publicProductWhere,
-          orderBy: [{ isFeatured: "desc" }, { ratingCount: "desc" }],
-          take: 4,
-          select: { slug: true, title: true, images: { orderBy: { position: "asc" }, take: 1, select: { url: true } } },
-        },
       },
     }),
     db.sellerProfile.groupBy({ by: ["country"], where: { verificationStatus: "APPROVED" }, _count: { _all: true } }),
   ]);
-  return { sellers, countries: countries.map((c) => ({ code: c.country, count: c._count._all })) };
+  // The database adapter applies nested `take` across all parents. Fetch each
+  // store's preview separately so every card receives its own four pieces.
+  const directorySellers = await Promise.all(sellers.map(async (seller) => ({
+    ...seller,
+    products: await db.product.findMany({
+      where: { sellerId: seller.id, status: "ACTIVE", deletedAt: null },
+      orderBy: [{ isFeatured: "desc" }, { ratingCount: "desc" }],
+      take: 4,
+      select: { slug: true, title: true, images: { orderBy: { position: "asc" }, select: { url: true } } },
+    }),
+  })));
+  return { sellers: directorySellers, countries: countries.map((c) => ({ code: c.country, count: c._count._all })) };
 }
 
 export async function getStorefront(slug: string, ctx: PriceContext, categorySlug?: string) {

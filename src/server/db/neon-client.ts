@@ -135,6 +135,13 @@ export function createNeonDbClient(connectionString?: string) {
           client.release();
         }
       },
+
+      $disconnect: async (): Promise<void> => {
+        if (pool) {
+          await pool.end();
+          pool = null;
+        }
+      },
     };
 
     // Instantiate all model delegates

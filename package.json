@@ -12,7 +12,9 @@
     "dev:next": "next dev",
     "build": "next build",
     "start": "next start",
+    "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "tsx prisma/seed/index.ts"
   },
   "dependencies": {

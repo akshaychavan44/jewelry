@@ -105,7 +105,6 @@ export default async function HomePage() {
           <GoldPurityChart editorial pureGoldPerGram={pureGoldPerGram} currency={ctx.currency} updatedLabel={gold ? `Spot · ${formatDate(gold.fetchedAt, "dayMonth")}` : ""} />
           <ClarityGuide editorial />
         </div>
-        {featured.length > 0 && <ProductGrid products={featured} savedIds={saved} columns="three" className="mt-14" />}
         </div>
       </section>
 

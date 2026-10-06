@@ -1,13 +1,15 @@
-import { Search } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeCheck, Gem, Search, ShieldCheck, Star, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { TopRated, VerifiedJeweler } from "@/components/brand/trust";
-import { EmptyState, Monogram, Stars } from "@/components/ui/display";
-import { NativeSelect } from "@/components/ui/input";
-import { formatResponseTime } from "@/lib/format";
+import { DirectorySelect } from "@/components/catalog/directory-select";
+import { FollowStoreButton } from "@/components/catalog/save-buttons";
+import styles from "@/components/catalog/jewelers-directory.module.css";
+import { EmptyState, Monogram } from "@/components/ui/display";
 import { countryName } from "@/lib/regions";
 import { firstParam, pluralize, type SearchParams } from "@/lib/utils";
+import { getCurrentUser } from "@/server/auth/session";
+import { db } from "@/server/db";
 import { DIRECTORY_SORTS, type DirectorySort, listJewelers } from "@/server/services/sellers";
 
 export const metadata: Metadata = {
@@ -15,103 +17,115 @@ export const metadata: Metadata = {
   description: "Independent ateliers, heritage houses and antique dealers — every one verified by Loupe.",
 };
 
+const categories = [
+  { slug: "", name: "All Jewelers" },
+  { slug: "rings", name: "Rings" },
+  { slug: "necklaces", name: "Necklaces" },
+  { slug: "earrings", name: "Earrings" },
+  { slug: "bracelets", name: "Bracelets" },
+  { slug: "high-jewelry", name: "High Jewelry" },
+  { slug: "custom-orders", name: "Custom Orders" },
+];
+
 export default async function JewelersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const q = firstParam(sp.q)?.trim() || undefined;
   const country = firstParam(sp.country) || undefined;
+  const categoryParam = firstParam(sp.category);
+  const category = categories.some((item) => item.slug === categoryParam) ? categoryParam : undefined;
   const sortParam = firstParam(sp.sort) as DirectorySort | undefined;
   const sort = sortParam && sortParam in DIRECTORY_SORTS ? sortParam : "rating";
-  const { sellers, countries } = await listJewelers({ q, country, sort });
+  const [{ sellers, countries }, user] = await Promise.all([listJewelers({ q, country, sort, category }), getCurrentUser()]);
+  const favorites = user ? await db.favoriteStore.findMany({ where: { userId: user.id }, select: { sellerId: true } }) : [];
+  const savedSellerIds = new Set(favorites.map((favorite) => favorite.sellerId));
+  const categoryHref = (slug: string) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (country) params.set("country", country);
+    if (sort !== "rating") params.set("sort", sort);
+    if (slug) params.set("category", slug);
+    return "/jewelers" + (params.size ? "?" + params.toString() : "");
+  };
 
   return (
-    <div className="shell pt-10 pb-24">
-      <header className="mx-auto max-w-2xl text-center">
-        <p className="eyebrow mb-4">The jewelers</p>
-        <h1 className="display-xl text-ink">Every seller, known by name</h1>
-        <p className="mt-5 text-[16px] leading-relaxed text-ink-soft">
-          Family workshops, Fifth Avenue salons and Hatton Garden dealers. Each has passed business, identity and payout verification before listing a single piece.
-        </p>
+    <div className={styles.page}>
+      <header className={styles.hero}>
+        <div className={styles.heroImage} aria-hidden="true">
+          <Image src="/media/story-solitaire.webp" alt="" fill priority sizes="(min-width: 768px) 70vw, 100vw" className={styles.heroPhoto} />
+        </div>
+        <div className={styles.heroWash} />
+        <div className={styles.heroContent}>
+          <p className={styles.eyebrow}>Certified sellers</p>
+          <h1>Jewelers we&rsquo;re proud to host</h1>
+          <p className={styles.intro}>Discover independent jewelers, renowned ateliers, and trusted<br className={styles.desktopBreak} /> sellers from around the world — all in one curated marketplace.</p>
+          <form id="jewelers-search" action="/jewelers" className={styles.search} role="search">
+            <Search size={20} strokeWidth={1.5} aria-hidden />
+            <label className="sr-only" htmlFor="jeweler-query">Search jewelers</label>
+            <input id="jeweler-query" name="q" defaultValue={q} placeholder="Search jewelers, locations or styles…" />
+            {category && <input type="hidden" name="category" value={category} />}
+            <button type="submit" aria-label="Search jewelers"><Search size={20} strokeWidth={1.5} /></button>
+          </form>
+          <ul className={styles.assurances} aria-label="Our marketplace assurances">
+            <li><Gem size={28} strokeWidth={1.3} /><span>Verified<br />jewelers</span></li>
+            <li><Star size={28} strokeWidth={1.3} /><span>Independent<br />collections</span></li>
+            <li><ShieldCheck size={28} strokeWidth={1.3} /><span>Trusted<br />marketplace</span></li>
+          </ul>
+        </div>
+        <p className={styles.signature}>Real jewelers.<br />Remarkable stories.</p>
       </header>
 
-      <form className="mx-auto mt-10 flex max-w-3xl flex-col gap-3 border-y border-line py-4 sm:flex-row sm:items-center" action="/jewelers">
-        <label className="relative flex-1">
-          <span className="sr-only">Search jewelers</span>
-          <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted" />
-          <input name="q" defaultValue={q} placeholder="Search by name, city or speciality" className="h-11 w-full rounded-[2px] border border-line bg-porcelain pr-3 pl-10 text-[14.5px] outline-none focus:border-sage" />
-        </label>
-        <NativeSelect name="country" defaultValue={country ?? ""} className="sm:w-48" aria-label="Country">
-          <option value="">All countries</option>
-          {countries.map((c) => (
-            <option key={c.code} value={c.code}>
-              {countryName(c.code)} ({c.count})
-            </option>
-          ))}
-        </NativeSelect>
-        <NativeSelect name="sort" defaultValue={sort} className="sm:w-44" aria-label="Sort">
-          {Object.entries(DIRECTORY_SORTS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </NativeSelect>
-        <button type="submit" className="h-11 rounded-[2px] bg-sage px-6 caps text-white hover:bg-sage-deep">
-          Search
-        </button>
-      </form>
-
-      <p className="mt-8 mb-6 text-[13.5px] text-muted">{pluralize(sellers.length, "verified jeweler")}</p>
-
-      {sellers.length === 0 ? (
-        <EmptyState title="No jewelers match that search">Try another city or clear the country filter.</EmptyState>
-      ) : (
-        <div className="grid gap-8 md:grid-cols-2">
-          {sellers.map((s) => (
-            <Link key={s.id} href={`/jewelers/${s.slug}`} className="group grid overflow-hidden border border-line bg-porcelain transition-shadow hover:shadow-soft sm:grid-cols-[1fr_1.1fr]">
-              <div className="relative aspect-[4/3] bg-sand sm:aspect-auto">
-                {s.bannerUrl && <Image src={s.bannerUrl} alt="" fill sizes="(min-width: 768px) 25vw, 100vw" className="object-cover transition-transform duration-700 ease-silk group-hover:scale-[1.03]" />}
-              </div>
-              <div className="flex flex-col p-6">
-                <div className="flex items-center gap-3">
-                  <Monogram name={s.storeName} src={s.logoUrl} size={44} />
-                  <div className="min-w-0">
-                    <h2 className="truncate font-display text-[22px] leading-tight text-ink">{s.storeName}</h2>
-                    <p className="text-[13px] text-muted">
-                      {s.city}, {countryName(s.country)}
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-3 line-clamp-2 text-[14px] text-ink-soft">{s.tagline}</p>
-                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
-                  <VerifiedJeweler />
-                  {s.isTopRated && <TopRated />}
-                </div>
-                <dl className="mt-4 grid grid-cols-3 gap-2 text-[12.5px]">
-                  <div>
-                    <dt className="text-muted">Rating</dt>
-                    <dd className="flex items-center gap-1 text-ink">{s.ratingCount ? <><Stars rating={s.ratingAverage} size={10} label={false} /> {s.ratingAverage.toFixed(1)}</> : "New"}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted">Replies</dt>
-                    <dd className="text-ink">{formatResponseTime(s.responseTimeMinutes).replace("within ", "< ")}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted">Boutique</dt>
-                    <dd className="text-ink">{s.locations.length ? s.locations.map((l) => l.city).join(", ") : "Online"}</dd>
-                  </div>
-                </dl>
-                <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
-                  {s.specialties.slice(0, 3).map((sp) => (
-                    <span key={sp} className="rounded-full bg-parchment px-2.5 py-0.5 text-[11.5px] text-ink-soft">
-                      {sp}
-                    </span>
-                  ))}
-                </div>
-                <p className="caps mt-4 text-[10.5px] text-ink-soft group-hover:text-ink">{pluralize(s.activeListingCount, "piece")} · Visit →</p>
-              </div>
-            </Link>
-          ))}
+      <section className={styles.directory} aria-label="Find your jeweler">
+        <div className={styles.toolbar}>
+          <nav className={styles.categories} aria-label="Jeweler categories">
+            {categories.map((item) => <Link key={item.slug} href={categoryHref(item.slug)} aria-current={(category ?? "") === item.slug ? "page" : undefined}>{item.name}</Link>)}
+          </nav>
+          <div className={styles.filters}>
+            <DirectorySelect name="country" value={country ?? ""}>
+              <option value="">All locations</option>
+              {countries.map((item) => <option key={item.code} value={item.code}>{countryName(item.code)} ({item.count})</option>)}
+            </DirectorySelect>
+            <DirectorySelect name="sort" value={sort}>
+              {Object.entries(DIRECTORY_SORTS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </DirectorySelect>
+          </div>
         </div>
-      )}
+        <div className={styles.results}>
+          <p>{pluralize(sellers.length, "verified jeweler")}{q && <> for &ldquo;{q}&rdquo;</>}</p>
+          {(q || country || category) && <Link href="/jewelers">Clear filters <span aria-hidden="true">×</span></Link>}
+        </div>
+        {sellers.length === 0 ? <EmptyState title="No jewelers match that search">Try another location or <Link href="/jewelers" className="underline underline-offset-4">browse all jewelers</Link>.</EmptyState> : (
+          <div className={styles.grid}>
+            {sellers.map((seller) => {
+              const href = "/jewelers/" + seller.slug;
+              const products = seller.products.filter((product) => product.images[0]?.url?.trim());
+              return (
+                <article key={seller.id} className={styles.card}>
+                  <div className={styles.cover}>
+                    <Link href={href} aria-label={"Visit " + seller.storeName} className={styles.coverLink}>
+                      {seller.bannerUrl ? <Image src={seller.bannerUrl} alt={seller.storeName + " atelier and collection"} fill sizes="(min-width: 1100px) 25vw, (min-width: 640px) 50vw, 100vw" className={styles.coverImage} /> : <span className={styles.coverFallback}><Gem size={44} strokeWidth={.8} /></span>}
+                    </Link>
+                    <FollowStoreButton sellerId={seller.id} following={savedSellerIds.has(seller.id)} variant="icon" storeName={seller.storeName} className={styles.favorite} />
+                  </div>
+                  <div className={styles.cardBody}>
+                    <Monogram name={seller.storeName} src={seller.logoUrl} size={52} className={styles.monogram} />
+                    <h2><Link href={href}>{seller.storeName}</Link><BadgeCheck size={18} className={styles.verified} aria-label="Verified jeweler" /></h2>
+                    <p className={styles.location}>{seller.city}, {countryName(seller.country)}{seller.foundedYear && <> <span>·</span> Est. {seller.foundedYear}</>}</p>
+                    <div className={styles.details}>
+                      <span className={styles.rating}><Star size={14} fill="currentColor" strokeWidth={1.5} />{seller.ratingCount ? <><strong>{seller.ratingAverage.toFixed(1)}</strong> <span>({seller.ratingCount})</span></> : <span>New jeweler</span>}</span>
+                      {seller.specialties[0] && <span className={styles.specialty} title={seller.specialties.join(" · ")}><Tag size={13} />{seller.specialties[0]}</span>}
+                    </div>
+                    {products.length > 0 ? <div className={styles.products}>
+                      {products.slice(0, 3).map((product) => <Link key={product.slug} href={"/product/" + product.slug} className={styles.product} aria-label={product.title}><Image src={product.images[0].url} alt={product.title} fill sizes="90px" className="object-cover" /></Link>)}
+                      {products.length > 3 && <Link href={href} className={styles.more} aria-label={"View all pieces from " + seller.storeName}>{seller.activeListingCount > 3 ? "+" + (seller.activeListingCount - 3) : <ArrowUpRight size={19} />}</Link>}
+                    </div> : <p className={styles.tagline}>{seller.tagline ?? "Discover the story behind the atelier."}</p>}
+                    <Link href={href} className={styles.collectionLink}>View collection <ArrowRight size={15} /></Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CollectionInvitation } from "@/components/home/landing-collections";
 import { LandingExperience } from "@/components/home/landing-experience";
+import { VideoShowcase } from "@/components/home/video-showcase";
 import styles from "@/components/home/landing.module.css";
 import { ProductGrid } from "@/components/catalog/product-card";
 import { ClarityGuide, GoldPurityChart } from "@/components/home/education";
@@ -10,7 +11,6 @@ import {
   CustomOrderBand,
   Hero,
   KindWords,
-  SellerShowcase,
   StorySection,
   ValueStrip,
 } from "@/components/home/sections";
@@ -24,7 +24,6 @@ import {
   getCategoryTree,
   getFeaturedProducts,
   getMarketplaceStats,
-  getShowcaseSellers,
   getTrendingProducts,
   getWishlistProductIds,
   publicProductWhere,
@@ -34,10 +33,9 @@ import { getSpotQuotes } from "@/server/services/market";
 
 export default async function HomePage() {
   const [ctx, user] = await Promise.all([getPriceContext(), getCurrentUser()]);
-  const [featured, stats, sellers, tree, quotes, saved, counts] = await Promise.all([
+  const [featured, stats, tree, quotes, saved, counts] = await Promise.all([
     getFeaturedProducts(ctx, 6),
     getMarketplaceStats(),
-    getShowcaseSellers(4),
     getCategoryTree(),
     getSpotQuotes(),
     getWishlistProductIds(user?.id),
@@ -58,6 +56,7 @@ export default async function HomePage() {
   return (
     <LandingExperience>
       <Hero stats={stats} />
+      <VideoShowcase />
       <StorySection stats={stats} />
       <CategoryRow categories={categories} />
 
@@ -75,7 +74,6 @@ export default async function HomePage() {
       </section>
 
       <ValueStrip />
-      {sellers.length > 0 && <SellerShowcase sellers={sellers} />}
 
       {trending.length > 0 && <section className="border-t border-line bg-porcelain/50 py-20 md:py-24" aria-labelledby="trending-heading">
         <div className="shell">

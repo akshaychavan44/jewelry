@@ -2,12 +2,18 @@
 
 const u = (id: string, params = "fit=crop") => `https://images.unsplash.com/${id}?${params}`;
 
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+  "http://localhost:3000";
+
 export const siteConfig = {
   name: "Loupe",
   descriptor: "Fine Jewelry Marketplace",
   description:
     "Fine, high and vintage jewelry from independent jewelers — every seller verified, every stone certified, every delivery insured.",
-  url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  url: appUrl,
   supportEmail: "concierge@loupe.example",
   announcement: "Every certificate checked · Insured, signature-on-delivery shipping",
   social: {

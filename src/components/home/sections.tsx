@@ -1,4 +1,3 @@
-import { Gem, Ruler, Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { CinematicHero } from "@/components/home/cinematic-hero";
@@ -56,66 +55,7 @@ export function CategoryRow({ categories }: { categories: { slug: string; name: 
   return <CategoryCarousel categories={categories} />;
 }
 
-const VALUES = [
-  {
-    icon: Store,
-    title: "INDEPENDENT ATELIERS",
-    body: "Small houses and family workshops — never a factory floor.",
-    image: "https://images.unsplash.com/photo-1531995811006-35cb42e1a022?auto=format&fit=crop&w=600&q=85",
-    alt: "Jeweler working at an independent atelier bench with loupe",
-  },
-  {
-    icon: Gem,
-    title: "OFTEN ONE OF A KIND",
-    body: "Antique, bespoke and single-stone pieces you won't see twice.",
-    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=85",
-    alt: "Unique blue sapphire and diamond halo ring on travertine stone",
-  },
-  {
-    icon: Ruler,
-    title: "MADE TO YOUR MEASURE",
-    body: "Sized, engraved and adjusted by the jeweler who made it.",
-    image: "https://images.unsplash.com/photo-1628926379972-9843ad139a8c?auto=format&fit=crop&w=600&q=85",
-    alt: "Craftsman hand holding caliper measuring engraved gold ring band",
-  },
-];
-
-export function ValueStrip() {
-  return (
-    <section className="bg-[#FAF7F2] pt-8 pb-3 md:pt-10 md:pb-4">
-      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 md:px-10 lg:px-14">
-        {/* 3 Value Cards fitting screen width */}
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6 lg:gap-8">
-          {VALUES.map(({ icon: Icon, title, body, image, alt }) => (
-            <div
-              key={title}
-              className="group flex items-center gap-4.5 sm:gap-5 lg:gap-6 rounded-[22px] md:rounded-[26px] border border-[#ede3d2]/90 bg-[#fdfbf7] p-4 sm:p-5 lg:p-6 shadow-[0_8px_28px_-10px_rgba(47,44,40,0.06)] transition-all duration-300 hover:border-gold/45 hover:shadow-[0_16px_36px_-10px_rgba(168,134,79,0.14)]"
-            >
-              <div className="relative size-[100px] sm:size-[115px] md:size-[125px] lg:size-[140px] shrink-0 overflow-hidden rounded-[16px] md:rounded-[20px] bg-sand">
-                <Image
-                  src={image}
-                  alt={alt}
-                  fill
-                  sizes="(min-width: 1280px) 140px, (min-width: 768px) 125px, 100px"
-                  className="object-cover transition-transform duration-500 ease-silk group-hover:scale-105"
-                />
-              </div>
-              <div className="flex flex-1 flex-col justify-center min-w-0 pr-1">
-                <Icon className="size-6 text-[#b58f55] stroke-[1.4] sm:size-7 lg:size-8" aria-hidden />
-                <p className="caps mt-2.5 text-[12px] sm:text-[12.5px] lg:text-[13px] font-semibold tracking-wider text-ink">
-                  {title}
-                </p>
-                <p className="mt-1.5 text-[13px] sm:text-[13.5px] lg:text-[14px] leading-relaxed text-ink/80">
-                  {body}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+export { ValueStrip } from "./value-strip";
 
 export function SellerShowcase({ sellers }: { sellers: Awaited<ReturnType<typeof getShowcaseSellers>> }) {
   return (
@@ -193,31 +133,7 @@ export function StyledGallery() {
   );
 }
 
-export function CustomOrderBand() {
-  return (
-    <section className="bg-greige">
-      <div className="shell grid items-center gap-10 py-16 md:grid-cols-[1fr_1.35fr] md:py-20">
-        <div className="max-w-md">
-          <p className="eyebrow mb-4">Bespoke</p>
-          <h2 className="display-lg text-ink">Imagined by you.<br />Made just for you.</h2>
-          <p className="mt-5 text-[15.5px] leading-relaxed text-ink-soft">
-            Describe the piece you have in mind — a remade heirloom, a stone you already own, a bridal set for a date that matters. Jewelers who take commissions will send you quotes.
-          </p>
-          <Link href="/custom-orders" className={cn(buttonVariants({ size: "lg" }), "mt-8")}>
-            Request a custom piece
-          </Link>
-        </div>
-        <div className="grid grid-cols-3 gap-3 md:gap-4">
-          {["/media/necklaces.jpg", "/media/loupe-hero.jpg", "/media/bridal.jpg"].map((src, i) => (
-            <div key={src} className={cn("relative overflow-hidden bg-sand", i === 1 ? "aspect-[3/4.4] md:-mt-6" : "aspect-[3/4]")}>
-              <Image src={src} alt="" fill sizes="(min-width: 768px) 18vw, 33vw" className="object-cover" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+export { CustomOrderBand } from "./custom-order-band";
 
 export function KindWords() {
   return <TestimonialsCarousel />;

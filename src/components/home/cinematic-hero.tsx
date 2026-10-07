@@ -70,14 +70,19 @@ export function CinematicHero({ jewelers }: { jewelers: number }) {
       const mediaHeight = media?.clientHeight ?? scene.clientHeight;
       const sceneWidth = scene.clientWidth;
       scene.style.setProperty("--media-height", `${mediaHeight}px`);
-      // Native 1080p (1920x1080) Full HD cover calculation
-      const scale = Math.max(sceneWidth / 1920, mediaHeight / 1080);
-      const videoWidth = Math.ceil(1920 * scale);
-      const videoHeight = Math.ceil(1080 * scale);
+      // Cover the jewelry scene, excluding the header and footer recorded
+      // inside the source clip (148px above and 84px below at 1080p).
+      const sourceWidth = video.videoWidth || 1920;
+      const sourceHeight = video.videoHeight || 1080;
+      const cropTop = sourceHeight * (148 / 1080);
+      const contentHeight = sourceHeight * (848 / 1080);
+      const scale = Math.max(sceneWidth / sourceWidth, mediaHeight / contentHeight);
+      const videoWidth = Math.ceil(sourceWidth * scale);
+      const videoHeight = Math.ceil(sourceHeight * scale);
       horizontalCrop = Math.max(0, videoWidth - sceneWidth);
       video.style.width = `${videoWidth}px`;
       video.style.height = `${videoHeight}px`;
-      video.style.top = `${Math.round((mediaHeight - videoHeight) / 2)}px`;
+      video.style.top = `${Math.floor((mediaHeight - contentHeight * scale) / 2 - cropTop * scale)}px`;
       if (motion.matches) {
         opening = false;
         manualRef.current = false;

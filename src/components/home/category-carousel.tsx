@@ -76,7 +76,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
           setIsInView(true);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.05 }
     );
 
     observer.observe(section);
@@ -171,7 +171,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
             setCurrentVirtualIndex(centered);
           }
         }
-      }, 550);
+      }, 380);
     },
     [n, middleSetOffset, reducedMotion]
   );
@@ -232,28 +232,44 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
           scrollToVirtualIndex(recenteredVirtualIdx, "instant" as ScrollBehavior);
         }
       }
-    }, 180);
+    }, 120);
   }, [currentVirtualIndex, middleSetOffset, n, scrollToVirtualIndex]);
 
+  const interactionTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const pauseTemporarily = useCallback((durationMs = 7000) => {
+    setIsInteracting(true);
+    if (interactionTimer.current) clearTimeout(interactionTimer.current);
+    interactionTimer.current = setTimeout(() => {
+      setIsInteracting(false);
+    }, durationMs);
+  }, []);
+
+  // Continuous auto circular loop rotation at 0.5s
   useEffect(() => {
     if (n < 2 || !isVisible || isPaused || isInteracting || reducedMotion || expandedCategory) return;
     const timer = setInterval(() => {
-      if (!document.hidden) scrollToVirtualIndex(currentVirtualIndex + 1);
-    }, 4200);
+      if (!document.hidden) {
+        scrollToVirtualIndex(currentVirtualIndex + 1);
+      }
+    }, 500);
     return () => clearInterval(timer);
   }, [n, isVisible, isPaused, isInteracting, reducedMotion, expandedCategory, currentVirtualIndex, scrollToVirtualIndex]);
 
   useEffect(() => () => {
     if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     if (closeTimeout.current) clearTimeout(closeTimeout.current);
+    if (interactionTimer.current) clearTimeout(interactionTimer.current);
   }, []);
 
   const handleNext = () => {
+    pauseTemporarily(7000);
     const nextIdx = currentVirtualIndex >= REPEATS * n - 1 ? middleSetOffset : currentVirtualIndex + 1;
     scrollToVirtualIndex(nextIdx, "smooth");
   };
 
   const handlePrev = () => {
+    pauseTemporarily(7000);
     const prevIdx = currentVirtualIndex <= 0 ? middleSetOffset + n - 1 : currentVirtualIndex - 1;
     scrollToVirtualIndex(prevIdx, "smooth");
   };
@@ -262,6 +278,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
   const handleCardClick = (e: React.MouseEvent<HTMLAnchorElement>, virtualIdx: number, isActive: boolean, category: CategoryItem) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
+    pauseTemporarily(7000);
     if (!isActive) {
       scrollToVirtualIndex(virtualIdx, "smooth");
     } else {
@@ -280,12 +297,6 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
       aria-labelledby={headingId}
       aria-roledescription="carousel"
       data-expanded={expandedCategory ? "true" : undefined}
-      onMouseEnter={() => setIsInteracting(true)}
-      onMouseLeave={() => setIsInteracting(false)}
-      onFocusCapture={() => setIsInteracting(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setIsInteracting(false);
-      }}
     >
       <div className={styles.studio} aria-hidden="true"><span /><span /><span /></div>
       {/* Scoped CSS for Entrance Staggered Bottom-to-Top Rise & Gold Shimmer */}

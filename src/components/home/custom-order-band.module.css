@@ -1,0 +1,68 @@
+.scene { position: relative; isolation: isolate; overflow: hidden; min-height: 780px; height: calc(100svh - 84px); max-height: 1050px; background: #f6ece0; color: #241d16; perspective: 1400px; }
+.photograph { position: absolute; inset: 0; z-index: -3; transform-origin: 72% 38%; will-change: transform; }
+.necklace { object-fit: cover; object-position: center; }
+.wash { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg, #faf3e9b3, #faf3e957 34%, transparent 56%), linear-gradient(0deg, #faf3e9bd, transparent 42%); }
+.copy { position: relative; z-index: 2; padding-top: clamp(64px, 7vw, 115px); margin-left: 6.6%; width: 43%; }
+.eyebrow { display: flex; align-items: center; gap: 14px; font-size: 12px; font-weight: 600; letter-spacing: .19em; text-transform: uppercase; }
+.eyebrow span { width: 34px; height: 1px; background: #a88449; }
+.copy h2 { font-family: var(--font-display); font-size: clamp(42px, 4vw, 70px); font-weight: 400; line-height: 1.06; letter-spacing: -.035em; margin-top: 25px; }
+.description { font-family: var(--font-display); font-size: clamp(18px, 1.55vw, 25px); line-height: 1.35; margin-top: 25px; }
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 54px; margin-top: 24px; padding: 16px 32px; background: linear-gradient(120deg, #9c7947, #a4824d); color: #fffaf1; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .18em; box-shadow: 0 8px 28px #69502715; transition: background .25s, transform .25s, box-shadow .25s; }
+.cta:hover { background: #846130; transform: translateY(-2px); box-shadow: 0 10px 25px #69502726; }
+.cta:focus-visible { outline: 2px solid #65431f; outline-offset: 5px; }
+.annotations { position: absolute; inset: 0; pointer-events: none; }
+.annotations > div { position: absolute; }
+.annotations h3 { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+.annotations p { margin-top: 5px; font-size: 12px; line-height: 1.45; }
+.annotations svg { position: absolute; width: 105px; height: 65px; overflow: visible; stroke: #ac8244; stroke-width: .75; fill: none; }
+.annotations circle { fill: #ac8244; stroke: none; }
+.stone { top: 15%; left: 45%; }
+.stone svg { left: 115%; top: 8px; }
+.metal { top: 12%; right: 5%; }
+.metal svg { right: 110%; bottom: 80%; }
+.craft { top: 54%; right: 5%; }
+.craft svg { right: 115%; bottom: 85%; }
+.shimmer { position: absolute; pointer-events: none; width: 36%; height: 70%; left: 60%; top: -5%; background: linear-gradient(115deg, transparent 40%, #fff7d755 50%, transparent 60%); opacity: 0; transform: rotate(-15deg); mix-blend-mode: screen; }
+.journey { position: absolute; z-index: -1; width: 100%; height: 190px; bottom: 18%; overflow: visible; }
+.trajectory { stroke: #b18b55; stroke-width: .7; }
+.nodes circle { fill: #a88449; stroke: #fff9ec; stroke-width: 3; }
+.nodes circle:nth-child(n+4) { fill: #fff9ec; stroke: none; }
+.steps { position: absolute; inset-inline: 6.1%; bottom: 6%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5%; list-style: none; margin: 0; padding: 0; }
+.step { display: flex; align-items: flex-start; gap: 13px; min-width: 0; }
+.step:nth-child(2) { padding-top: 35px; }
+.step:nth-child(3) { padding-top: 60px; }
+.stepCopy { flex: 1; min-width: 0; }
+.number { font-family: var(--font-display); font-size: clamp(38px, 3.6vw, 62px); color: #c79e666e; line-height: 1; }
+.step h3 { font-family: var(--font-display); font-size: clamp(25px, 2vw, 35px); font-weight: 400; line-height: 1.15; white-space: nowrap; }
+.rule { display: block; width: 34px; height: 1px; background: #a88449; margin-top: 16px; }
+.step p { max-width: 245px; margin-top: 17px; font-size: 13px; line-height: 1.45; color: #433b31; }
+.circle { position: relative; flex-shrink: 0; width: 54%; aspect-ratio: 1; overflow: hidden; border-radius: 50%; border: 1px solid #b799674a; box-shadow: 0 9px 24px #6950270c; margin-top: 8px; transition: transform .6s cubic-bezier(.22,1,.36,1), box-shadow .6s; }
+.stepImage { object-fit: cover; transition: transform .7s; }
+.circle span { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, #fff8 48%, transparent 66%); transform: translateX(-120%); }
+.step:hover .circle { transform: translateY(-6px); box-shadow: 0 15px 30px #a8844926; }
+.step:hover .stepImage { transform: scale(1.045); }
+.step:hover .circle span { transform: translateX(120%); transition: transform 1s; }
+.scene[data-entered="true"] .photograph { animation: necklaceEntrance 2.1s cubic-bezier(.22,1,.36,1) both; }
+.scene[data-entered="true"] .copy { animation: copyEntrance .9s 1.55s cubic-bezier(.22,1,.36,1) both; }
+.scene[data-entered="true"] .wash { animation: veilReveal 1s 1s both; }
+.scene[data-entered="true"] .annotations { animation: riseIn .8s 2.65s both; }
+.scene[data-entered="true"] .trajectory { stroke-dasharray: 1; animation: drawLine 1.4s 2.1s both; }
+.scene[data-entered="true"] .nodes { animation: riseIn .6s 2.3s both; }
+.scene[data-entered="true"] .step { animation: stepEntrance .7s 2.25s cubic-bezier(.22,1,.36,1) both; }
+.scene[data-entered="true"] .step:nth-child(2) { animation-delay: 3s; }
+.scene[data-entered="true"] .step:nth-child(3) { animation-delay: 3.75s; }
+.scene[data-entered="true"] .shimmer { animation: lightPass 1.8s .35s both; }
+@keyframes necklaceEntrance { 0%, 43% { transform: translateX(-17%) scale(1.65) rotateY(-7deg) rotateZ(-2deg); } 100% { transform: translateX(0) scale(1) rotateY(0) rotateZ(0); } }
+@keyframes copyEntrance { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes riseIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes stepEntrance { from { opacity: 0; transform: translateX(-70px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes drawLine { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes veilReveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lightPass { 0% { opacity: 0; transform: translateX(-70%) rotate(-15deg); } 30% { opacity: .75; } 100% { opacity: 0; transform: translateX(60%) rotate(-15deg); } }
+@media (min-width: 1700px) { .steps { bottom: 8%; } .circle { max-width: 250px; } }
+@media (min-width: 1100px) and (max-height: 800px) { .scene { min-height: 636px; } .copy { padding-top: 54px; } .copy h2 { font-size: 46px; margin-top: 20px; } .description { font-size: 20px; margin-top: 18px; } .cta { min-height: 48px; margin-top: 20px; padding-block: 13px; } .steps { bottom: 4%; } .step:nth-child(2) { padding-top: 20px; } .step:nth-child(3) { padding-top: 40px; } .circle { width: 54%; } .number { font-size: 40px; } .step h3 { font-size: 27px; } .step p { font-size: 12px; } .journey { height: 140px; bottom: 20%; } }
+@media (max-width: 1099px) { .scene { min-height: 740px; } .copy { margin-left: 5%; width: 48%; } .copy h2 { font-size: 45px; } .description { font-size: 19px; } .steps { inset-inline: 5%; gap: 3%; bottom: 7%; } .step { flex-direction: column-reverse; gap: 10px; } .circle { width: 175px; } .step:nth-child(2), .step:nth-child(3) { padding-top: 0; } .step h3 { font-size: 26px; } .step p { font-size: 12px; } .number { font-size: 36px; } .rule { margin-top: 10px; } .step p { margin-top: 10px; } .journey { bottom: 37%; height: 100px; } .stone { left: 52%; top: 10%; } .stone svg { width: 50px; left: 95%; } .metal { right: 4%; top: 23%; } .craft { top: 43%; right: 6%; } .annotations p { font-size: 11px; } }
+@media (max-width: 767px) { .scene { height: auto; max-height: none; min-height: 0; padding-bottom: 42px; } .photograph { inset: 0 0 auto; height: 600px; transform-origin: 65% 30%; } .necklace { object-position: 62% top; } .wash { background: linear-gradient(0deg, #faf3e9 30%, #faf3e9ee 44%, transparent 80%), linear-gradient(90deg, #faf3e97a, transparent); } .copy { margin: 0; width: 100%; padding: 270px 24px 0; } .copy h2 { font-size: clamp(36px, 6.5vw, 48px); margin-top: 18px; } .description { font-size: 19px; max-width: 440px; margin-top: 18px; } .cta { min-height: 50px; margin-top: 22px; padding: 14px 24px; font-size: 11px; } .annotations { display: none; } .steps { position: relative; inset: auto; grid-template-columns: 1fr; gap: 28px; padding: 38px 24px 0; } .step { flex-direction: row; align-items: center; gap: 20px; } .step h3 { font-size: 29px; } .step p { font-size: 13px; max-width: 300px; } .circle { width: 44%; max-width: 185px; } .journey { display: none; } .scene[data-entered="true"] .photograph { animation-name: mobileNecklaceEntrance; } }
+@media (max-width: 767px) { .photograph { height: 360px; } .copy { padding-top: 300px; } .wash { background: linear-gradient(0deg, #faf3e9 62%, #faf3e9b3 75%, transparent 90%); } }
+@keyframes mobileNecklaceEntrance { 0%, 43% { transform: translateY(80px) scale(1.35) rotateY(-6deg); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .scene *, .scene *::before, .scene *::after { animation: none !important; transition: none !important; } .photograph { will-change: auto; } .shimmer { display: none; } }

@@ -34,6 +34,7 @@ import { CURRENCIES, type CurrencyCode, SUPPORTED_CURRENCIES } from "@/lib/money
 import { cn } from "@/lib/utils";
 import { setCurrency } from "@/server/actions/preferences";
 import { signOutAction } from "@/server/actions/auth";
+import styles from "./site-header.module.css";
 
 type Category = { slug: string; name: string; imageUrl: string | null; children: { slug: string; name: string }[] };
 
@@ -44,11 +45,11 @@ type Props = {
   user: { name: string | null; email: string; role: Role } | null;
 };
 
-const navLink = "caps text-ink/85 transition-colors hover:text-ink";
+const navLink = "caps text-[12px] md:text-[12.5px] font-semibold tracking-[0.14em] text-ink transition-colors hover:text-[#885f2a]";
 
 export function HeaderClient({ categories, cartCount, currency, user }: Props) {
   const pathname = usePathname();
-  const isHome = pathname === "/" || pathname === "" || pathname === null;
+  const isHome = !pathname || pathname === "/" || pathname === "";
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -57,7 +58,7 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    const isHomepage = pathname === "/" || pathname === "" || pathname === null;
+    const isHomepage = !pathname || pathname === "/" || pathname === "";
     if (!isHomepage) {
       setHeroPassed(true);
       return;
@@ -77,6 +78,7 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
   useEffect(() => {
     setMegaOpen(false);
     setMobileOpen(false);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [pathname]);
 
   const openMega = () => {
@@ -93,18 +95,20 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
     <header
       className={cn(
         isHome ? "fixed top-0 inset-x-0 z-40" : "sticky top-0 z-40",
-        "border-b bg-ivory/95 backdrop-blur-md transition-all duration-500 ease-silk",
-        scrolled || megaOpen ? "border-line shadow-soft" : "border-transparent",
+        styles.header,
+        "transition-all duration-500 ease-silk",
+        (scrolled || megaOpen) && styles.elevated,
         isVisible ? "translate-y-0 opacity-100 visible pointer-events-auto" : "-translate-y-full opacity-0 pointer-events-none invisible"
       )}
     >
-      <div className="shell grid h-[72px] grid-cols-[1fr_auto_1fr] items-center md:h-[84px]">
+      <div className={styles.glassLight} aria-hidden="true" />
+      <div className={cn(styles.bar, "grid h-[72px] grid-cols-[1fr_auto_1fr] items-center md:h-[84px]")}>
         {/* Left: navigation */}
         <div className="flex items-center gap-7">
           <button type="button" className="-ml-2 grid size-10 place-items-center lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
             <Menu className="size-5" strokeWidth={1.5} />
           </button>
-          <nav className="hidden items-center gap-8 lg:flex" aria-label="Main">
+          <nav className={cn(styles.navigation, "hidden items-center lg:flex")} aria-label="Main">
             <div onMouseEnter={openMega} onMouseLeave={closeMegaSoon}>
               <button
                 type="button"
@@ -134,14 +138,14 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
 
         {/* Right: utilities */}
         <div className="flex items-center justify-end gap-1 md:gap-5">
-          <CurrencyMenu currency={currency} className="hidden md:flex" />
-          <button type="button" onClick={() => setSearchOpen(true)} className={cn(navLink, "inline-flex items-center gap-2 p-2 md:p-0")} aria-label="Search">
-            <span className="hidden md:inline">Search</span>
+          <CurrencyMenu currency={currency} className="hidden lg:flex" />
+          <button type="button" onClick={() => setSearchOpen(true)} className={cn(navLink, styles.searchButton, "inline-flex items-center gap-2 p-2")} aria-label="Search">
+            <span className="hidden lg:inline">Search jewelry</span>
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
           <AccountMenu user={user} />
           <Link href="/cart" className={cn(navLink, "relative inline-flex items-center gap-2 p-2 md:p-0")} aria-label={`Cart, ${cartCount} items`}>
-            <span className="hidden md:inline">Cart</span>
+            <span className="hidden lg:inline">Cart</span>
             <ShoppingBag className="size-[18px] md:size-4" strokeWidth={1.6} />
             {cartCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 grid size-[17px] place-items-center rounded-full bg-sage text-[10px] font-medium text-white md:static md:-ml-1">
@@ -288,7 +292,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
   if (!user) {
     return (
       <Link href="/login" className={cn(navLink, "inline-flex items-center gap-2 p-2 md:p-0")} aria-label="Sign in">
-        <span className="hidden md:inline">Sign in</span>
+        <span className="hidden lg:inline">Sign in</span>
         <User className="size-[18px] md:size-4" strokeWidth={1.6} />
       </Link>
     );
@@ -296,7 +300,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className={cn(navLink, "inline-flex items-center gap-2 p-2 outline-none md:p-0")} aria-label="Account menu">
-        <span className="hidden md:inline">Account</span>
+        <span className="hidden lg:inline">Account</span>
         <User className="size-[18px] md:size-4" strokeWidth={1.6} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-60">

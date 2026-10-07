@@ -56,7 +56,12 @@ export function num(value: bigint | number | string | { toString(): string } | n
 }
 
 export function absoluteUrl(path = "/") {
-  return new URL(path, process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").toString();
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "http://localhost:3000";
+  return new URL(path, base).toString();
 }
 
 export function randomCode(length = 6, alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789") {

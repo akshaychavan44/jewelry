@@ -91,7 +91,7 @@ export function CustomOrdersView({
       {/* ============================================================ */}
       {/* 1. HERO SECTION (1st Image) */}
       {/* ============================================================ */}
-      <section className="relative overflow-hidden border-b border-[#e6dcce] pt-12 pb-16 md:pt-16 md:pb-24 lg:pt-20 lg:pb-28">
+      <section className="relative overflow-hidden border-b border-[#e6dcce] pt-4 pb-8 sm:pt-6 sm:pb-10 md:pt-8 md:pb-12 lg:pt-9">
         {/* Soft studio ambient glow */}
         <div
           className="pointer-events-none absolute inset-0 -z-10"
@@ -187,7 +187,7 @@ export function CustomOrdersView({
       {/* ============================================================ */}
       {/* 2. RECENT CUSTOM PIECES (2nd Image Top) */}
       {/* ============================================================ */}
-      <section className="py-16 md:py-24 border-b border-[#e6dcce]">
+      <section className="pt-8 pb-14 sm:pt-10 sm:pb-16 md:pt-12 md:pb-20 border-b border-[#e6dcce]">
         <div className="mx-auto w-full max-w-[1720px] px-4 sm:px-6 md:px-10 lg:px-14">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>

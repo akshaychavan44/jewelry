@@ -45,31 +45,18 @@ type Props = {
   user: { name: string | null; email: string; role: Role } | null;
 };
 
-const navLink = "caps text-[12px] md:text-[12.5px] font-semibold tracking-[0.14em] text-ink transition-colors hover:text-[#885f2a]";
+const navLink = "caps text-[12px] md:text-[12.5px] font-semibold tracking-[0.14em] text-ink transition-colors hover:text-[#86683a] " + styles.navItem;
 
 export function HeaderClient({ categories, cartCount, currency, user }: Props) {
   const pathname = usePathname();
-  const isHome = !pathname || pathname === "/" || pathname === "";
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [heroPassed, setHeroPassed] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    const isHomepage = !pathname || pathname === "/" || pathname === "";
-    if (!isHomepage) {
-      setHeroPassed(true);
-      return;
-    }
-    const onScroll = () => {
-      const currentScroll = window.scrollY || document.documentElement.scrollTop || 0;
-      setScrolled(currentScroll > 8);
-      // Reveal navbar right as the user scrolls past the cinematic hero scroll track
-      const heroThreshold = Math.max(400, window.innerHeight * 1.5);
-      setHeroPassed(currentScroll > heroThreshold);
-    };
+    const onScroll = () => { setScrolled(window.scrollY > 8); };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -89,19 +76,22 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
     closeTimer.current = setTimeout(() => setMegaOpen(false), 140);
   };
 
-  const isVisible = !isHome || heroPassed;
+  const isShopActive = pathname.startsWith("/shop") || pathname.startsWith("/categories");
+  const isJewelersActive = pathname.startsWith("/jewelers");
+  const isCustomOrdersActive = pathname.startsWith("/custom-orders");
+  const isGuidesActive = pathname.startsWith("/guides");
+  const isCartActive = pathname.startsWith("/cart");
 
   return (
     <header
       className={cn(
-        isHome ? "fixed top-0 inset-x-0 z-40" : "sticky top-0 z-40",
+        "sticky top-0 z-40",
         styles.header,
         "transition-all duration-500 ease-silk",
         (scrolled || megaOpen) && styles.elevated,
-        isVisible ? "translate-y-0 opacity-100 visible pointer-events-auto" : "-translate-y-full opacity-0 pointer-events-none invisible"
+        "translate-y-0 opacity-100 visible pointer-events-auto"
       )}
     >
-      <div className={styles.glassLight} aria-hidden="true" />
       <div className={cn(styles.bar, "grid h-[72px] grid-cols-[1fr_auto_1fr] items-center md:h-[84px]")}>
         {/* Left: navigation */}
         <div className="flex items-center gap-7">
@@ -112,7 +102,8 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
             <div onMouseEnter={openMega} onMouseLeave={closeMegaSoon}>
               <button
                 type="button"
-                className={cn(navLink, "inline-flex items-center gap-1.5")}
+                className={cn(navLink, "inline-flex items-center gap-1.5", (isShopActive || megaOpen) && styles.activeNavItem)}
+                data-active={isShopActive || megaOpen ? "true" : undefined}
                 aria-expanded={megaOpen}
                 aria-controls="mega-menu"
                 onClick={() => setMegaOpen((v) => !v)}
@@ -121,30 +112,30 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
                 Shop <ChevronDown className={cn("size-3.5 transition-transform", megaOpen && "rotate-180")} />
               </button>
             </div>
-            <Link href="/jewelers" className={navLink}>
+            <Link href="/jewelers" className={cn(navLink, isJewelersActive && styles.activeNavItem)} data-active={isJewelersActive ? "true" : undefined}>
               Jewelers
             </Link>
-            <Link href="/custom-orders" className={navLink}>
+            <Link href="/custom-orders" className={cn(navLink, isCustomOrdersActive && styles.activeNavItem)} data-active={isCustomOrdersActive ? "true" : undefined}>
               Custom orders
             </Link>
-            <Link href="/guides" className={cn(navLink, "hidden xl:inline")}>
+            <Link href="/guides" className={cn(navLink, "hidden xl:inline", isGuidesActive && styles.activeNavItem)} data-active={isGuidesActive ? "true" : undefined}>
               Guides
             </Link>
           </nav>
         </div>
 
         {/* Centre: wordmark */}
-        <Logo />
+        <Logo className={styles.wordmark} />
 
         {/* Right: utilities */}
-        <div className="flex items-center justify-end gap-1 md:gap-5">
-          <CurrencyMenu currency={currency} className="hidden lg:flex" />
+        <div className={styles.utilities}>
+          <CurrencyMenu currency={currency} className={styles.currencyControl} />
           <button type="button" onClick={() => setSearchOpen(true)} className={cn(navLink, styles.searchButton, "inline-flex items-center gap-2 p-2")} aria-label="Search">
-            <span className="hidden lg:inline">Search jewelry</span>
+            <span className="hidden xl:inline">Search jewelry</span>
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
           <AccountMenu user={user} />
-          <Link href="/cart" className={cn(navLink, "relative inline-flex items-center gap-2 p-2 md:p-0")} aria-label={`Cart, ${cartCount} items`}>
+          <Link href="/cart" className={cn(navLink, "relative inline-flex items-center gap-2 p-2 md:p-0", isCartActive && styles.activeNavItem)} data-active={isCartActive ? "true" : undefined} aria-label={`Cart, ${cartCount} items`}>
             <span className="hidden lg:inline">Cart</span>
             <ShoppingBag className="size-[18px] md:size-4" strokeWidth={1.6} />
             {cartCount > 0 && (
@@ -263,7 +254,7 @@ function CurrencyMenu({ currency, className }: { currency: CurrencyCode; classNa
   const router = useRouter();
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn("caps inline-flex items-center gap-1 text-ink/85 outline-none hover:text-ink", pending && "opacity-50", className)} aria-label={`Currency: ${currency}`}>
+      <DropdownMenuTrigger className={cn("caps inline-flex items-center gap-1 text-ink/85 outline-none transition-colors hover:text-[#86683a]", styles.navItem, pending && "opacity-50", className)} aria-label={`Currency: ${currency}`}>
         {currency} <ChevronDown className="size-3" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">

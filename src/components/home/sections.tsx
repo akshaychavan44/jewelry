@@ -8,6 +8,7 @@ import { Monogram, Stars } from "@/components/ui/display";
 import { siteConfig } from "@/config/site";
 import { TestimonialsCarousel } from "./testimonials-carousel";
 import { AtelierVideo } from "./atelier-video";
+import { StoryEntrance } from "./story-entrance";
 import storyStyles from "./story.module.css";
 import { formatResponseTime } from "@/lib/format";
 import { countryName } from "@/lib/regions";
@@ -20,7 +21,7 @@ export function Hero({ stats }: { stats: { jewelers: number; certified: number }
 
 export function StorySection({ stats }: { stats: { jewelers: number; certified: number; countries: number } }) {
   return (
-    <section id="our-story" aria-labelledby="story-heading" className={storyStyles.story}>
+    <StoryEntrance>
       <AtelierVideo />
       <div className={storyStyles.copy}>
         <p className="eyebrow mb-4">The art of choosing well</p>
@@ -47,7 +48,7 @@ export function StorySection({ stats }: { stats: { jewelers: number; certified: 
         </dl>}
         <Link href="/jewelers" className="link-quiet mt-8 inline-flex min-h-11 items-center text-sm">Meet the independent jewelers →</Link>
       </div>
-    </section>
+    </StoryEntrance>
   );
 }
 

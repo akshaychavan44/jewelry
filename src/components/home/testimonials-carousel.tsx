@@ -1,17 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Stars } from "@/components/ui/display";
 import { testimonials } from "@/config/site";
 import styles from "./testimonials.module.css";
-
-const photographs = [
-  { src: "/media/story-solitaire.webp", alt: "Emerald-cut diamond solitaire on ivory silk" },
-  { src: "/media/story-art-deco.webp", alt: "Art Deco diamond and sapphire cluster ring on cream stone" },
-  { src: "/media/story-bracelet.webp", alt: "Gold diamond tennis bracelet on cream travertine" },
-];
 
 export function TestimonialsCarousel() {
   const [active, setActive] = useState(0);
@@ -72,7 +65,6 @@ export function TestimonialsCarousel() {
           const duplicate = position >= count;
           return (
             <figure key={`${story.name}-${position}`} className={`${styles.card} ${duplicate ? styles.duplicate : ""}`} data-active={index === active} aria-hidden={duplicate || undefined} aria-label={duplicate ? undefined : `Story ${index + 1} of ${count}`}>
-              <div className={styles.photo}><Image src={photographs[index].src} alt={duplicate ? "" : photographs[index].alt} fill sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 85vw" className={styles.image} /></div>
               <span className={styles.quoteMark} aria-hidden>&ldquo;</span>
               <blockquote>{story.quote}</blockquote>
               <Stars rating={5} size={18} className={styles.stars} />

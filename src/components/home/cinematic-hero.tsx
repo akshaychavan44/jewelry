@@ -76,10 +76,12 @@ export function CinematicHero({ jewelers }: { jewelers: number }) {
       const sourceHeight = video.videoHeight || 1080;
       const cropTop = sourceHeight * (148 / 1080);
       const contentHeight = sourceHeight * (848 / 1080);
-      const scale = Math.max(sceneWidth / sourceWidth, mediaHeight / contentHeight);
+      // Exclude the rightmost 12% containing the embedded Gemini mark.
+      const contentWidth = sourceWidth * 0.88;
+      const scale = Math.max(sceneWidth / contentWidth, mediaHeight / contentHeight);
       const videoWidth = Math.ceil(sourceWidth * scale);
       const videoHeight = Math.ceil(sourceHeight * scale);
-      horizontalCrop = Math.max(0, videoWidth - sceneWidth);
+      horizontalCrop = Math.max(0, contentWidth * scale - sceneWidth);
       video.style.width = `${videoWidth}px`;
       video.style.height = `${videoHeight}px`;
       video.style.top = `${Math.floor((mediaHeight - contentHeight * scale) / 2 - cropTop * scale)}px`;

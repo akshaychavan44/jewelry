@@ -245,14 +245,14 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
     }, durationMs);
   }, []);
 
-  // Continuous auto circular loop rotation at 0.5s
+  // Continuous auto circular loop rotation at 1s
   useEffect(() => {
     if (n < 2 || !isVisible || isPaused || isInteracting || reducedMotion || expandedCategory) return;
     const timer = setInterval(() => {
       if (!document.hidden) {
         scrollToVirtualIndex(currentVirtualIndex + 1);
       }
-    }, 500);
+    }, 1000);
     return () => clearInterval(timer);
   }, [n, isVisible, isPaused, isInteracting, reducedMotion, expandedCategory, currentVirtualIndex, scrollToVirtualIndex]);
 

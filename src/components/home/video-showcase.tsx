@@ -81,7 +81,7 @@ export function VideoShowcase() {
           {playing ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
         </button>}
       </div>
-      <div className={styles.copy} inert={!revealed}>
+      <div className={styles.copy}>
         <p className={`caps ${styles.eyebrow}`}>Discover fine jewelry</p>
         <h2 id="film-heading" className={styles.heading}>
           <span className={styles.firstLine}>Made to be found.</span>

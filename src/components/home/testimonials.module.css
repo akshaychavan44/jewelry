@@ -6,12 +6,9 @@
 .arrows button:hover { background: #b58f48; color: #fffaf3; transform: translateY(-2px); }
 .track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px 1px 20px; overscroll-behavior-x: contain; }
 .track::-webkit-scrollbar { display: none; }
-.card { flex: 0 0 calc((100% - 48px) / 3); min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 9px 9px 24px; border: 1px solid #e5d8c2; border-radius: 9px; text-align: center; background: #fffaf3; scroll-snap-align: start; transition: border-color .4s, box-shadow .4s; }
+.card { flex: 0 0 calc((100% - 48px) / 3); min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 28px 16px 28px; border: 1px solid #e5d8c2; border-radius: 9px; text-align: center; background: #fffaf3; scroll-snap-align: start; transition: border-color .4s, box-shadow .4s; }
 .card[data-active="true"] { border-color: #af883e; box-shadow: 0 10px 22px rgb(115 86 38 / 10%); }
-.photo { position: relative; width: 100%; aspect-ratio: 2.4 / 1; overflow: hidden; border-radius: 5px; background: #e8dac6; }
-.image { object-fit: cover; transition: transform .8s var(--ease-silk); }
-.card:hover .image { transform: scale(1.035); }
-.quoteMark { font-family: var(--font-display); color: #b28b3e; font-size: 54px; line-height: 1; height: 48px; margin-top: 18px; }
+.quoteMark { font-family: var(--font-display); color: #b28b3e; font-size: 54px; line-height: 1; height: 40px; margin-top: 0; }
 .card blockquote { flex: 1; margin: 0; padding-inline: clamp(14px, 2.2vw, 38px); font-family: var(--font-display); font-size: clamp(17px, 1.2vw, 21px); line-height: 1.4; color: #393a3d; }
 .stars { margin-top: 22px; gap: 5px; color: #b28b3e; }
 .card figcaption { margin-top: 12px; }

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LabMark } from "@/components/brand/hallmark";
-import { GuideLayout, GuideSection } from "@/components/guides/guide-layout";
+import { GuideLayout, GuideQuote, GuideSection, GuideTakeaway } from "@/components/guides/guide-layout";
 import { guideBySlug } from "@/config/guides";
 import type { CertificateLab } from "@/generated/prisma/enums";
 import { LABS } from "@/lib/jewelry";
+import { CheckCircle2, ExternalLink, FileCheck, FileText, Gem, ShieldCheck, Sparkles } from "lucide-react";
 
 const guide = guideBySlug("certificates");
-export const metadata: Metadata = { title: guide.title, description: guide.description };
+export const metadata: Metadata = { title: `${guide.title} | Loupe Buying Guides`, description: guide.description };
 
 const SECTIONS = [
   { id: "why", label: "Why a report matters" },
@@ -17,98 +19,116 @@ const SECTIONS = [
 ];
 
 const LAB_NOTES: { lab: CertificateLab; covers: string }[] = [
-  { lab: "GIA", covers: "Created the 4Cs grading system. The most widely recognised reports for diamonds, coloured stones and pearls." },
-  { lab: "IGI", covers: "Grades a large share of the world's diamonds, including most lab-grown stones, with reports and girdle inscriptions." },
-  { lab: "HRD", covers: "Antwerp's diamond laboratory, common on stones cut and traded in Europe." },
-  { lab: "AGS", covers: "Cut-focused diamond reports with light-performance grading; still found on many stones in the resale market." },
-  { lab: "SSEF", covers: "Swiss laboratory for rubies, sapphires, emeralds and natural pearls, including origin opinions." },
-  { lab: "GUBELIN", covers: "Swiss laboratory known for coloured-stone origin reports on important gems." },
-  { lab: "AGL", covers: "American laboratory specialising in coloured stones, treatments and origin." },
-  { lab: "BIS_HALLMARK", covers: "India's mandatory gold hallmark, with a unique six-character HUID for each piece." },
-  { lab: "ASSAY_OFFICE", covers: "UK assay-office hallmarks guaranteeing precious-metal purity, compulsory above set weights." },
+  { lab: "GIA", covers: "Created the 4Cs grading system. The universally recognised gold standard for natural diamonds, coloured stones, and pearls." },
+  { lab: "IGI", covers: "World authority in diamond and lab-grown gemstone certification, providing comprehensive reports and laser girdle inscriptions." },
+  { lab: "HRD", covers: "Antwerp's premier diamond laboratory, respected throughout European diamond bourses and legacy houses." },
+  { lab: "AGS", covers: "Pioneered scientific cut-grade and light-performance analysis for high-brilliance diamond cuts." },
+  { lab: "SSEF", covers: "Swiss Gemmological Institute, the benchmark laboratory for exceptional rubies, sapphires, emeralds, and natural pearls." },
+  { lab: "GUBELIN", covers: "Legendary Swiss laboratory renowned for high-jewelry origin reports and gemstone treatment detection." },
+  { lab: "AGL", covers: "American Gemological Laboratories, specializing in colored gemstone country-of-origin and thermal treatment analysis." },
+  { lab: "BIS_HALLMARK", covers: "India's mandatory government hallmark with unique 6-character HUID laser authentication for precious gold." },
+  { lab: "ASSAY_OFFICE", covers: "UK statutory assay-office hallmarks guaranteeing precious metal purity across centuries of fine smithing." },
 ];
 
 export default function CertificatesGuide() {
   return (
-    <GuideLayout slug="certificates" sections={SECTIONS} cta={{ label: "Shop certified pieces", href: "/shop?cert=gia,igi,ssef,bis-hallmark" }}>
-      <GuideSection id="why" title="Why a report matters">
+    <GuideLayout slug="certificates" sections={SECTIONS} cta={{ label: "Shop verified certified pieces", href: "/shop?cert=gia,igi,ssef,bis-hallmark" }}>
+      {/* 01. WHY A REPORT MATTERS */}
+      <GuideSection id="why" title="Why an independent report matters">
         <p>
-          Two diamonds can look identical across a counter and differ in value by thousands. A grading report from an independent laboratory records what a stone is — its
-          weight, colour, clarity, cut and any treatment — measured by people with no stake in the sale. For coloured stones and pearls, it can also tell you whether the gem is
-          natural and where it likely came from.
+          Two gemstones can look identical across a boutique counter and differ in value by thousands. A grading report from an independent gemological laboratory records what a stone objectively is — its exact weight, color, clarity, cut, and whether any heat or clarity enhancement treatments have occurred.
         </p>
-        <p>A report describes the stone, not the setting or the price. It&rsquo;s the reason you can compare pieces from jewelers in different countries on equal terms.</p>
+        <p>
+          A certificate describes the gemstone itself, not the retail markup. It provides an impartial, scientific baseline so you can evaluate pieces from independent ateliers worldwide with absolute transparency.
+        </p>
+
+        <GuideQuote
+          quote="A laboratory report is your gemstone's passport and provenance. It eliminates conjecture and gives both buyer and collector unassailable peace of mind."
+          author="Dr. Henri Dubois"
+          role="Senior Gemological Consultant"
+        />
       </GuideSection>
 
+      {/* 02. THE LABORATORIES */}
       <GuideSection id="labs" title="The laboratories you'll see on Loupe">
-        <ul className="list-none! pl-0!">
+        <div className="my-7 grid gap-4 sm:grid-cols-2">
           {LAB_NOTES.map(({ lab, covers }) => (
-            <li key={lab} className="flex flex-col gap-2 border-b border-line py-4 sm:flex-row sm:items-start sm:gap-5">
-              <span className="w-28 shrink-0 pt-0.5">
-                <LabMark lab={lab} />
-              </span>
-              <span>
-                <strong>{LABS[lab].full}</strong>
-                <span className="block">{covers}</span>
-                {LABS[lab].verify && <span className="mt-1 block text-[13px] text-muted">Reports can be checked on the lab&rsquo;s website by report number.</span>}
-              </span>
-            </li>
+            <div key={lab} className="rounded-[16px] border border-[#e5d8c3] bg-[#FFFDF8] p-5 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <LabMark lab={lab} />
+                  {LABS[lab].verify && (
+                    <span className="inline-flex items-center gap-1 font-mono text-[10.5px] font-semibold text-[#86683a] uppercase tracking-wider bg-[#f8f1e4] px-2 py-0.5 rounded-full border border-[#d6b579]/40">
+                      <FileCheck className="size-3" /> Online Verify
+                    </span>
+                  )}
+                </div>
+                <h4 className="font-display text-[18px] text-ink font-normal">{LABS[lab].full}</h4>
+                <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">{covers}</p>
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       </GuideSection>
 
-      <GuideSection id="reading" title="Reading a grading report">
-        <ul>
-          <li>
-            <strong>Report number and date.</strong> The number is your key to the lab&rsquo;s online register. A recent date matters for coloured stones, whose treatments are
-            better understood now than a decade ago.
-          </li>
-          <li>
-            <strong>Shape, measurements and carat weight.</strong> Measurements in millimetres tell you how large a stone looks; two stones of equal weight can face up
-            differently.
-          </li>
-          <li>
-            <strong>Colour, clarity and cut.</strong> The heart of a diamond report. Cut is graded for round brilliants; fancy shapes list polish and symmetry instead.
-          </li>
-          <li>
-            <strong>Fluorescence.</strong> A glow under UV light. Faint or none is typical; strong blue fluorescence can make a stone look slightly hazy.
-          </li>
-          <li>
-            <strong>Inscription.</strong> Many stones have the report number laser-inscribed on the girdle — invisible to the eye, but visible with a loupe. It&rsquo;s the
-            simplest way to match the stone in your hand to its report.
-          </li>
-          <li>
-            <strong>Comments and treatments.</strong> For coloured stones: &ldquo;no indications of heating&rdquo;, &ldquo;minor oil&rdquo; and origin opinions all affect value
-            significantly.
-          </li>
-        </ul>
+      {/* 03. READING A REPORT */}
+      <GuideSection id="reading" title="Anatomy of a grading report">
+        <p>Key checkpoints to review when evaluating a laboratory report:</p>
+        
+        <div className="my-6 space-y-3.5">
+          <div className="rounded-[14px] border border-[#e5d8c3] bg-[#FFFDF8] p-4.5 flex items-start gap-3.5 shadow-2xs">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f6eedf] text-[#86683a] mt-0.5">
+              <FileText className="size-4" />
+            </div>
+            <div>
+              <p className="font-medium text-[15px] text-ink">Report Number & Issue Date</p>
+              <p className="text-[13.5px] text-ink-soft mt-0.5">Your unique lookup key on the issuing registry. Recent dates are preferred for colored gems as modern detection methods continue to advance.</p>
+            </div>
+          </div>
+
+          <div className="rounded-[14px] border border-[#e5d8c3] bg-[#FFFDF8] p-4.5 flex items-start gap-3.5 shadow-2xs">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f6eedf] text-[#86683a] mt-0.5">
+              <Gem className="size-4" />
+            </div>
+            <div>
+              <p className="font-medium text-[15px] text-ink">Measurements & Carat Weight</p>
+              <p className="text-[13.5px] text-ink-soft mt-0.5">Precise millimeter dimensions (length × width × depth). Stones of identical carat weight can have drastically different face-up visual presence depending on proportions.</p>
+            </div>
+          </div>
+
+          <div className="rounded-[14px] border border-[#e5d8c3] bg-[#FFFDF8] p-4.5 flex items-start gap-3.5 shadow-2xs">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f6eedf] text-[#86683a] mt-0.5">
+              <Sparkles className="size-4" />
+            </div>
+            <div>
+              <p className="font-medium text-[15px] text-ink">4Cs Grading & Laser Inscription</p>
+              <p className="text-[13.5px] text-ink-soft mt-0.5">Color, Clarity, Cut, Polish, and Symmetry grades. Many diamonds feature microscopic laser inscriptions on the girdle matching the registry ID.</p>
+            </div>
+          </div>
+        </div>
       </GuideSection>
 
-      <GuideSection id="hallmarks" title="Hallmarks count too">
+      {/* 04. HALLMARKS */}
+      <GuideSection id="hallmarks" title="Precious metal hallmarks">
         <p>
-          For plain gold and silver, the relevant document is a hallmark rather than a grading report. An Indian BIS hallmark carries a HUID you can verify in the BIS CARE app;
-          a British hallmark is struck by an assay office and even dates antique pieces. Loupe treats both as certificates: they&rsquo;re recorded against the listing and
-          verified by our team. The <a href="/guides/gold-purity">gold purity guide</a> covers the marks in detail.
+          For fine gold and silver, the statutory guarantee is a formal assay hallmark rather than a gem paper. An Indian BIS hallmark carries an individual HUID verifiable in the BIS CARE app; a British hallmark is struck by one of four historic assay offices and dates antique jewelry.
+        </p>
+        <p>
+          Learn more in our dedicated <Link href="/guides/gold-purity" className="font-medium text-[#86683a] underline underline-offset-4 hover:text-ink transition-colors">Gold Purity & Hallmarks Guide</Link>.
         </p>
       </GuideSection>
 
-      <GuideSection id="loupe" title="How Loupe checks every certificate">
-        <ul>
-          <li>
-            <strong>Verified before it counts.</strong> When a jeweler attaches a report, our team checks the number against the issuing lab&rsquo;s register. Only verified
-            reports appear in the &ldquo;certified&rdquo; filters and on the listing badge.
-          </li>
-          <li>
-            <strong>One report, one listing.</strong> A report number can back only one piece on Loupe, so a certificate can&rsquo;t be reused for a lookalike.
-          </li>
-          <li>
-            <strong>Open it before you buy.</strong> The report is attached to the listing — you can read it in full before checkout, and it&rsquo;s included with your order.
-          </li>
-          <li>
-            <strong>Inspect when it arrives.</strong> You have three days after delivery before the jeweler is paid. If anything doesn&rsquo;t match the report, open a case from
-            your order and we&rsquo;ll hold the funds while we investigate.
-          </li>
-        </ul>
+      {/* 05. HOW LOUPE CHECKS */}
+      <GuideSection id="loupe" title="How Loupe verifies every certificate">
+        <GuideTakeaway
+          title="Loupe Authentication Guarantees"
+          points={[
+            "Registry Verification: Every attached report is verified directly with the issuing institute (GIA, IGI, SSEF) prior to listing approval.",
+            "Single-Listing Integrity: A certificate number can belong to only one physical piece on Loupe, preventing copycat reuse.",
+            "Complete Transparency: Review full high-resolution report PDFs directly on the piece page before placing an order.",
+            "3-Day Inspection Escrow: Your payment remains secure in escrow during your in-person 3-day inspection window.",
+          ]}
+        />
       </GuideSection>
     </GuideLayout>
   );

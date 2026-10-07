@@ -1,23 +1,21 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CollectionInvitation } from "@/components/home/landing-collections";
+import { StaticHero } from "@/components/home/static-hero";
 import { LandingExperience } from "@/components/home/landing-experience";
 import { VideoShowcase } from "@/components/home/video-showcase";
 import styles from "@/components/home/landing.module.css";
 import { ProductGrid } from "@/components/catalog/product-card";
-import { ClarityGuide, GoldPurityChart } from "@/components/home/education";
+import { DiamondClarityShowcase } from "@/components/home/diamond-clarity-showcase";
 import {
   CategoryRow,
   CustomOrderBand,
-  Hero,
   KindWords,
   StorySection,
   ValueStrip,
 } from "@/components/home/sections";
 import { buttonVariants } from "@/components/ui/button";
 import { mainCategories } from "@/config/site";
-import { formatDate } from "@/lib/format";
-import { convertMinor } from "@/lib/money";
 import { getCurrentUser } from "@/server/auth/session";
 import { db } from "@/server/db";
 import {
@@ -29,15 +27,13 @@ import {
   publicProductWhere,
 } from "@/server/services/catalog";
 import { getPriceContext } from "@/server/services/currency";
-import { getSpotQuotes } from "@/server/services/market";
 
 export default async function HomePage() {
   const [ctx, user] = await Promise.all([getPriceContext(), getCurrentUser()]);
-  const [featured, stats, tree, quotes, saved, counts] = await Promise.all([
+  const [featured, stats, tree, saved, counts] = await Promise.all([
     getFeaturedProducts(ctx, 6),
     getMarketplaceStats(),
     getCategoryTree(),
-    getSpotQuotes(),
     getWishlistProductIds(user?.id),
     db.product.groupBy({ by: ["categoryId"], where: publicProductWhere, _count: { _all: true } }),
   ]);
@@ -50,12 +46,9 @@ export default async function HomePage() {
   };
   const categories = mainCategories.map((c) => ({ slug: c.slug, name: c.name, imageUrl: tree.find((t) => t.slug === c.slug)?.imageUrl ?? null, count: countFor(c.slug) }));
 
-  const gold = quotes.find((q) => q.metal === "GOLD");
-  const pureGoldPerGram = convertMinor((gold?.usdPerGram ?? 0) * 100, "USD", ctx.currency, ctx.rates, "exact");
-
   return (
     <LandingExperience>
-      <Hero stats={stats} />
+      <StaticHero />
       <VideoShowcase />
       <StorySection stats={stats} />
       <CategoryRow categories={categories} />
@@ -92,18 +85,8 @@ export default async function HomePage() {
         </div>
       </section>}
 
-      <section className={`${styles.section} ${styles.journal}`} aria-labelledby="learn-heading">
-        <div className={styles.knowledgeContainer}>
-        <div className={styles.knowledgeHeading}>
-          <h2 id="learn-heading">
-            A little knowledge. A lasting choice.
-          </h2>
-        </div>
-        <div className={styles.knowledgeGrid}>
-          <GoldPurityChart editorial pureGoldPerGram={pureGoldPerGram} currency={ctx.currency} updatedLabel={gold ? `Spot · ${formatDate(gold.fetchedAt, "dayMonth")}` : ""} />
-          <ClarityGuide editorial />
-        </div>
-        </div>
+      <section className={`${styles.section} ${styles.journal}`} aria-labelledby="clarity-guide-heading">
+        <DiamondClarityShowcase />
       </section>
 
       <CustomOrderBand />

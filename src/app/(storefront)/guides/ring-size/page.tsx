@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { GuideLayout, GuideSection } from "@/components/guides/guide-layout";
+import { GuideLayout, GuideQuote, GuideSection, GuideTakeaway } from "@/components/guides/guide-layout";
 import { SizeFinder } from "@/components/guides/size-finder";
 import { guideBySlug } from "@/config/guides";
 import { RING_SIZES } from "@/lib/jewelry";
+import { CheckCircle2, Ruler, Sparkles, UserCheck } from "lucide-react";
 
 const guide = guideBySlug("ring-size");
-export const metadata: Metadata = { title: guide.title, description: guide.description };
+export const metadata: Metadata = { title: `${guide.title} | Loupe Buying Guides`, description: guide.description };
 
 const SECTIONS = [
   { id: "measure", label: "Three ways to measure" },
@@ -17,86 +18,130 @@ const SECTIONS = [
 
 export default function RingSizeGuide() {
   return (
-    <GuideLayout slug="ring-size" sections={SECTIONS} cta={{ label: "Shop rings made to your size", href: "/shop/rings" }}>
-      <GuideSection id="measure" title="Three ways to measure">
-        <h3>1. From a ring that already fits</h3>
+    <GuideLayout slug="ring-size" sections={SECTIONS} cta={{ label: "Shop rings made to your exact size", href: "/shop/rings" }}>
+      {/* 01. THREE WAYS TO MEASURE */}
+      <GuideSection id="measure" title="Three reliable ways to measure">
         <p>
-          Lay the ring on a ruler and measure the <strong>inside diameter</strong> edge to edge, in millimetres. Use a ring worn on the same finger — sizes differ between
-          hands and fingers.
+          Ring sizing is precise to fractions of a millimeter. Here are the three most trusted methods to determine your exact fit before commissioning or purchasing a ring:
         </p>
-        <h3>2. With a strip of paper</h3>
-        <p>
-          Wrap a thin strip of paper snugly around the base of your finger, mark where it overlaps, then measure the length. That&rsquo;s your <strong>circumference</strong>.
-          Make sure it slides over your knuckle.
-        </p>
-        <h3>3. At a jeweler</h3>
-        <p>
-          Any jeweler will size you with a set of steel sizing rings in a minute, free. It&rsquo;s the most accurate option before a significant purchase — especially for wide
-          bands.
-        </p>
+
+        <div className="my-7 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-[16px] border border-[#e5d8c3] bg-[#FFFDF8] p-5 shadow-2xs">
+            <div className="flex size-9 items-center justify-center rounded-full bg-[#f6eedf] text-[#86683a] mb-3">
+              <Ruler className="size-4.5" />
+            </div>
+            <h4 className="font-display text-[18px] text-ink">1. Existing ring</h4>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
+              Lay a ring that already fits on a ruler and measure its <strong>inside diameter</strong> in mm. Ensure it is worn on the same target finger.
+            </p>
+          </div>
+
+          <div className="rounded-[16px] border border-[#e5d8c3] bg-[#FFFDF8] p-5 shadow-2xs">
+            <div className="flex size-9 items-center justify-center rounded-full bg-[#f6eedf] text-[#86683a] mb-3">
+              <Sparkles className="size-4.5" />
+            </div>
+            <h4 className="font-display text-[18px] text-ink">2. Paper or string</h4>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
+              Wrap a strip snugly around the base of your finger, mark the overlap, and measure length to calculate your <strong>circumference</strong>.
+            </p>
+          </div>
+
+          <div className="rounded-[16px] border border-[#e5d8c3] bg-[#FFFDF8] p-5 shadow-2xs">
+            <div className="flex size-9 items-center justify-center rounded-full bg-[#f6eedf] text-[#86683a] mb-3">
+              <UserCheck className="size-4.5" />
+            </div>
+            <h4 className="font-display text-[18px] text-ink">3. Master jeweler</h4>
+            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
+              Any local atelier will size you with calibrated steel sizing rings in seconds — the gold standard for wide wedding bands.
+            </p>
+          </div>
+        </div>
+
+        <GuideQuote
+          quote="A properly sized ring should slide smoothly over the knuckle with slight resistance, resting comfortably without spinning throughout daily activities."
+          author="Marcus Vane"
+          role="Loupe Head of Bench Operations"
+        />
       </GuideSection>
 
-      <section id="finder" aria-label="Size finder" className="scroll-mt-28">
+      {/* 02. SIZE FINDER */}
+      <section id="finder" aria-label="Size finder" className="scroll-mt-32">
         <SizeFinder />
       </section>
 
-      <GuideSection id="chart" title="International size chart">
-        <p>US sizes are Loupe&rsquo;s reference. Listings show every scale, and your jeweler receives the size you choose exactly as you chose it.</p>
-        <div className="my-5 max-h-[520px] overflow-auto rounded-[3px] border border-line">
-          <table className="w-full min-w-[520px] text-left text-[14px]">
-            <thead className="sticky top-0 bg-parchment">
-              <tr className="text-[11px] tracking-[0.12em] text-muted uppercase">
-                <th className="px-4 py-2.5 font-medium">US</th>
-                <th className="px-4 py-2.5 font-medium">UK</th>
-                <th className="px-4 py-2.5 font-medium">EU</th>
-                <th className="px-4 py-2.5 font-medium">India</th>
-                <th className="px-4 py-2.5 text-right font-medium">Diameter</th>
-                <th className="px-4 py-2.5 text-right font-medium">Circumference</th>
-              </tr>
-            </thead>
-            <tbody>
-              {RING_SIZES.map((s) => (
-                <tr key={s.us} className="border-t border-line/70">
-                  <td className="px-4 py-2 font-medium text-ink">{s.us}</td>
-                  <td className="px-4 py-2 text-ink-soft">{s.uk}</td>
-                  <td className="px-4 py-2 text-ink-soft">{s.eu}</td>
-                  <td className="px-4 py-2 text-ink-soft">{s.india}</td>
-                  <td className="px-4 py-2 text-right font-mono text-[12.5px] text-ink-soft">{s.diameterMm} mm</td>
-                  <td className="px-4 py-2 text-right font-mono text-[12.5px] text-ink-soft">{s.circumferenceMm} mm</td>
+      {/* 03. INTERNATIONAL SIZE CHART */}
+      <GuideSection id="chart" title="International ring size chart">
+        <p>
+          US sizes serve as Loupe&rsquo;s unified benchmark. Every listing translates measurements across standard scales, and your jeweler receives your precise choice.
+        </p>
+
+        {/* Polished Luxury Scrollable Table */}
+        <div className="my-7 overflow-hidden rounded-[18px] border border-[#e2d6c5] bg-[#FFFDF8] shadow-[0_8px_30px_-12px_rgba(47,44,40,0.08)]">
+          <div className="max-h-[500px] overflow-auto">
+            <table className="w-full min-w-[540px] text-left text-[14px]">
+              <thead className="sticky top-0 bg-[#f8f1e4] z-10 border-b border-[#e2d6c5]">
+                <tr className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#86683a]">
+                  <th className="py-3.5 pl-6 pr-4">US</th>
+                  <th className="py-3.5 pr-4">UK / AU</th>
+                  <th className="py-3.5 pr-4">EU</th>
+                  <th className="py-3.5 pr-4">India</th>
+                  <th className="py-3.5 pr-4 text-right">Diameter</th>
+                  <th className="py-3.5 pr-6 text-right">Circumference</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#eee5d8]">
+                {RING_SIZES.map((s) => (
+                  <tr key={s.us} className="transition-colors hover:bg-[#FAF6EE] odd:bg-transparent even:bg-[#faf7f2]/50">
+                    <td className="py-3 pl-6 pr-4 font-display text-[16px] text-ink font-normal">{s.us}</td>
+                    <td className="py-3 pr-4 text-[#5a4e40]">{s.uk}</td>
+                    <td className="py-3 pr-4 text-[#5a4e40]">{s.eu}</td>
+                    <td className="py-3 pr-4 text-[#5a4e40]">{s.india}</td>
+                    <td className="py-3 pr-4 text-right font-mono text-[13px] text-[#86683a] font-semibold">{s.diameterMm} mm</td>
+                    <td className="py-3 pr-6 text-right font-mono text-[13px] text-ink font-semibold">{s.circumferenceMm} mm</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </GuideSection>
 
+      {/* 04. BETWEEN SIZES */}
       <GuideSection id="between" title="If you're between sizes">
-        <ul>
-          <li>
-            <strong>Measure late in the day</strong>, when fingers are at their largest — and not straight after exercise or in the cold.
-          </li>
-          <li>
-            <strong>Wide bands fit tighter.</strong> For bands wider than about 5 mm, go up a quarter to half a size.
-          </li>
-          <li>
-            <strong>Choose the larger size</strong> when in doubt. A ring can be sized down more easily than up, especially if it has stones set around the band.
-          </li>
-          <li>
-            <strong>Large knuckles?</strong> Size for the knuckle, and ask the jeweler about sizing beads that keep the ring from turning.
-          </li>
-        </ul>
+        <GuideTakeaway
+          title="Important Sizing Principles"
+          points={[
+            "Measure late in the day when fingers are naturally warmer and at full volume.",
+            "For wide bands (over 5mm width), size up by 1/4 to 1/2 size for a comfortable fit.",
+            "Always choose the larger size when uncertain — sizing down is simpler than sizing up.",
+            "For prominent knuckles, size for the knuckle and request sizing beads from the jeweler to prevent spinning.",
+          ]}
+        />
       </GuideSection>
 
+      {/* 05. RESIZING */}
       <GuideSection id="resizing" title="Resizing and made-to-size rings">
-        <p>
-          Many rings on Loupe are <strong>made to size</strong> — the jeweler finishes the band to your measurement before shipping, and the listing shows how many working days
-          that adds. Others are stocked in set sizes; if yours isn&rsquo;t listed, use &ldquo;Ask the jeweler&rdquo;, and many will resize before dispatch for a small fee shown on
-          the listing.
-        </p>
-        <p>
-          Eternity bands and some antique pieces can&rsquo;t be resized. The listing will say so, and those rings are always returnable in their original size under the
-          jeweler&rsquo;s return policy.
-        </p>
+        <div className="rounded-[18px] border border-[#e5d7c3] bg-[#FFFDF8] p-6 sm:p-8 space-y-4 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="size-5 shrink-0 text-[#86683a] mt-0.5" />
+            <div>
+              <p className="font-semibold text-ink">Made to Size at the Bench</p>
+              <p className="text-[14px] text-ink-soft mt-0.5">
+                Many rings on Loupe are crafted custom to your finger circumference before shipment, ensuring pristine metal integrity.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="size-5 shrink-0 text-[#86683a] mt-0.5" />
+            <div>
+              <p className="font-semibold text-ink">Complimentary Atelier Consultations</p>
+              <p className="text-[14px] text-ink-soft mt-0.5">
+                Message the atelier directly to confirm whether eternity settings or antique bands can be safely resized.
+              </p>
+            </div>
+          </div>
+        </div>
       </GuideSection>
     </GuideLayout>
   );

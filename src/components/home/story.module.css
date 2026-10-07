@@ -9,3 +9,21 @@
 @media (width < 64rem) { .story { width: calc(100% - 48px); gap: 32px; padding-block: 56px; } .media { min-height: 440px; } .copy h2 { font-size: 36px; } }
 @media (width < 48rem) { .story { width: calc(100% - 40px); grid-template-columns: 1fr; gap: 30px; padding-block: 40px 48px; } .media { min-height: 0; aspect-ratio: 14 / 9; } .media video { object-fit: contain; } .copy { padding-block: 0; } .copy h2 { font-size: clamp(34px, 8vw, 44px); } .playback { right: 14px; bottom: 14px; width: 44px; height: 44px; } }
 @media (prefers-reduced-motion: reduce) { .playback { transition: none; } }
+
+/* One-time bracelet entrance followed by staggered editorial copy. */
+.story { overflow: clip; }
+.media { transition: opacity 850ms ease, transform 850ms cubic-bezier(.22,1,.36,1); transform-origin: center; }
+.media video { object-position: center; }
+.copy > p, .copy > h2, .copy > div > p, .copy > dl, .copy > a { transition: opacity 650ms ease, transform 650ms cubic-bezier(.22,1,.36,1); }
+.copy > p:first-child { transition-delay: 150ms; }
+.copy > h2 { transition-delay: 280ms; }
+.copy > div > p:first-child { transition-delay: 430ms; }
+.copy > div > p:nth-child(2) { transition-delay: 580ms; }
+.copy > p:nth-of-type(2) { transition-delay: 730ms; }
+.copy > dl { transition-delay: 880ms; }
+.copy > a { transition-delay: 1030ms; }
+.story[data-entered="false"] .media { opacity: 0; transform: perspective(1100px) translateX(-60px) rotateY(7deg) scale(.97); }
+.story[data-entered="false"] .copy > p, .story[data-entered="false"] .copy > h2, .story[data-entered="false"] .copy > div > p, .story[data-entered="false"] .copy > dl, .story[data-entered="false"] .copy > a { opacity: 0; transform: translateX(40px); }
+.story[data-entered="true"] .media, .story[data-entered="true"] .copy > p, .story[data-entered="true"] .copy > h2, .story[data-entered="true"] .copy > div > p, .story[data-entered="true"] .copy > dl, .story[data-entered="true"] .copy > a { opacity: 1; transform: none; }
+.videoError { position: absolute; bottom: 16px; left: 16px; right: 16px; padding: 12px; border-radius: 4px; background: #faf7f2ed; font-size: 13px; color: #57524a; }
+@media (prefers-reduced-motion: reduce) { .media, .copy > p, .copy > h2, .copy > div > p, .copy > dl, .copy > a { opacity: 1 !important; transform: none !important; transition: none; } }

@@ -1,4 +1,4 @@
-import { HandCoins, PackageCheck, RotateCcw, ShieldCheck } from "lucide-react";
+import { Award, Gem, MessageSquare, ShieldCheck } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import styles from "./bars.module.css";
 
@@ -15,10 +15,10 @@ export function AnnouncementBar() {
 }
 
 const TRUST = [
-  { icon: ShieldCheck, title: "Certified & verified", body: "Every jeweler vetted, every report checked" },
-  { icon: HandCoins, title: "Payment held for you", body: "Released only after you approve" },
-  { icon: PackageCheck, title: "Insured delivery", body: "Signature-tracked, door to door" },
-  { icon: RotateCcw, title: "Returns to the jeweler", body: "Prepaid, insured return labels" },
+  { icon: ShieldCheck, title: "Verified jewelers", body: "Every jeweler's business & identity verified" },
+  { icon: MessageSquare, title: "Direct communication", body: "Contact ateliers directly with zero markups" },
+  { icon: Gem, title: "Authentic showcases", body: "Independent designs, rare stones & vintage pieces" },
+  { icon: Award, title: "Bespoke commissions", body: "Collaborate directly on custom jewelry" },
 ];
 
 /** Assurance strip shown above the footer (mirrors the reference's service row). */

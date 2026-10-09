@@ -31,7 +31,7 @@ export default async function SellerPricing() {
     <>
       <PageHeader
         title="Live metal pricing"
-        description="Listings priced by weight follow the spot market: weight × rate at purity + your making charge + stones, recalculated every 15 minutes and locked at checkout."
+        description="Listings priced by weight follow the spot market: weight × rate at purity + your making charge + stones, recalculated every 15 minutes and displayed dynamically on your showcases."
         action={<RepriceButton />}
       />
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">

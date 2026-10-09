@@ -27,10 +27,10 @@ export function StorySection({ stats }: { stats: { jewelers: number; certified: 
         <p className="eyebrow mb-4">The art of choosing well</p>
         <h2 id="story-heading" className="display-lg text-ink">Extraordinary pieces.<br />A more personal story.</h2>
         <div className="mt-6 space-y-4 text-[15.5px] leading-relaxed text-ink-soft">
-          <p>Before a jeweler lists anything, we verify their business, their identity and where their payouts go. Before a listing goes live, we check its GIA, IGI or hallmark report against the stone it describes.</p>
-          <p>When you buy, your payment is held until the piece arrives and you have had three days with it. Only then is the jeweler paid.</p>
+          <p>Loupe connects discerning collectors with verified independent jewelers and master ateliers. We verify each jeweler&rsquo;s business registration and identity so you can discover authentic talent with complete peace of mind.</p>
+          <p>When you discover a piece or commission bespoke work, you connect with the jeweler directly. Discuss specifications, arrange viewings, and complete your purchase directly with the maker.</p>
         </div>
-        <p className="mt-7 font-script text-[34px] leading-none text-gold-deep">Examined with care</p>
+        <p className="mt-7 font-script text-[34px] leading-none text-gold-deep">Crafted with care</p>
         {(stats.jewelers > 0 || stats.certified > 0) && <dl className="mt-9 grid grid-cols-3 gap-4 border-t border-line pt-6">
           {[
             [stats.jewelers, "verified jewelers"],
@@ -63,7 +63,7 @@ export function SellerShowcase({ sellers }: { sellers: Awaited<ReturnType<typeof
     <section className="shell pt-8 md:pt-12 pb-16 md:pb-24" aria-labelledby="jewelers-heading">
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow mb-3">Certified sellers</p>
+          <p className="eyebrow mb-3">Independent Ateliers</p>
           <h2 id="jewelers-heading" className="display-lg text-ink">
             Jewelers we&rsquo;re proud to host
           </h2>

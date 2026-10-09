@@ -192,13 +192,13 @@ export function GuideLayout({ slug, sections, children, cta }: GuideLayoutProps)
                   <div>
                     <div className="flex items-center gap-2 text-[#d6b478] font-mono text-[11px] font-semibold uppercase tracking-[0.2em]">
                       <ShieldCheck className="size-4" />
-                      <span>Loupe Guarantee</span>
+                      <span>Verified Ateliers</span>
                     </div>
                     <h3 className="mt-2 font-display text-[26px] font-normal leading-tight text-[#faf3e7] sm:text-[30px]">
                       {cta.label}
                     </h3>
                     <p className="mt-2 text-[14px] text-[#c7b9a5] max-w-md">
-                      3-day inspection window on all purchases. Payment is held safely in escrow until you approve the piece.
+                      Connect directly with verified independent jewelers to inquire about showcase pieces, commission bespoke designs, and consult directly.
                     </p>
                   </div>
                   <Link

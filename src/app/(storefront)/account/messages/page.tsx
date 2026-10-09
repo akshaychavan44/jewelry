@@ -8,7 +8,7 @@ export default async function MessagesPage() {
   const conversations = await listConversations(user.id, user.role);
   return (
     <>
-      <PageHeader title="Messages" description="Questions, commissions, offers and any open cases with Loupe." />
+      <PageHeader title="Messages" description="Direct inquiries, bespoke commission briefs, and discussions with verified jewelers." />
       <ConversationList
         basePath="/account/messages"
         items={conversations.map((c) => ({

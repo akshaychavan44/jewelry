@@ -3,11 +3,43 @@
 .heading h2 { font-family: var(--font-display); font-size: clamp(42px, 4.7vw, 80px); line-height: 1.12; letter-spacing: -.03em; }
 .arrows { display: flex; gap: 14px; flex-shrink: 0; }
 .arrows button { display: grid; place-items: center; width: 49px; height: 49px; border: 1px solid #bc9859; border-radius: 50%; color: #a98237; transition: background .25s, color .25s, transform .25s; }
-.arrows button:hover { background: #b58f48; color: #fffaf3; transform: translateY(-2px); }
+.arrows button:hover { background: #b58f48; color: var(--color-porcelain); transform: translateY(-2px); }
 .track { display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px 1px 20px; overscroll-behavior-x: contain; }
 .track::-webkit-scrollbar { display: none; }
-.card { flex: 0 0 calc((100% - 48px) / 3); min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 28px 16px 28px; border: 1px solid #e5d8c2; border-radius: 9px; text-align: center; background: #fffaf3; scroll-snap-align: start; transition: border-color .4s, box-shadow .4s; }
-.card[data-active="true"] { border-color: #af883e; box-shadow: 0 10px 22px rgb(115 86 38 / 10%); }
+.card {
+  flex: 0 0 calc((100% - 48px) / 3);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 18px 28px;
+  border: 1.5px solid rgba(214, 185, 142, 0.45);
+  border-radius: 12px;
+  text-align: center;
+  background: #ffffff;
+  scroll-snap-align: start;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card:hover {
+  border-color: rgba(184, 145, 82, 0.75);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(168, 134, 79, 0.12);
+}
+
+.card:focus-visible {
+  outline: 2px solid #a87e34;
+  outline-offset: 3px;
+}
+
+.card[data-active="true"] {
+  border-color: #a87e34;
+  box-shadow: 0 0 0 1px #a87e34, 0 12px 30px rgba(168, 134, 79, 0.2);
+  transform: translateY(-4px);
+  background: #ffffff;
+}
 .quoteMark { font-family: var(--font-display); color: #b28b3e; font-size: 54px; line-height: 1; height: 40px; margin-top: 0; }
 .card blockquote { flex: 1; margin: 0; padding-inline: clamp(14px, 2.2vw, 38px); font-family: var(--font-display); font-size: clamp(17px, 1.2vw, 21px); line-height: 1.4; color: #393a3d; }
 .stars { margin-top: 22px; gap: 5px; color: #b28b3e; }

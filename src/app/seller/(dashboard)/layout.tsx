@@ -21,18 +21,16 @@ export default async function SellerLayout({ children }: { children: React.React
 
   const items: NavItem[] = [
     { href: "/seller", label: "Overview", icon: "analytics", exact: true },
-    { href: "/seller/orders", label: "Orders", icon: "orders", badge: pending },
-    { href: "/seller/products", label: "Listings", icon: "products" },
-    { href: "/seller/offers", label: "Offers", icon: "offers", badge: offers },
-    { href: "/seller/messages", label: "Messages", icon: "messages", badge: unread },
-    { href: "/seller/returns", label: "Returns", icon: "returns", badge: returns },
+    { href: "/seller/products", label: "Showcase Listings", icon: "products" },
+    { href: "/seller/offers", label: "Price Inquiries", icon: "offers", badge: offers },
+    { href: "/seller/messages", label: "Direct Messages", icon: "messages", badge: unread },
     { href: "/seller/custom-requests", label: "Commissions", icon: "custom" },
     { href: "/seller/reviews", label: "Reviews", icon: "reviews" },
     { href: "/seller/pricing", label: "Live metal pricing", icon: "pricing" },
     { href: "/seller/integrations", label: "POS & inventory sync", icon: "integrations" },
-    { href: "/seller/payouts", label: "Payouts", icon: "payouts" },
-    { href: "/seller/settings", label: "Store settings", icon: "settings" },
+    { href: "/seller/settings", label: "Store settings & Plan", icon: "settings" },
   ];
+
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[256px_1fr]">

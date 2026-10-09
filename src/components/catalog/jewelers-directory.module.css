@@ -1,4 +1,4 @@
-.page { background: #faf7f2; color: #29251f; }
+.page { background: var(--color-ivory); color: #29251f; }
 .hero { position: relative; isolation: isolate; min-height: 354px; overflow: hidden; background: #ece2d6; }
 .heroImage { position: absolute; inset: 0 0 0 35%; z-index: -2; mask-image: linear-gradient(90deg, transparent, #000 22%); }
 .heroPhoto { object-fit: cover; object-position: 55% 50%; }

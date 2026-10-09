@@ -90,7 +90,7 @@ export async function ListingPage({
 
       <header className="mb-8 max-w-3xl">
         <h1 className="display-lg text-ink">{filters.q ? <>Results for &ldquo;{filters.q}&rdquo;</> : title}</h1>
-        {description && !filters.q && <p className="mt-3 text-[15.5px] text-ink-soft">{description}</p>}
+        {description && !filters.q && <p className="mt-3 max-w-[49ch] text-lg leading-relaxed text-ink-soft">{description}</p>}
       </header>
 
       {subcategories.length > 0 && (

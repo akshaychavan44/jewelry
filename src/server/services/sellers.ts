@@ -100,6 +100,7 @@ export async function getStorefront(slug: string, ctx: PriceContext, categorySlu
     include: {
       locations: true,
       shippingRates: { where: { isActive: true }, select: { zone: true } },
+      returnAddress: true,
     },
   });
   if (!seller || seller.verificationStatus !== "APPROVED") return null;

@@ -10,12 +10,12 @@ const appUrl =
 
 export const siteConfig = {
   name: "Loupe",
-  descriptor: "Fine Jewelry Marketplace",
+  descriptor: "Independent Jeweler Directory & Showcase",
   description:
-    "Fine, high and vintage jewelry from independent jewelers — every seller verified, every stone certified, every delivery insured.",
+    "Discover exceptional fine, high and vintage jewelry from verified independent jewelers — connect directly with master ateliers and artisans.",
   url: appUrl,
   supportEmail: "concierge@loupe.example",
-  announcement: "Every certificate checked · Insured, signature-on-delivery shipping",
+  announcement: "Discover exceptional independent jewelers · Connect directly with master artisans",
   social: {
     instagram: "https://www.instagram.com/",
     pinterest: "https://www.pinterest.com/",
@@ -35,13 +35,13 @@ export const mainCategories = [
 
 export const footerNav = [
   {
-    title: "Shop",
+    title: "Discover",
     links: [
       { label: "All jewelry", href: "/shop" },
+      { label: "Our jewelers", href: "/jewelers" },
       { label: "Engagement rings", href: "/shop/engagement-rings" },
       { label: "High jewelry", href: "/shop/high-jewelry" },
-      { label: "Vintage & pre-owned", href: "/shop/vintage" },
-      { label: "Custom orders", href: "/custom-orders" },
+      { label: "Custom commissions", href: "/custom-orders" },
     ],
   },
   {
@@ -54,12 +54,12 @@ export const footerNav = [
     ],
   },
   {
-    title: "Marketplace",
+    title: "For Jewelers",
     links: [
-      { label: "Our jewelers", href: "/jewelers" },
-      { label: "Sell on Loupe", href: "/sell" },
-      { label: "Track an order", href: "/account/orders" },
-      { label: "Shipping & returns", href: "/help/shipping-returns" },
+      { label: "List your business", href: "/sell" },
+      { label: "Jeweler login", href: "/login" },
+      { label: "Direct policies", href: "/help/shipping-returns" },
+      { label: "Terms of service", href: "/help/terms" },
     ],
   },
 ] as const;
@@ -89,20 +89,20 @@ export const imagery = {
 export const testimonials = [
   {
     quote:
-      "The GIA report was attached to the listing and matched the laser inscription exactly. It arrived insured, signed for, and even more beautiful than the photos.",
-    name: "Priya R.",
-    detail: "Emerald-cut solitaire · Mumbai",
+      "I discovered an independent jeweler in Florence through Loupe and contacted them directly. We arranged a video consultation and designed a custom sapphire ring together.",
+    name: "Elena M.",
+    detail: "Bespoke sapphire solitaire · Florence",
   },
   {
     quote:
-      "I negotiated on a 1920s ring through Make an Offer, and the jeweler resized it before shipping. It felt like buying from a boutique, not a website.",
+      "I reached out to the atelier directly through their Loupe showcase. They provided detailed provenance and resized the Art Deco ring perfectly for me.",
     name: "Hannah W.",
-    detail: "Art Deco cluster ring · London",
+    detail: "1920s Art Deco cluster · London",
   },
   {
     quote:
-      "Payment was held until I'd inspected the bracelet. That's what finally made me comfortable buying fine jewelry online.",
-    name: "Marcus L.",
-    detail: "Diamond line bracelet · New York",
+      "Finding verified independent jewelers in one directory made finding an engagement ring effortless. Dealing directly with the master goldsmith was an unmatched experience.",
+    name: "David K.",
+    detail: "Handcrafted diamond band · New York",
   },
 ] as const;

@@ -1,14 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/input";
 import { formatMoney } from "@/lib/money";
-import { addOfferToCartAction, type ActionResult } from "@/server/actions/cart";
+import type { ActionResult } from "@/server/actions/cart";
 import { respondToOfferAction } from "@/server/actions/product";
 
 /** Negotiation controls for one side of an offer. */
@@ -51,10 +52,11 @@ export function OfferActions({
   return (
     <div className="flex flex-wrap gap-2">
       {canCheckout && (
-        <Button size="sm" pending={pending} onClick={() => exec(() => addOfferToCartAction(offerId))}>
-          Checkout at agreed price
-        </Button>
+        <Link href="/account/messages" className={buttonVariants({ size: "sm" })}>
+          Contact Jeweler to Finalize
+        </Link>
       )}
+
       {canRespond && (
         <>
           <Button size="sm" pending={pending} onClick={() => exec(() => respondToOfferAction(offerId, as, "ACCEPT"))}>

@@ -1,81 +1,78 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PolicyLayout } from "@/components/help/policy-layout";
-import { formatMoney } from "@/lib/money";
-import { num } from "@/lib/utils";
-import { db } from "@/server/db";
+import { siteConfig } from "@/config/site";
 
-export const metadata: Metadata = { title: "Shipping & returns", description: "Insured, signature-tracked delivery from every jeweler, duties paid at checkout, and returns sent straight back to the jeweler." };
+export const metadata: Metadata = {
+  title: "Direct Purchasing & Jeweler Policies | Loupe",
+  description: "How shipping, delivery, payments, returns, and warranties work directly between clients and independent jewelers.",
+};
 
-export default async function ShippingReturnsPage() {
-  const [settings, windows] = await Promise.all([
-    db.platformSettings.findUniqueOrThrow({ where: { id: "platform" } }),
-    db.sellerProfile.aggregate({ where: { verificationStatus: "APPROVED" }, _min: { returnWindowDays: true }, _max: { returnWindowDays: true } }),
-  ]);
-  const usd = (cents: bigint) => formatMoney(num(cents), "USD");
-  const minWindow = windows._min.returnWindowDays ?? 14;
-  const maxWindow = windows._max.returnWindowDays ?? 30;
-
+export default function ShippingReturnsPage() {
   return (
     <PolicyLayout
       current="/help/shipping-returns"
-      title="Shipping & returns"
-      updated={new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(settings.updatedAt)}
-      intro="Every piece ships directly from the jeweler who made or sourced it — insured, tracked and signed for. If it isn't right, it goes back to them, and we hold their payment until you're happy."
+      title="Direct Purchasing & Jeweler Policies"
+      updated="October 2026"
+      sample
+      intro={`${siteConfig.name} is a directory and showcase platform connecting customers directly with independent jewelers. All discussions, purchases, payments, shipping, delivery, returns, and warranties are handled directly between you and the jeweler.`}
     >
-      <h2>How delivery works</h2>
+      <h2>1. Direct Inquiries &amp; Consultations</h2>
       <p>
-        When your order includes pieces from more than one jeweler, each ships separately, with its own tracking number. You&rsquo;ll see every parcel on your order page as it
-        moves, and we email you at each step.
+        When you discover a piece you love or wish to commission custom jewelry, you contact the jeweler directly through {siteConfig.name}&rsquo;s inquiry system, telephone, email, website, or showroom. You can discuss:
+      </p>
+      <ul>
+        <li>Exact dimensions, ring sizing, and metal customization.</li>
+        <li>Gemstone origins, grading reports, and laser inscriptions.</li>
+        <li>Bespoke commissions, sketches, and 3D CAD designs.</li>
+        <li>Showroom viewings and in-person appointments.</li>
+      </ul>
+
+      <h2>2. Direct Payments &amp; Invoicing</h2>
+      <p>
+        {siteConfig.name} does not process customer retail transactions, hold buyer funds, or charge buyer transaction fees. When you agree to purchase a piece:
+      </p>
+      <ul>
+        <li>The jeweler issues an invoice or payment request directly to you.</li>
+        <li>Payment methods (e.g. secure credit card terminal, bank wire transfer, or in-store payment) are agreed upon directly with the jeweler.</li>
+        <li>Always ensure you review the jeweler&rsquo;s sales agreement and invoice prior to payment.</li>
+      </ul>
+
+      <h2>3. Shipping, Logistics &amp; Insurance</h2>
+      <p>
+        Each jeweler arranges delivery directly from their workshop or atelier to your address:
       </p>
       <ul>
         <li>
-          <strong>Every parcel is insured</strong> for its full value until you sign for it. If a parcel is lost or damaged in transit, the jeweler and our team handle the claim
-          — you receive a replacement or a full refund.
+          <strong>Insured Transit:</strong> Independent jewelers typically utilize insured, signature-on-delivery couriers (or specialist armored carriers for high jewelry).
         </li>
         <li>
-          <strong>Signature on delivery</strong> is required for any piece over {usd(settings.signatureThresholdUsd)}. Below that, you can choose at checkout.
+          <strong>Lead Times:</strong> In-stock pieces generally dispatch quickly, while made-to-order or custom-sized pieces depend on the jeweler&rsquo;s workshop schedule.
         </li>
         <li>
-          <strong>Secure courier</strong> is used for orders over {usd(settings.secureCourierThresholdUsd)}: an armoured service with identity checks at the door.
-        </li>
-        <li>
-          <strong>Delivery estimates</strong> include the jeweler&rsquo;s handling time, and any making or sizing days for made-to-order pieces, so the date you see at checkout
-          is the date to expect.
+          <strong>International Duties &amp; Taxes:</strong> Customs requirements, import duties, and local taxes depend on the destination country and are arranged directly with the jeweler or carrier.
         </li>
       </ul>
 
-      <h2>Duties and taxes</h2>
+      <h2>4. Returns, Resizing &amp; Warranties</h2>
       <p>
-        For most international orders we collect import duties and sales tax at checkout, so there&rsquo;s nothing to pay on arrival and no surprise hold at customs. The
-        estimate is itemised before you pay. Where a country doesn&rsquo;t allow duties to be prepaid, checkout tells you in advance and the carrier collects them on delivery.
-      </p>
-
-      <h2>Returns</h2>
-      <p>
-        Each jeweler sets a return window between {minWindow} and {maxWindow} days from delivery; you&rsquo;ll find it on the listing and on your order. To start a return,
-        open the order and choose <strong>Return an item</strong>.
+        Policies regarding returns, resizing, and warranty coverage are set independently by each atelier:
       </p>
       <ul>
         <li>
-          Once the jeweler approves, you get a <strong>prepaid, insured return label</strong> addressed to the jeweler&rsquo;s own workshop — never to a warehouse.
+          <strong>Return Windows:</strong> Each jeweler indicates their return policy on their profile. Many accept returns on ready-to-wear pieces, while bespoke or personalized items are typically final sale unless defective.
         </li>
-        <li>Pieces must come back unworn, in their original packaging, with any certificates and paperwork.</li>
         <li>
-          <strong>Engraved, resized and made-to-order pieces</strong> can&rsquo;t be returned for a change of mind, but are always covered if they arrive damaged, don&rsquo;t
-          match the description, or raise an authenticity concern.
+          <strong>Resizing &amp; Adjustments:</strong> Many jewelers offer complimentary or low-cost ring sizing and minor adjustments.
         </li>
-        <li>Refunds go back to your original payment method as soon as the jeweler confirms the piece has arrived. Your bank may take 5–10 days to show it.</li>
+        <li>
+          <strong>Warranties:</strong> Manufacturing warranties and care guarantees are provided directly by the maker.
+        </li>
       </ul>
 
-      <h2>Protected until you&rsquo;re happy</h2>
+      <h2>5. Questions &amp; Support</h2>
       <p>
-        We hold the jeweler&rsquo;s payment until {settings.inspectionWindowDays} days after delivery. If something is wrong — the stone doesn&rsquo;t match its report, the
-        piece was damaged, or a return is refused — open a case from your order within that time and our team will step in, review the evidence from both sides and, where
-        it&rsquo;s warranted, refund you directly.
-      </p>
-      <p>
-        Questions about a specific order? Message the jeweler from your <Link href="/account/orders">order page</Link> — they usually reply within a few hours.
+        If you have questions about a specific piece or order, reach out to the jeweler via your <Link href="/account/messages" className="underline">Loupe messages</Link> or the contact details on their atelier profile.
       </p>
     </PolicyLayout>
   );

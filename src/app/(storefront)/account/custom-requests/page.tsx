@@ -27,8 +27,8 @@ export default async function CustomRequestsPage() {
   return (
     <>
       <PageHeader
-        title="Custom requests"
-        description="Bespoke commissions — from briefing jewelers to the piece arriving at your door."
+        title="Custom Commissions"
+        description="Bespoke commissions — collaborate directly with verified jewelers from concept to finished piece."
         action={
           <Link href="/custom-orders" className={buttonVariants({ size: "sm" })}>
             New request

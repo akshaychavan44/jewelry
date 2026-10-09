@@ -26,16 +26,15 @@ export default async function BuyerOffersPage() {
 
   return (
     <>
-      <PageHeader title="Offers" description="Your negotiations with jewelers. Accepted offers hold the agreed price for 48 hours." />
+      <PageHeader title="Price Inquiries" description="Your price proposals with independent jewelers. Once accepted, message the jeweler directly to arrange payment and delivery." />
       {offers.length === 0 ? (
-        <EmptyState icon={<HandCoins />} title="No offers yet">
-          Look for &ldquo;Make an offer&rdquo; on pieces whose jewelers welcome negotiation.
+        <EmptyState icon={<HandCoins />} title="No price inquiries yet">
+          Look for &ldquo;Propose an offer&rdquo; on pieces whose jewelers welcome direct pricing discussions.
         </EmptyState>
       ) : (
         <ul className="space-y-4">
           {offers.map((o) => {
             const awaitingMe = o.status === "COUNTERED" && o.lastActor === "SELLER";
-            const deadline = o.purchaseDeadline && o.purchaseDeadline > new Date() ? o.purchaseDeadline : null;
             return (
               <li key={o.id} className="rounded-[3px] border border-line bg-porcelain">
                 <div className="flex flex-wrap gap-4 px-5 py-4">
@@ -56,17 +55,16 @@ export default async function BuyerOffersPage() {
                     </div>
                     <p className="mt-2 font-display text-[22px] text-ink">
                       {formatMoney(num(o.acceptedAmountMinor ?? o.currentAmountMinor), o.currency)}
-                      <span className="ml-2 font-sans text-[12.5px] text-muted">{awaitingMe ? "their counter-offer" : o.status === "ACCEPTED" ? "agreed price" : "latest offer"}</span>
+                      <span className="ml-2 font-sans text-[12.5px] text-muted">{awaitingMe ? "their counter-offer" : o.status === "ACCEPTED" ? "agreed price" : "latest proposal"}</span>
                     </p>
-                    {deadline && o.status === "ACCEPTED" && !o.cartItem && <p className="text-[13px] text-sage-deep">Check out before {formatDate(deadline, "dateTime")} to secure this price.</p>}
-                    {o.status === "ACCEPTED" && o.cartItem && <p className="text-[13px] text-sage-deep">In your cart at the agreed price.</p>}
+                    {o.status === "ACCEPTED" && <p className="text-[13px] text-sage-deep">Price agreed! Contact the jeweler directly to finalize payment and delivery.</p>}
                     <div className="mt-3">
                       <OfferActions
                         offerId={o.id}
                         as="BUYER"
                         canRespond={awaitingMe}
                         canWithdraw={o.status === "PENDING"}
-                        canCheckout={o.status === "ACCEPTED" && !!deadline && !o.cartItem}
+                        canCheckout={o.status === "ACCEPTED"}
                         currency={o.currency}
                         currentMinor={num(o.currentAmountMinor)}
                         listMinor={num(o.listPriceMinor)}
@@ -74,6 +72,7 @@ export default async function BuyerOffersPage() {
                     </div>
                   </div>
                 </div>
+
                 <ol className="border-t border-line px-5 py-3 text-[12.5px] text-ink-soft">
                   {o.events.map((e) => (
                     <li key={e.id} className="flex flex-wrap gap-x-2 py-0.5">

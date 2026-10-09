@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, MessageCircle, ShieldCheck, Truck } from "lucide-react";
+import { Info, MessageCircle, Send, ShieldCheck, Sparkles, Store } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -11,11 +11,9 @@ import { Field } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/menus";
 import type { EngravingStyle, MetalColor, MetalType, SizingMode } from "@/generated/prisma/enums";
-import { formatDateRange } from "@/lib/format";
 import { chainLengthLabel, METAL_SWATCH, METALS, metalLabel, ringSizesBetween, RING_SIZES } from "@/lib/jewelry";
 import { formatMoney, toMajor } from "@/lib/money";
 import { cn } from "@/lib/utils";
-import { addToCartAction } from "@/server/actions/cart";
 import { askJewelerAction, makeOfferAction } from "@/server/actions/product";
 import type { VariantOption } from "@/server/services/product";
 import { EngravingField } from "./engraving";
@@ -53,10 +51,12 @@ type Props = {
 const metalKey = (v: { metalType: MetalType; metalColor: MetalColor | null }) => `${v.metalType}|${v.metalColor ?? ""}`;
 const uniq = <T,>(xs: T[]) => [...new Set(xs)];
 
-export function PurchasePanel({ product, variants, engravingFee, resizingFee, shipping, saved, isOwner, signedIn }: Props) {
+export function PurchasePanel({ product, variants, engravingFee, resizingFee, saved, isOwner, signedIn }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const [pending, start] = useTransition();
+  const [inquiryOpen, setInquiryOpen] = useState(false);
+  const [inquiryMessage, setInquiryMessage] = useState("");
+  const [inquiryPending, startInquiry] = useTransition();
 
   const axes = useMemo(
     () => ({
@@ -91,10 +91,6 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
   const axisValue = (v: VariantOption, key: string) =>
     key === "metal" ? metalKey(v) : key === "carat" ? v.caratWeight : key === "ringSize" ? v.ringSize : v.chainLengthMm;
 
-  /**
-   * Choose an axis value. Keep the other selections when that combination
-   * exists; otherwise jump to the best SKU that honours the new choice.
-   */
   const choose = (patch: Partial<typeof sel>) => {
     const next = { ...sel, ...patch };
     if (variants.some((v) => matches(v, next))) return setSel(next);
@@ -104,46 +100,39 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
   };
   const optionAvailable = (patch: Partial<typeof sel>) => variants.some((v) => v.available && matches(v, { ...sel, ...patch }));
 
-  const leadDays = product.handlingDays + product.productionDays + (engraving.enabled && engraving.text ? 2 : 0);
-  const delivery = shipping
-    ? (() => {
-        const now = new Date();
-        const add = (d: number) => {
-          const x = new Date(now);
-          let n = 0;
-          while (n < d) {
-            x.setDate(x.getDate() + 1);
-            if (x.getDay() !== 0 && x.getDay() !== 6) n++;
-          }
-          return x;
-        };
-        return formatDateRange(add(leadDays + shipping.minDays), add(leadDays + shipping.maxDays));
-      })()
-    : null;
-
   const needsSize = product.sizingMode === "MADE_TO_SIZE";
   const ringOptions = needsSize ? ringSizesBetween(product.ringSizeMin, product.ringSizeMax) : [];
+  const unavailableSizes = new Set(axes.ringSize.filter((s) => !optionAvailable({ ringSize: s })));
 
-  const addToCart = () => {
-    if (!variant) return toast.error("That combination isn't available.");
-    if (needsSize && !madeToSize) return toast.error("Choose your ring size first.");
-    if (engraving.enabled && !engraving.text.trim()) return toast.error("Add your engraving text, or untick engraving.");
-    start(async () => {
-      const res = await addToCartAction({
-        variantId: variant.id,
-        ringSize: needsSize ? madeToSize : variant.ringSize,
-        chainLengthMm: variant.chainLengthMm,
-        engravingText: engraving.enabled ? engraving.text : null,
-        engravingStyle: engraving.enabled ? engraving.style : null,
-      });
+  const handleSendInquiry = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signedIn) {
+      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    const specsList: string[] = [];
+    if (variant) {
+      specsList.push(`Option: ${variant.title}`);
+      if (variant.metalType) specsList.push(`Metal: ${metalLabel(variant.metalType, variant.metalColor)}`);
+    }
+    if (needsSize && madeToSize) specsList.push(`Requested size: US ${madeToSize}`);
+    if (engraving.enabled && engraving.text) specsList.push(`Engraving (${engraving.style}): "${engraving.text}"`);
+
+    const fullMessage = specsList.length > 0
+      ? `${inquiryMessage.trim()}\n\n[Piece Inquired: ${product.title} · Specs: ${specsList.join(", ")}]`
+      : inquiryMessage.trim();
+
+    startInquiry(async () => {
+      const res = await askJewelerAction({ productId: product.id, message: fullMessage });
       if (res.ok) {
-        toast.success(res.message, { action: { label: "View cart", onClick: () => router.push("/cart") } });
-        router.refresh();
-      } else toast.error(res.message);
+        toast.success(res.message, { action: res.href ? { label: "Open conversation", onClick: () => router.push(res.href!) } : undefined });
+        setInquiryMessage("");
+        setInquiryOpen(false);
+      } else {
+        toast.error(res.message);
+      }
     });
   };
-
-  const unavailableSizes = new Set(axes.ringSize.filter((s) => !optionAvailable({ ringSize: s })));
 
   return (
     <div className="space-y-6">
@@ -151,16 +140,20 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
       <div className="flex items-end justify-between gap-4 border-b border-line pb-6">
         <div>
           {product.sold ? (
-            <p className="font-display text-[30px] text-muted">Sold</p>
+            <p className="font-display text-[30px] text-muted">Sold / Archived</p>
           ) : variant ? (
             <p className="tabular font-display text-[32px] leading-none text-ink">
               {formatMoney(variant.price.amountMinor, variant.price.currency)}
-              {variant.compareAt && variant.compareAt.amountMinor > variant.price.amountMinor && <s className="ml-3 text-[20px] text-muted">{formatMoney(variant.compareAt.amountMinor, variant.compareAt.currency)}</s>}
+              {variant.compareAt && variant.compareAt.amountMinor > variant.price.amountMinor && (
+                <s className="ml-3 text-[20px] text-muted">{formatMoney(variant.compareAt.amountMinor, variant.compareAt.currency)}</s>
+              )}
             </p>
           ) : (
-            <p className="text-[15px] text-muted">Choose an available combination</p>
+            <p className="text-[15px] text-muted">Choose an available configuration</p>
           )}
-          <p className="mt-2 text-[12.5px] text-muted">Taxes, duties and insured shipping calculated at checkout.</p>
+          <p className="mt-2 text-[12.5px] text-muted">
+            Direct atelier price · Contact jeweler directly for purchases, payment &amp; delivery.
+          </p>
         </div>
         {variant?.breakdown && (
           <Popover>
@@ -191,11 +184,11 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
                   </div>
                 )}
                 <div className="flex justify-between gap-3 border-t border-line pt-2 font-medium">
-                  <dt>Today&rsquo;s price</dt>
+                  <dt>Today&rsquo;s estimate</dt>
                   <dd className="tabular">{formatMoney(variant.price.amountMinor, variant.price.currency)}</dd>
                 </div>
               </dl>
-              <p className="mt-3 text-[12px] text-muted">Recalculated from the spot rate every 15 minutes and locked when you check out.</p>
+              <p className="mt-3 text-[12px] text-muted">Calculated from the spot rate every 15 minutes as a transparent guide.</p>
             </PopoverContent>
           </Popover>
         )}
@@ -264,7 +257,7 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
           <RingSizePicker sizes={ringOptions} value={madeToSize} onChange={setMadeToSize} />
           <p className="mt-2 text-[12.5px] text-muted">
             Made to your size by {product.sellerName}
-            {resizingFee ? ` · sizing ${resizingFee}` : " at no extra cost"}.
+            {resizingFee ? ` · sizing ${resizingFee}` : " · bespoke sizing available"}.
           </p>
         </div>
       )}
@@ -278,7 +271,7 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
           style={engraving.style}
           onStyle={(style) => setEngraving((e) => ({ ...e, style }))}
           maxChars={product.engravingMaxChars}
-          feeLabel={engravingFee ?? "complimentary"}
+          feeLabel={engravingFee ?? "available on request"}
         />
       )}
 
@@ -288,31 +281,80 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
           {variant && (
             <p className="text-[13px] text-ink-soft">
               {!variant.available ? (
-                <span className="text-rosewood">Sold out in this option</span>
+                <span className="text-rosewood">Inquire for availability or re-commission</span>
               ) : variant.madeToOrder ? (
-                <>Made to order · ships in about {product.productionDays + product.handlingDays} working days</>
+                <>Made to order · crafted in approximately {product.productionDays + product.handlingDays} working days</>
               ) : product.isOneOfAKind ? (
-                <>One of a kind — only this piece exists</>
+                <>One of a kind — crafted individually</>
               ) : variant.stock <= 2 ? (
-                <span className="text-amber">Only {variant.stock} left</span>
+                <span className="text-amber">Limited showcase availability</span>
               ) : (
-                <>In stock</>
+                <>Available for direct inquiry</>
               )}
             </p>
           )}
           {isOwner ? (
-            <p className="rounded-[2px] border border-line bg-parchment px-4 py-3 text-[14px] text-ink-soft">This is your listing. Manage it from your seller dashboard.</p>
+            <p className="rounded-[2px] border border-line bg-parchment px-4 py-3 text-[14px] text-ink-soft">
+              This is your listing in the showcase. Manage it from your jeweler dashboard.
+            </p>
           ) : (
             <>
               <div className="flex gap-2">
-                <Button size="lg" className="flex-1" onClick={addToCart} pending={pending} disabled={!variant?.available}>
-                  Add to cart
-                </Button>
+                <Dialog open={inquiryOpen} onOpenChange={setInquiryOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" className="flex-1">
+                      <Send className="mr-2 size-4" /> Inquire About This Piece
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Inquire with {product.sellerName}</DialogTitle>
+                      <DialogDescription>
+                        Direct message regarding {product.title}. The jeweler will reply to your account messages.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSendInquiry}>
+                      <DialogBody className="space-y-4">
+                        <Field label="Your message or question" htmlFor="inquiry-message">
+                          <Textarea
+                            id="inquiry-message"
+                            value={inquiryMessage}
+                            onChange={(e) => setInquiryMessage(e.target.value)}
+                            required
+                            maxLength={2000}
+                            placeholder="I'm interested in this piece. Could we arrange a viewing, discuss delivery to my city, or confirm details?"
+                            className="min-h-28"
+                          />
+                        </Field>
+                        <p className="text-[12.5px] text-muted">
+                          Purchases, custom sizing, payments, and delivery are arranged directly between you and {product.sellerName}.
+                        </p>
+                      </DialogBody>
+                      <DialogFooter>
+                        <Button type="button" variant="ghost" onClick={() => setInquiryOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" pending={inquiryPending}>
+                          Send direct inquiry
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
                 <WishlistButton productId={product.id} saved={saved} variant="full" className="w-auto px-4" />
               </div>
+
               <div className="grid grid-cols-2 gap-2">
-                {product.acceptsOffers && variant?.available ? <OfferDialog product={product} variant={variant} signedIn={signedIn} loginHref={`/login?callbackUrl=${encodeURIComponent(pathname)}`} /> : null}
-                <AskDialog productId={product.id} sellerName={product.sellerName} signedIn={signedIn} loginHref={`/login?callbackUrl=${encodeURIComponent(pathname)}`} className={product.acceptsOffers ? "" : "col-span-2"} />
+                {product.acceptsOffers && variant?.available ? (
+                  <OfferDialog product={product} variant={variant} signedIn={signedIn} loginHref={`/login?callbackUrl=${encodeURIComponent(pathname)}`} />
+                ) : null}
+                <AskDialog
+                  productId={product.id}
+                  sellerName={product.sellerName}
+                  signedIn={signedIn}
+                  loginHref={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
+                  className={product.acceptsOffers ? "" : "col-span-2"}
+                />
               </div>
             </>
           )}
@@ -320,24 +362,19 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sh
       )}
 
       <ul className="space-y-3 border-t border-line pt-6 text-[13.5px] text-ink-soft">
-        {shipping ? (
-          <li className="flex gap-3">
-            <Truck className="mt-0.5 size-4 shrink-0 text-ink" strokeWidth={1.5} />
-            <span>
-              {shipping.label} from {product.shipsFrom} · <span className="text-ink">{shipping.price}</span>
-              {delivery && <> · arrives {delivery}</>}
-              {shipping.international && <span className="block text-[12.5px] text-muted">Duties prepaid at checkout — nothing to pay on arrival.</span>}
-            </span>
-          </li>
-        ) : (
-          <li className="flex gap-3">
-            <Truck className="mt-0.5 size-4 shrink-0 text-ink" strokeWidth={1.5} />
-            <span>This jeweler doesn&rsquo;t currently ship to your region.</span>
-          </li>
-        )}
+        <li className="flex gap-3">
+          <Store className="mt-0.5 size-4 shrink-0 text-ink" strokeWidth={1.5} />
+          <span>
+            Crafted &amp; listed by <span className="text-ink font-medium">{product.sellerName}</span> in {product.shipsFrom}.
+          </span>
+        </li>
+        <li className="flex gap-3">
+          <MessageCircle className="mt-0.5 size-4 shrink-0 text-ink" strokeWidth={1.5} />
+          <span>Direct transaction — payments, delivery, returns, and warranties are handled directly with the jeweler.</span>
+        </li>
         <li className="flex gap-3">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink" strokeWidth={1.5} />
-          <span>Your payment is held by Loupe until you&rsquo;ve received and approved the piece.</span>
+          <span>Verified jeweler credentials and business registration.</span>
         </li>
       </ul>
     </div>
@@ -381,7 +418,7 @@ function OfferDialog({ product, variant, signedIn, loginHref }: { product: Panel
   if (!signedIn) {
     return (
       <Button variant="outline" size="lg" onClick={() => router.push(loginHref)}>
-        Make an offer
+        Propose budget / offer
       </Button>
     );
   }
@@ -390,14 +427,14 @@ function OfferDialog({ product, variant, signedIn, loginHref }: { product: Panel
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="lg">
-          Make an offer
+          Propose budget / offer
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Make an offer</DialogTitle>
+          <DialogTitle>Propose offer to {product.sellerName}</DialogTitle>
           <DialogDescription>
-            {product.title} · listed at {formatMoney(variant.price.amountMinor, variant.price.currency)}
+            {product.title} · listed guide price {formatMoney(variant.price.amountMinor, variant.price.currency)}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -413,7 +450,7 @@ function OfferDialog({ product, variant, signedIn, loginHref }: { product: Panel
           }}
         >
           <DialogBody className="space-y-5">
-            <Field label={`Your offer (${variant.price.currency})`} htmlFor="offer-amount" hint="Offers must be at least half the list price.">
+            <Field label={`Your proposed price (${variant.price.currency})`} htmlFor="offer-amount" hint="Send your proposed budget directly to the jeweler for consideration.">
               <input
                 id="offer-amount"
                 inputMode="decimal"
@@ -432,9 +469,11 @@ function OfferDialog({ product, variant, signedIn, loginHref }: { product: Panel
               ))}
             </div>
             <Field label="Message to the jeweler" htmlFor="offer-message" optional>
-              <Textarea id="offer-message" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={600} placeholder="Anything that would help them say yes — timing, sizing, or how you'll wear it." className="min-h-24" />
+              <Textarea id="offer-message" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={600} placeholder="Notes on timing, sizing, or terms to discuss directly with the jeweler." className="min-h-24" />
             </Field>
-            <p className="text-[12.5px] text-muted">The jeweler has 48 hours to accept, decline or counter. If they accept, you&rsquo;ll have 48 hours to check out at that price.</p>
+            <p className="text-[12.5px] text-muted">
+              The jeweler will review your proposal directly. If agreed, you arrange purchase, payment, and delivery directly with them.
+            </p>
           </DialogBody>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
@@ -458,7 +497,7 @@ function AskDialog({ productId, sellerName, signedIn, loginHref, className }: { 
   if (!signedIn) {
     return (
       <Button variant="subtle" size="lg" className={className} onClick={() => router.push(loginHref)}>
-        <MessageCircle /> Ask the jeweler
+        <MessageCircle /> Direct question
       </Button>
     );
   }
@@ -466,13 +505,13 @@ function AskDialog({ productId, sellerName, signedIn, loginHref, className }: { 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="subtle" size="lg" className={className}>
-          <MessageCircle /> Ask the jeweler
+          <MessageCircle /> Direct question
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Ask {sellerName}</DialogTitle>
-          <DialogDescription>Questions about sizing, stones, provenance or timing go straight to the jeweler.</DialogDescription>
+          <DialogTitle>Message {sellerName}</DialogTitle>
+          <DialogDescription>Questions about sizing, stones, provenance or showroom appointments go straight to the jeweler.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -489,7 +528,7 @@ function AskDialog({ productId, sellerName, signedIn, loginHref, className }: { 
         >
           <DialogBody>
             <Field label="Your message" htmlFor="ask-message">
-              <Textarea id="ask-message" value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={2000} placeholder="Is the report number laser-inscribed? Could the band be made 2 mm wide?" />
+              <Textarea id="ask-message" value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={2000} placeholder="Is this available to view in your showroom? Can the band width be customized?" />
             </Field>
           </DialogBody>
           <DialogFooter>

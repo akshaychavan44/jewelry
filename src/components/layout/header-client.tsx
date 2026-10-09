@@ -7,10 +7,9 @@ import {
   LogOut,
   Menu,
   MessageSquare,
-  Package,
   Search,
   Shield,
-  ShoppingBag,
+  Sparkles,
   Store,
   User,
 } from "lucide-react";
@@ -40,14 +39,13 @@ type Category = { slug: string; name: string; imageUrl: string | null; children:
 
 type Props = {
   categories: Category[];
-  cartCount: number;
   currency: CurrencyCode;
   user: { name: string | null; email: string; role: Role } | null;
 };
 
 const navLink = "caps text-[12px] md:text-[12.5px] font-semibold tracking-[0.14em] text-ink transition-colors hover:text-[#86683a] " + styles.navItem;
 
-export function HeaderClient({ categories, cartCount, currency, user }: Props) {
+export function HeaderClient({ categories, currency, user }: Props) {
   const pathname = usePathname();
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -80,7 +78,7 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
   const isJewelersActive = pathname.startsWith("/jewelers");
   const isCustomOrdersActive = pathname.startsWith("/custom-orders");
   const isGuidesActive = pathname.startsWith("/guides");
-  const isCartActive = pathname.startsWith("/cart");
+  const isSellActive = pathname.startsWith("/sell");
 
   return (
     <header
@@ -92,7 +90,7 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
         "translate-y-0 opacity-100 visible pointer-events-auto"
       )}
     >
-      <div className={cn(styles.bar, "grid h-[72px] grid-cols-[1fr_auto_1fr] items-center md:h-[84px]")}>
+      <div className={cn(styles.bar, "h-[72px] md:h-[84px]")}>
         {/* Left: navigation */}
         <div className="flex items-center gap-7">
           <button type="button" className="-ml-2 grid size-10 place-items-center lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
@@ -109,7 +107,7 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
                 onClick={() => setMegaOpen((v) => !v)}
                 onKeyDown={(e) => e.key === "Escape" && setMegaOpen(false)}
               >
-                Shop <ChevronDown className={cn("size-3.5 transition-transform", megaOpen && "rotate-180")} />
+                Jewelry <ChevronDown className={cn("size-3.5 transition-transform", megaOpen && "rotate-180")} />
               </button>
             </div>
             <Link href="/jewelers" className={cn(navLink, isJewelersActive && styles.activeNavItem)} data-active={isJewelersActive ? "true" : undefined}>
@@ -121,11 +119,16 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
             <Link href="/guides" className={cn(navLink, "hidden xl:inline", isGuidesActive && styles.activeNavItem)} data-active={isGuidesActive ? "true" : undefined}>
               Guides
             </Link>
+            <Link href="/sell" className={cn(navLink, "hidden xl:inline", isSellActive && styles.activeNavItem)} data-active={isSellActive ? "true" : undefined}>
+              For jewelers
+            </Link>
           </nav>
         </div>
 
         {/* Centre: wordmark */}
-        <Logo className={styles.wordmark} />
+        <div className={styles.centerBrand}>
+          <Logo className={styles.wordmark} />
+        </div>
 
         {/* Right: utilities */}
         <div className={styles.utilities}>
@@ -135,14 +138,8 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
           <AccountMenu user={user} />
-          <Link href="/cart" className={cn(navLink, "relative inline-flex items-center gap-2 p-2 md:p-0", isCartActive && styles.activeNavItem)} data-active={isCartActive ? "true" : undefined} aria-label={`Cart, ${cartCount} items`}>
-            <span className="hidden lg:inline">Cart</span>
-            <ShoppingBag className="size-[18px] md:size-4" strokeWidth={1.6} />
-            {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 grid size-[17px] place-items-center rounded-full bg-sage text-[10px] font-medium text-white md:static md:-ml-1">
-                {cartCount}
-              </span>
-            )}
+          <Link href="/sell" className={cn(navLink, "hidden md:inline-flex items-center gap-1.5 rounded-[2px] border border-ink/30 px-3 py-1 text-[11.5px] hover:border-ink hover:bg-ink hover:text-ivory transition-all")}>
+            List Your Business
           </Link>
         </div>
       </div>
@@ -153,7 +150,7 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
         onMouseEnter={openMega}
         onMouseLeave={closeMegaSoon}
         className={cn(
-          "absolute inset-x-0 top-full hidden border-b border-line bg-ivory shadow-soft transition-[opacity,transform] duration-200 lg:block",
+          "absolute inset-x-0 top-full hidden border-b border-line/60 bg-white/95 backdrop-blur-2xl shadow-soft transition-[opacity,transform] duration-200 lg:block",
           megaOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0",
         )}
       >
@@ -209,7 +206,7 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
                     <ul className="space-y-2.5 pb-4 pl-1">
                       <li>
                         <Link href={`/shop/${c.slug}`} className="text-[15px] text-ink underline underline-offset-4">
-                          Shop all {c.name.toLowerCase()}
+                          Browse all {c.name.toLowerCase()}
                         </Link>
                       </li>
                       {c.children.map((ch) => (
@@ -226,10 +223,11 @@ export function HeaderClient({ categories, cartCount, currency, user }: Props) {
             </ul>
             <ul className="mt-6 space-y-4">
               {[
-                ["/jewelers", "Jewelers"],
+                ["/shop", "All jewelry"],
+                ["/jewelers", "Our jewelers"],
                 ["/custom-orders", "Custom orders"],
                 ["/guides", "Guides"],
-                ["/sell", "Sell on Loupe"],
+                ["/sell", "List your business"],
                 [user ? "/account" : "/login", user ? "My account" : "Sign in"],
               ].map(([href, label]) => (
                 <li key={href}>
@@ -258,7 +256,7 @@ function CurrencyMenu({ currency, className }: { currency: CurrencyCode; classNa
         {currency} <ChevronDown className="size-3" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
-        <DropdownMenuLabel className="eyebrow">Shop in</DropdownMenuLabel>
+        <DropdownMenuLabel className="eyebrow">Currency</DropdownMenuLabel>
         {SUPPORTED_CURRENCIES.map((code) => (
           <DropdownMenuItem
             key={code}
@@ -310,7 +308,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
         {user.role === "SELLER" && (
           <DropdownMenuItem asChild>
             <Link href="/seller">
-              <Store /> Seller dashboard
+              <Store /> Jeweler dashboard
             </Link>
           </DropdownMenuItem>
         )}
@@ -320,18 +318,23 @@ function AccountMenu({ user }: { user: Props["user"] }) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/account/orders">
-            <Package /> Orders
+          <Link href="/account/messages">
+            <MessageSquare /> Messages & Inquiries
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account/custom-requests">
+            <Sparkles /> Custom commissions
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/account/wishlist">
-            <Heart /> Wishlist
+            <Heart /> Saved pieces
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/account/messages">
-            <MessageSquare /> Messages
+          <Link href="/account/favorite-stores">
+            <Store /> Saved jewelers
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -356,7 +359,7 @@ function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg" className="top-[18%] translate-y-0">
         <div className="px-6 pt-6 pb-7 md:px-8">
-          <DialogTitle className="eyebrow mb-4">Search the marketplace</DialogTitle>
+          <DialogTitle className="eyebrow mb-4">Search jewelry & jewelers</DialogTitle>
           <DialogPrimitive.Description className="sr-only">Search jewelry, jewelers and materials</DialogPrimitive.Description>
           <form
             onSubmit={(e) => {

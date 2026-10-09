@@ -17,7 +17,7 @@ export default async function CustomOrdersPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sellerSlug = firstParam((await searchParams).jeweler);
-  const [user, currency, categories, seller] = await Promise.all([
+  const [user, currency, categories, seller, jewelers] = await Promise.all([
     getCurrentUser(),
     getDisplayCurrency(),
     db.category.findMany({
@@ -31,6 +31,11 @@ export default async function CustomOrdersPage({
           select: { storeName: true, slug: true },
         })
       : null,
+    db.sellerProfile.findMany({
+      where: { verificationStatus: "APPROVED", acceptsCustomOrders: true },
+      orderBy: { storeName: "asc" },
+      select: { id: true, storeName: true, slug: true, city: true },
+    }),
   ]);
 
   return (
@@ -40,6 +45,7 @@ export default async function CustomOrdersPage({
       categories={categories}
       seller={seller}
       sellerSlug={sellerSlug}
+      jewelers={jewelers}
     />
   );
 }

@@ -2,32 +2,33 @@
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Loupe design tokens
-   Palette derived from the brand reference: warm ivory grounds, sage actions,
-   burnished-gold certification accents. Type: Gilda Display (display),
-   Jost (UI & body), DM Mono (hallmarks, report numbers), Pinyon Script
+   Palette derived from the brand reference: warm cream grounds, gold actions,
+   burnished-gold certification accents. Type: Cormorant Garamond (display),
+   Manrope (UI & body), DM Mono (hallmarks, report numbers), Pinyon Script
    (engraving & signature accents).
    ──────────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  --color-ivory: #faf7f2;
-  --color-porcelain: #fdfcf9;
-  --color-parchment: #f2ece3;
-  --color-sand: #ebe3d6;
-  --color-greige: #e7e4dc;
-  --color-line: #e4ddd1;
-  --color-line-strong: #d2c8b8;
+  --color-ivory: #FCF9F4;
+  --color-porcelain: #ffffff;
+  --color-parchment: #f7f2ea;
+  --color-sand: #f0e8dc;
+  --color-greige: #ede7dc;
+  --color-line: #ede4d6;
+  --color-line-strong: #d5c8b5;
 
-  --color-ink: #2f2c28;
-  --color-ink-soft: #57524a;
-  --color-muted: #857e73;
+  --color-ink: #211e17;
+  --color-ink-soft: #625b4d;
+  --color-muted: #766c5c;
 
-  --color-sage: #7b8069;
-  --color-sage-deep: #5f644f;
-  --color-sage-mist: #e8eae0;
+  --color-sage: #c18d2d;
+  --color-sage-deep: #93691f;
+  --color-sage-mist: #efe5d2;
 
-  --color-gold: #a8864f;
-  --color-gold-deep: #86683a;
+  --color-gold: #c18d2d;
+  --color-gold-deep: #93691f;
   --color-gold-mist: #efe5d2;
+  --gradient-gold: linear-gradient(110deg, #bb882b, #d8b565 65%, #f4db91);
 
   --color-rosewood: #9b4f45;
   --color-rosewood-mist: #f6e7e3;
@@ -38,8 +39,8 @@
   --color-slate: #5b6573;
   --color-slate-mist: #e7eaee;
 
-  --font-display: var(--font-gilda), "Didot", "Bodoni 72", Georgia, serif;
-  --font-sans: var(--font-jost), "Futura", "Avenir Next", system-ui, sans-serif;
+  --font-display: var(--font-cormorant), "Didot", "Bodoni 72", Georgia, serif;
+  --font-sans: var(--font-manrope), "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", monospace;
   --font-script: var(--font-pinyon), "Snell Roundhand", cursive;
 
@@ -87,8 +88,57 @@
     background-color: var(--color-ivory);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.65;
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: var(--color-ink);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  h1 {
+    font-size: clamp(2.75rem, 2rem + 4vw, 5.5rem);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  h2 {
+    font-size: clamp(2.25rem, 1.8rem + 2.2vw, 3.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-size: clamp(1.75rem, 1.45rem + 1.2vw, 2.5rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+
+  h4 {
+    font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.75rem);
+    line-height: 1.18;
+    letter-spacing: -0.015em;
+  }
+
+  p {
+    font-family: var(--font-sans);
+    color: var(--color-ink-soft);
+    line-height: 1.65;
+    text-wrap: pretty;
   }
 
   ::selection {
@@ -135,17 +185,8 @@
 
 /* ── Layout ─────────────────────────────────────────────────────────────────── */
 
-/* Warm cream and champagne accents throughout the storefront. */
+/* All route groups inherit the same reference palette. */
 .storefront {
-  --color-ivory: #fcf7ee;
-  --color-porcelain: #fffaf3;
-  --color-parchment: #f4eadb;
-  --color-sand: #eadcc8;
-  --color-greige: #f0e7da;
-  --color-line: #e8ddcc;
-  --color-sage: #8c704b;
-  --color-sage-deep: #735a38;
-  --color-sage-mist: #f2e8d8;
   background: var(--color-ivory);
 }
 
@@ -193,31 +234,41 @@
 @utility display-xl {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(2.5rem, 1.6rem + 3.4vw, 4.25rem);
+  font-size: clamp(2.75rem, 2rem + 4vw, 5.5rem);
   line-height: 1.04;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
+  color: var(--color-ink);
+  max-width: 12ch;
+  text-wrap: balance;
 }
 
 @utility display-lg {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(2rem, 1.5rem + 1.8vw, 3rem);
-  line-height: 1.1;
-  letter-spacing: -0.005em;
+  font-size: clamp(2.25rem, 1.8rem + 2.2vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--color-ink);
+  text-wrap: balance;
 }
 
 @utility display-md {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(1.625rem, 1.35rem + 0.9vw, 2.125rem);
-  line-height: 1.15;
+  font-size: clamp(1.75rem, 1.45rem + 1.2vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  text-wrap: balance;
 }
 
 @utility display-sm {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: 1.375rem;
-  line-height: 1.25;
+  font-size: clamp(1.35rem, 1.2rem + 0.6vw, 1.75rem);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
 }
 
 /* Hallmark / report-number data. */
@@ -252,8 +303,9 @@
 /* ── Prose (policies, guides, product descriptions) ─────────────────────────── */
 
 @utility prose-loupe {
+  max-width: 65ch;
   color: var(--color-ink-soft);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.75;
   & p + p {
     margin-top: 1em;
@@ -265,13 +317,15 @@
     font-weight: 400;
     margin-top: 1.8em;
     margin-bottom: 0.5em;
-    line-height: 1.2;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
   }
   & h2 {
-    font-size: 1.6rem;
+    font-size: clamp(1.8rem, 1.5rem + 1vw, 2.4rem);
   }
   & h3 {
-    font-size: 1.25rem;
+    font-size: clamp(1.4rem, 1.25rem + 0.6vw, 1.8rem);
   }
   & ul {
     list-style: disc;

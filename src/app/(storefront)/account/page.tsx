@@ -1,70 +1,111 @@
-import { Bell } from "lucide-react";
-import Image from "next/image";
+import { Bell, MessageSquare, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { PageHeader, StatCard } from "@/components/account/page-header";
-import { StatusBadge } from "@/components/ui/display";
 import { timeAgo } from "@/lib/format";
-import { formatMoney } from "@/lib/money";
-import { FULFILLMENT_STATUS } from "@/lib/status";
-import { num } from "@/lib/utils";
 import { requireUser } from "@/server/auth/session";
 import { db } from "@/server/db";
 import { getAccountBadges } from "@/server/services/account";
 
 export default async function AccountOverview() {
   const user = await requireUser("/account");
-  const [badges, recent, notifications, wishlistCount, customOpen] = await Promise.all([
+  const [badges, recentConvos, customRequests, notifications, wishlistCount] = await Promise.all([
     getAccountBadges(user.id),
-    db.sellerOrder.findMany({
-      where: { order: { buyerId: user.id, status: { not: "PENDING_PAYMENT" } } },
-      orderBy: { createdAt: "desc" },
+    db.conversation.findMany({
+      where: { participants: { some: { userId: user.id } } },
+      orderBy: { updatedAt: "desc" },
       take: 4,
-      include: { order: { select: { orderNumber: true } }, seller: { select: { storeName: true } }, items: { take: 1, select: { title: true, imageUrl: true } } },
+      include: {
+        seller: { select: { storeName: true } },
+        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+      },
+    }),
+    db.customRequest.findMany({
+      where: { buyerId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      include: { seller: { select: { storeName: true } }, quotes: { select: { id: true, status: true } } },
     }),
     db.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 6 }),
     db.wishlistItem.count({ where: { userId: user.id } }),
-    db.customRequest.count({ where: { buyerId: user.id, status: { in: ["OPEN", "QUOTED", "ACCEPTED", "IN_PRODUCTION"] } } }),
   ]);
 
   return (
     <>
-      <PageHeader eyebrow="Your account" title={`Good to see you, ${user.name?.split(" ")[0] ?? "there"}`} description="Orders, offers and conversations with your jewelers, all in one place." />
+      <PageHeader
+        eyebrow="Your account"
+        title={`Good to see you, ${user.name?.split(" ")[0] ?? "there"}`}
+        description="Your conversations, bespoke commissions, and saved pieces in one place."
+      />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="In progress" value={badges.openOrders} hint="orders on their way" href="/account/orders?status=open" />
-        <StatCard label="Offers" value={badges.offers} hint="awaiting your reply" href="/account/offers" />
-        <StatCard label="Unread" value={badges.unread} hint="messages" href="/account/messages" />
-        <StatCard label="Saved" value={wishlistCount} hint={`${customOpen} custom request${customOpen === 1 ? "" : "s"} open`} href="/account/wishlist" />
+        <StatCard label="Unread messages" value={badges.unread} hint="inquiries & messages" href="/account/messages" />
+        <StatCard label="Custom requests" value={customRequests.length} hint="bespoke commissions" href="/account/custom-requests" />
+        <StatCard label="Price inquiries" value={badges.offers} hint="pending response" href="/account/offers" />
+        <StatCard label="Saved pieces" value={wishlistCount} hint="in your wishlist" href="/account/wishlist" />
       </div>
 
       <div className="mt-10 grid gap-8 xl:grid-cols-[1.5fr_1fr]">
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="caps text-ink">Recent orders</h2>
-            <Link href="/account/orders" className="link-quiet text-[13px] text-ink">
-              All orders
-            </Link>
-          </div>
-          <ul className="divide-y divide-line rounded-[3px] border border-line bg-porcelain">
-            {recent.length === 0 && <li className="px-5 py-8 text-center text-[14px] text-muted">No orders yet.</li>}
-            {recent.map((so) => (
-              <li key={so.id}>
-                <Link href={`/account/orders/${so.order.orderNumber}`} className="flex items-center gap-4 px-5 py-4 hover:bg-parchment/40">
-                  <div className="relative size-14 shrink-0 overflow-hidden bg-sand">{so.items[0]?.imageUrl && <Image src={so.items[0].imageUrl} alt="" fill sizes="56px" className="object-cover" />}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] text-ink">{so.items[0]?.title}</p>
-                    <p className="text-[12.5px] text-muted">
-                      {so.seller.storeName} · <span className="font-mono">{so.reference}</span>
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <StatusBadge status={so.status} map={FULFILLMENT_STATUS} />
-                    <p className="mt-1 text-[12.5px] text-muted tabular">{formatMoney(num(so.totalMinor), so.currency)}</p>
-                  </div>
+        <div className="space-y-8">
+          <section>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="caps text-ink">Recent conversations</h2>
+              <Link href="/account/messages" className="link-quiet text-[13px] text-ink">
+                All messages
+              </Link>
+            </div>
+            <ul className="divide-y divide-line rounded-[3px] border border-line bg-porcelain">
+              {recentConvos.length === 0 && (
+                <li className="px-5 py-8 text-center text-[14px] text-muted">
+                  No conversations yet. Inquire with any jeweler to get started.
+                </li>
+              )}
+              {recentConvos.map((c) => (
+                <li key={c.id}>
+                  <Link href={`/account/messages/${c.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-parchment/40">
+                    <div className="grid size-10 place-items-center rounded-full bg-sand text-ink">
+                      <MessageSquare className="size-5 text-ink-soft" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[14px] font-medium text-ink">{c.subject}</p>
+                      <p className="truncate text-[12.5px] text-muted">
+                        {c.seller?.storeName ? `With ${c.seller.storeName}` : "Inquiry"} · {c.messages[0]?.body ?? "No messages"}
+                      </p>
+                    </div>
+                    <span className="text-[12px] text-muted">{timeAgo(c.updatedAt)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {customRequests.length > 0 && (
+            <section>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="caps text-ink">Custom Commissions</h2>
+                <Link href="/account/custom-requests" className="link-quiet text-[13px] text-ink">
+                  All requests
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+              </div>
+              <ul className="divide-y divide-line rounded-[3px] border border-line bg-porcelain">
+                {customRequests.map((cr) => (
+                  <li key={cr.id} className="flex items-center justify-between px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <Sparkles className="size-5 text-gold-deep" />
+                      <div>
+                        <p className="text-[14px] font-medium text-ink">{cr.title}</p>
+                        <p className="text-[12.5px] text-muted">
+                          {cr.seller?.storeName ? `For ${cr.seller.storeName}` : "Open brief"} · {cr.quotes.length} quote{cr.quotes.length === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                    </div>
+                    <Link href="/account/custom-requests" className="text-[13px] text-ink underline underline-offset-4">
+                      View brief
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
 
         <section>
           <h2 className="caps mb-4 text-ink">Notifications</h2>

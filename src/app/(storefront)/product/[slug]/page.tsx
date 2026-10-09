@@ -169,22 +169,25 @@ export default async function ProductPage({ params }: Props) {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="shipping">
-                <AccordionTrigger>Shipping, insurance &amp; returns</AccordionTrigger>
+                <AccordionTrigger>Direct Atelier Policies &amp; Inquiries</AccordionTrigger>
                 <AccordionContent className="space-y-3 text-[14px] leading-relaxed text-ink-soft">
                   <p>
-                    Ships from {countryName(product.shipsFromCountry)} to {product.shipsTo.map((r) => REGION_LABELS[r]).join(", ")}. Every parcel is fully insured, tracked and needs a signature on delivery; pieces above $25,000 travel with specialist secure couriers.
+                    This piece is crafted and listed directly by <strong>{product.seller.storeName}</strong> located in {product.seller.city ? `${product.seller.city}, ` : ""}{countryName(product.shipsFromCountry)}.
                   </p>
                   <p>
-                    Returns within {product.returnWindowDays ?? product.seller.returnWindowDays} days of delivery go straight back to {product.seller.storeName} with a prepaid, insured label. Engraved and made-to-measure pieces can only be returned if faulty.
+                    Payment methods, insured dispatch options, custom sizing, delivery estimates, return policies, and warranties are handled directly between you and the jeweler.
                   </p>
-                  <p>International orders are delivered duties-paid: taxes and import duties are calculated and collected at checkout, so there is nothing to pay on arrival.</p>
+                  <p>
+                    Use the inquiry buttons above or visit the jeweler&rsquo;s profile to message them directly, ask technical questions, or book an appointment.
+                  </p>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="care">
-                <AccordionTrigger>Care &amp; warranty</AccordionTrigger>
+                <AccordionTrigger>Care &amp; maintenance</AccordionTrigger>
                 <AccordionContent className="space-y-3 text-[14px] leading-relaxed text-ink-soft">
-                  <p>Covered by a {product.warrantyMonths}-month warranty from {product.seller.storeName} against manufacturing defects, including stone settings and clasps. Register repairs and resizing from your account.</p>
-                  <p>Store pieces separately to avoid scratches, remove before swimming or exercise, and have claws checked by a jeweler once a year.</p>
+                  <p>
+                    Fine jewelry is crafted to last generations with proper care. Store pieces individually in a soft pouch to avoid scratching, remove before intense activity, swimming, or applying perfumes, and have gemstone claws checked periodically by a professional goldsmith.
+                  </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

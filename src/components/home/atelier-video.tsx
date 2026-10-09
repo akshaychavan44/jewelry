@@ -58,9 +58,9 @@ export function AtelierVideo() {
 
   return (
     <div className={styles.media}>
-      <video ref={videoRef} muted playsInline preload="metadata" poster="/media/bracelet-unboxing-poster.png" aria-label="A presentation box opens to reveal a floating diamond bracelet" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setFailed(true)}>
-        <source src="/media/bracelet-unboxing.mp4" type="video/mp4" />
-      </video>
+        <video ref={videoRef} muted playsInline preload="metadata" poster="/media/bracelet-unboxing-poster.png" aria-label="A presentation box opens to reveal a floating diamond bracelet" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setFailed(true)}>
+          <source src="/media/bracelet-unboxing.mp4" type="video/mp4" />
+        </video>
       {failed ? <p className={styles.videoError} role="status">The bracelet video could not load. Please refresh to try again.</p> : <button type="button" className={styles.playback} aria-label={playing ? "Pause bracelet video" : "Play bracelet video"} onClick={togglePlayback}>
         {playing ? <Pause size={17} strokeWidth={1.5} aria-hidden /> : <Play size={17} strokeWidth={1.5} aria-hidden />}
       </button>}

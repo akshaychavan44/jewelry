@@ -71,7 +71,7 @@ export function ScaleVisualizer({ widthMm, heightMm, depthMm, label }: { widthMm
         {ref.shape === "rect" && <rect x={rx} y={baseline - rh} width={rw} height={rh} rx={3 * scale} fill="none" stroke="#857e73" strokeDasharray="3 3" />}
         {ref.shape === "circle" && <circle cx={rx + rw / 2} cy={baseline - rh / 2} r={rw / 2} fill="none" stroke="#857e73" strokeDasharray="3 3" />}
         {ref.shape === "dodecagon" && <polygon points={dodecagon(rx + rw / 2, baseline - rh / 2, rw / 2)} fill="none" stroke="#857e73" strokeDasharray="3 3" />}
-        <text x={rx + rw / 2} y={baseline - rh - 7} textAnchor="middle" className="fill-muted" style={{ font: "10px var(--font-jost)" }}>
+        <text x={rx + rw / 2} y={baseline - rh - 7} textAnchor="middle" className="fill-muted" style={{ font: "10px var(--font-sans)" }}>
           {ref.label} · {ref.widthMm} mm
         </text>
 

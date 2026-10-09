@@ -35,7 +35,7 @@ export default async function GuidesIndex() {
                 Know what you&rsquo;re<br /><span className="text-[#b67b31]">looking at.</span>
               </h1>
               <p className="mt-5 max-w-[740px] font-display text-[19px] leading-[1.5] text-ink sm:text-[22px]">
-                Fine jewelry has its own language — karats, clarity grades, report numbers, hallmarks. These guides translate it, so you can compare pieces from different jewelers with confidence.
+                Understand gold purity, diamond clarity, sizing and hallmarks. Choose your next piece with confidence.
               </p>
             </header>
 
@@ -71,7 +71,7 @@ export default async function GuidesIndex() {
                 <MessagesSquare className="mt-1 hidden size-9 shrink-0 stroke-[1.2] text-gold-deep sm:block" aria-hidden />
                 <div>
                   <h3 className="font-display text-[25px] leading-[1.2] text-ink">Still unsure? Ask the jeweler.</h3>
-                  <p className="mt-3 text-[14px] leading-[1.6] text-ink-soft">Every listing has an &ldquo;Ask the jeweler&rdquo; button. Most reply within a few hours — about stones, sizing, or a piece you have in mind.</p>
+                  <p className="mt-3 text-[14px] leading-[1.6] text-ink-soft">Contact the jeweler directly for advice on stones, sizing and designs.</p>
                   <Link href="/jewelers" className="mt-5 inline-flex min-h-11 items-center gap-3 rounded-full border border-gold px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.12em] text-ink transition-colors hover:bg-gold-mist focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold">
                     Meet our jewelers <ArrowRight className="size-4" aria-hidden />
                   </Link>

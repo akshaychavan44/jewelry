@@ -1,65 +1,56 @@
 import type { Metadata } from "next";
 import { PolicyLayout } from "@/components/help/policy-layout";
+import { siteConfig } from "@/config/site";
 
-export const metadata: Metadata = { title: "Privacy" };
+export const metadata: Metadata = { title: "Privacy Policy" };
 
 export default function PrivacyPage() {
   return (
     <PolicyLayout
       current="/help/privacy"
-      title="Privacy"
-      updated="September 2026"
+      title="Privacy Policy"
+      updated="October 2026"
       sample
-      intro="We collect what we need to run a safe marketplace for valuable things — and no more. We don't sell personal data, and our analytics don't use tracking cookies."
+      intro={`At ${siteConfig.name}, we value transparency. We collect only what is necessary to operate our independent jeweler directory and showcase software. We never sell personal data.`}
     >
       <h2>What we collect</h2>
       <ul>
         <li>
-          <strong>Your account:</strong> name, email, password (stored only as a one-way hash) or your Google / Apple sign-in, preferred currency and country.
+          <strong>Customer Account Details:</strong> Name, email address, password hash, saved jewelers, and wishlist items.
         </li>
         <li>
-          <strong>Orders:</strong> shipping and billing addresses, what you bought, messages with jewelers, offers, reviews and any return or dispute details.
+          <strong>Inquiries &amp; Messages:</strong> Direct messages, custom commission briefs, and inquiries you send to jewelers to facilitate communication.
         </li>
         <li>
-          <strong>Payments:</strong> card details go directly to Stripe, our payment processor. We only ever see the card brand, last four digits and expiry.
+          <strong>Jeweler Business Records:</strong> Atelier name, showroom address, business registration, tax ID, and identity verification documents submitted to earn the Verified Jeweler badge.
         </li>
         <li>
-          <strong>For jewelers:</strong> business registration, tax ID, bank details and identity documents for verification. Tax IDs and bank numbers are encrypted at rest,
-          documents are stored privately, and only our verification team can open them — every view is logged.
+          <strong>Jeweler Subscription Billing:</strong> For jewelers paying listing subscription fees, card details are processed directly by Stripe. We do not store raw card numbers.
         </li>
       </ul>
 
       <h2>Analytics without tracking cookies</h2>
       <p>
-        To understand which pages and pieces people look at, we record anonymous page views with a visitor identifier that is hashed and changes every day. It can&rsquo;t be
-        used to follow you across days or across other websites. We don&rsquo;t use advertising trackers.
+        To understand which showcase categories and pieces receive interest, we record anonymous, cookie-less page views. We do not track you across third-party websites or sell behavioral profiles to advertisers.
       </p>
 
       <h2>Who sees your information</h2>
       <ul>
         <li>
-          <strong>The jeweler you buy from</strong> receives your name, shipping address and phone number to deliver your order, and your messages to them.
+          <strong>Jewelers you contact:</strong> When you send an inquiry, custom request, or message, the respective jeweler receives your name, message text, and contact information to respond directly to you.
         </li>
         <li>
-          <strong>Service providers</strong> who help us run Loupe — payment processing, insured shipping, tax calculation, file storage and email — under contracts that limit
-          use to that purpose.
+          <strong>Infrastructure Providers:</strong> Secure hosting, encrypted cloud database storage, and email delivery providers operating under strict confidentiality contracts.
         </li>
         <li>
-          <strong>Authorities</strong>, when required by law, or to prevent fraud and protect our buyers and jewelers.
+          <strong>Legal Compliance:</strong> When required by law or to protect against fraudulent impersonation.
         </li>
       </ul>
 
-      <h2>How long we keep it</h2>
-      <p>
-        Order and payment records are kept for as long as tax and anti-money-laundering rules require — typically seven to ten years. Verification documents are kept for the
-        life of a seller account and a limited period afterwards. Everything else is deleted or anonymised when you close your account.
-      </p>
-
-      <h2>Your choices</h2>
+      <h2>Your rights &amp; choices</h2>
       <ul>
-        <li>Update your details, addresses and saved cards at any time in your account.</li>
-        <li>Ask for a copy of your data, a correction, or deletion — write to privacy@loupe.example.</li>
-        <li>Unsubscribe from marketing emails with one click; order and security emails will still arrive.</li>
+        <li>You may update your profile, notifications, and saved items in your account settings at any time.</li>
+        <li>To request a copy of your stored data or request account deletion, write to privacy@loupe.example.</li>
       </ul>
     </PolicyLayout>
   );

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 export function VerifiedJeweler({ className, compact }: { className?: string; compact?: boolean }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 text-[12px] font-medium text-sage-deep", className)} title="Business, identity and payouts verified by Loupe">
+    <span className={cn("inline-flex items-center gap-1 text-[12px] font-medium text-sage-deep", className)} title="Business credentials and identity verified by Loupe">
       <BadgeCheck className="size-[15px]" strokeWidth={1.75} aria-hidden />
       {compact ? "Verified" : "Verified jeweler"}
     </span>

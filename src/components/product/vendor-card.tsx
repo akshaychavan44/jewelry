@@ -26,7 +26,7 @@ type Seller = {
 export function VendorCard({ seller, following }: { seller: Seller; following: boolean }) {
   return (
     <section aria-label="About the jeweler" className="rounded-[3px] border border-line bg-porcelain p-5">
-      <p className="eyebrow mb-4">Sold &amp; shipped by</p>
+      <p className="eyebrow mb-4">Crafted &amp; Listed by</p>
       <div className="flex items-start gap-4">
         <Monogram name={seller.storeName} src={seller.logoUrl} size={56} />
         <div className="min-w-0 flex-1">
@@ -57,8 +57,8 @@ export function VendorCard({ seller, following }: { seller: Seller; following: b
           </dd>
         </div>
         <div>
-          <dt className="text-[11px] tracking-[0.08em] text-muted uppercase">Sales</dt>
-          <dd className="mt-1 text-[14px] text-ink">{seller.salesCount}</dd>
+          <dt className="text-[11px] tracking-[0.08em] text-muted uppercase">Pieces</dt>
+          <dd className="mt-1 text-[14px] text-ink">{seller.salesCount || "Showcase"}</dd>
         </div>
         <div>
           <dt className="text-[11px] tracking-[0.08em] text-muted uppercase">Replies</dt>

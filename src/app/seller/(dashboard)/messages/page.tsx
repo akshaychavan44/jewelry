@@ -10,7 +10,7 @@ export default async function SellerMessages() {
   const all = [...conversations, ...disputes.filter((d) => d.type === "DISPUTE" && d.sellerId === seller.id)].sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
   return (
     <>
-      <PageHeader title="Messages" description="Buyer questions, order threads, commissions — and any case Loupe is mediating." />
+      <PageHeader title="Messages" description="Direct customer inquiries, bespoke commission requests, and piece discussions." />
       <ConversationList
         basePath="/seller/messages"
         items={all.map((c) => {

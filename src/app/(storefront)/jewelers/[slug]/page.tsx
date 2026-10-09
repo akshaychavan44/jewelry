@@ -1,4 +1,4 @@
-import { Clock, MapPin, Phone, RotateCcw, Truck } from "lucide-react";
+import { Clock, Globe, Mail, MapPin, MessageSquare, Phone, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { FollowStoreButton } from "@/components/catalog/save-buttons";
 import { TopRated, VerifiedJeweler } from "@/components/brand/trust";
 import { EmptyState, Monogram, Stars } from "@/components/ui/display";
 import { formatDate, formatResponseTime } from "@/lib/format";
-import { countryName, REGION_LABELS, regionForCountry } from "@/lib/regions";
+import { countryName } from "@/lib/regions";
 import { cn, firstParam, pluralize, type SearchParams } from "@/lib/utils";
 import { getCurrentUser } from "@/server/auth/session";
 import { db } from "@/server/db";
@@ -38,8 +38,6 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
   ]);
   await track("STORE_VIEW", { userId: user?.id, sellerId: seller.id, path: `/jewelers/${slug}` });
 
-  const regions = [...new Set(seller.shippingRates.map((r) => (r.zone === "DOMESTIC" ? regionForCountry(seller.country) : r.zone)))];
-
   return (
     <div className="pb-20">
       <div className="relative h-[240px] bg-sand md:h-[340px]">
@@ -63,14 +61,22 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
               </div>
             </div>
           </div>
-          <FollowStoreButton sellerId={seller.id} following={!!following} className="self-start md:self-auto" />
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={`/custom-orders?jeweler=${seller.slug}`}
+              className="inline-flex h-10 items-center gap-2 rounded-[2px] border border-ink bg-ink px-4 text-[12.5px] font-medium text-ivory transition-colors hover:bg-ink/85"
+            >
+              <MessageSquare className="size-4" /> Commission piece
+            </Link>
+            <FollowStoreButton sellerId={seller.id} following={!!following} />
+          </div>
         </div>
 
         <dl className="grid grid-cols-2 gap-6 border-b border-line py-7 md:grid-cols-5">
           {[
             ["Rating", seller.ratingCount ? <span className="flex items-center gap-1.5"><Stars rating={seller.ratingAverage} size={12} label={false} />{seller.ratingAverage.toFixed(1)}</span> : "New"],
             ["Reviews", seller.ratingCount],
-            ["Sales", seller.salesCount],
+            ["Showcase", `${listings.length} pieces`],
             ["Replies", formatResponseTime(seller.responseTimeMinutes)],
             ["On Loupe since", formatDate(seller.approvedAt, "monthYear")],
           ].map(([label, value]) => (
@@ -116,12 +122,23 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
                 )}
               </div>
             ))}
-            <div className="space-y-3 text-[14px] text-ink-soft">
-              <p className="flex items-start gap-2">
-                <Truck className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} /> Ships insured to {regions.map((r) => REGION_LABELS[r]).join(", ")}
-              </p>
-              <p className="flex items-start gap-2">
-                <RotateCcw className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} /> {seller.returnWindowDays}-day returns, sent straight back to {seller.city}
+            <div className="rounded-[3px] border border-line bg-parchment/60 p-5 space-y-3 text-[14px] text-ink-soft">
+              <p className="font-medium text-ink">Direct Atelier Contacts &amp; Policies</p>
+              {seller.website && (
+                <p className="flex items-center gap-2 truncate">
+                  <Globe className="size-4 shrink-0 text-muted" />
+                  <a href={seller.website} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
+                    {seller.website.replace(/^https?:\/\//, "")}
+                  </a>
+                </p>
+              )}
+              {seller.returnAddress?.phone && (
+                <p className="flex items-center gap-2">
+                  <Phone className="size-4 shrink-0 text-muted" /> {seller.returnAddress.phone}
+                </p>
+              )}
+              <p className="text-[13px] text-muted">
+                All purchases, consultations, payments, delivery, and returns are handled directly with {seller.storeName}.
               </p>
             </div>
           </div>
@@ -130,7 +147,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
         <section aria-labelledby="collection-heading" className="border-t border-line pt-12">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <h2 id="collection-heading" className="display-md text-ink">
-              The collection <span className="text-[18px] text-muted">({pluralize(listings.length, "piece")})</span>
+              The showcase <span className="text-[18px] text-muted">({pluralize(listings.length, "piece")})</span>
             </h2>
             {categories.length > 1 && (
               <div className="flex flex-wrap gap-2">
@@ -152,7 +169,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
           <section aria-labelledby="sold-heading" className="mt-20">
             <p className="eyebrow mb-3">Found new homes</p>
             <h2 id="sold-heading" className="display-md mb-8 text-ink">
-              Recently sold
+              Past creations &amp; archives
             </h2>
             <ProductGrid products={sold} />
           </section>
@@ -161,7 +178,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
         {reviews.length > 0 && (
           <section aria-labelledby="store-reviews" className="mt-20 border-t border-line pt-12">
             <h2 id="store-reviews" className="display-md mb-8 text-ink">
-              What buyers say
+              Client testimonials
             </h2>
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {reviews.map((r) => (

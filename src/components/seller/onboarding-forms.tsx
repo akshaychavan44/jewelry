@@ -91,8 +91,8 @@ export function StoreProfileForm({
       </Field>
 
       <fieldset className="grid gap-5 border-t border-line pt-6 sm:col-span-2 sm:grid-cols-2">
-        <legend className="caps mb-1 text-ink">Return address</legend>
-        <p className="text-[13px] text-muted sm:col-span-2">Buyers&rsquo; prepaid return labels are addressed here — returns never go through a central warehouse.</p>
+        <legend className="caps mb-1 text-ink">Business / Atelier Address</legend>
+        <p className="text-[13px] text-muted sm:col-span-2">Your workshop or showroom address for customer visits, inquiries, and direct correspondence.</p>
         <Field label="Street address" htmlFor="ra_line1" error={err("ra_line1")} className="sm:col-span-2">
           <Input id="ra_line1" name="ra_line1" defaultValue={ra?.line1} aria-invalid={!!err("ra_line1")} />
         </Field>
@@ -261,7 +261,7 @@ export function SubmitApplicationForm() {
       <label className="flex items-start gap-3 rounded-[3px] border border-line bg-ivory p-4 text-[14px] leading-relaxed text-ink-soft">
         <input type="checkbox" name="agree" className="mt-1 size-4 accent-[#7b8069]" />
         <span>
-          I confirm every piece I list is described accurately — metal purity, stones, treatments and condition — and that certificates I attach belong to the piece. I&rsquo;ll ship insured, honour returns to my return address, and respond to disputes within 72 hours.
+          I confirm that our business details and all listed jewelry showcase pieces are described accurately — metal purity, gemstones, certifications, and craft origins. I understand that all customer inquiries, consultations, bespoke commissions, transactions, fulfillment, returns, and dispute handling are conducted directly and independently between our atelier and the customer.
         </span>
       </label>
       <SubmitButton size="lg" pendingLabel="Submitting…">

@@ -19,22 +19,22 @@ export default async function SellerSettings() {
 
   return (
     <>
-      <PageHeader title="Store settings" description="How your store appears, ships and gets paid." />
+      <PageHeader title="Store settings" description="How your atelier profile, showcase policies and listing subscription appear." />
       <div className="space-y-6">
         <Card>
-          <CardHeader title="Store profile" description="Shown on your storefront, product pages and the jeweler directory." />
+          <CardHeader title="Store profile" description="Shown on your atelier profile, product showcases and the jeweler directory." />
           <div className="p-5">
             <StoreProfileForm store={{ ...full, returnAddress: full.returnAddress }} action={updateStoreProfileAction} submitLabel="Save profile" />
           </div>
         </Card>
         <Card>
-          <CardHeader title="Policies" />
+          <CardHeader title="Policies" description="Direct communication, commission lead handling and workshop policies." />
           <div className="p-5">
             <PoliciesForm initial={{ returnWindowDays: full.returnWindowDays, handlingDays: full.handlingDays, acceptsOffers: full.acceptsOffers, acceptsCustomOrders: full.acceptsCustomOrders }} />
           </div>
         </Card>
         <Card>
-          <CardHeader title="Shipping rate card" description={`Prices in ${seller.defaultCurrency}. Domestic means within ${seller.country}.`} />
+          <CardHeader title="Fulfillment & Dispatch Information" description={`Displayed on your piece showcases. Domestic means within ${seller.country}.`} />
           <div className="p-5">
             <RateCardEditor
               currency={seller.defaultCurrency}
@@ -53,7 +53,7 @@ export default async function SellerSettings() {
           </div>
         </Card>
         <Card>
-          <CardHeader title="Plan" description="Featured-store subscriptions lower your commission and add visibility." />
+          <CardHeader title="Listing Subscription Plan" description="Choose your directory listing subscription plan. 0% sales commission across all plans." />
           <div className="p-5">
             <PlanPicker
               current={full.subscription?.status === "ACTIVE" ? full.subscription.plan.code : "atelier"}
@@ -61,22 +61,21 @@ export default async function SellerSettings() {
                 code: p.code,
                 name: p.name,
                 price: num(p.priceMinor) === 0 ? "Free" : `${formatMoney(num(p.priceMinor), p.currency)}/mo`,
-                commission: bpsToPercent(settings.defaultCommissionBps - p.commissionDiscountBps),
+                commission: "0%",
                 features: p.features,
               }))}
             />
           </div>
         </Card>
         <Card>
-          <CardHeader title="Payout account" />
+          <CardHeader title="Listing & Membership Status" />
           <p className="px-5 py-4 text-[14px] text-ink-soft">
-            {full.payoutMethod === "STRIPE_CONNECT"
-              ? `Stripe Connect · ${full.stripeAccountId ?? "—"} · payouts ${full.stripePayoutsEnabled ? "enabled" : "pending verification"}`
-              : `Bank transfer · ${full.bankName ?? "—"} ••••${full.bankAccountLast4 ?? "—"} · ${full.payoutCurrency ?? seller.defaultCurrency}`}
-            <span className="mt-1 block text-[12.5px] text-muted">For your security, payout accounts are changed with our verification team — email payouts@loupe.example.</span>
+            Verification status: <span className="font-medium text-ink">{full.verificationStatus}</span> · Listing plan: <span className="font-medium text-ink">{full.subscription?.plan.name ?? "Atelier"}</span>
+            <span className="mt-1 block text-[12.5px] text-muted">All customer inquiries, consultations, sales, payments, and fulfillment are handled directly and independently by your atelier.</span>
           </p>
         </Card>
       </div>
     </>
   );
 }
+

@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, BadgeCheck, Gem, Search, ShieldCheck, Star, Tag } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeCheck, Gem, MessageSquare, Search, ShieldCheck, Star, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,8 +13,8 @@ import { db } from "@/server/db";
 import { DIRECTORY_SORTS, type DirectorySort, listJewelers } from "@/server/services/sellers";
 
 export const metadata: Metadata = {
-  title: "Our jewelers",
-  description: "Independent ateliers, heritage houses and antique dealers — every one verified by Loupe.",
+  title: "Independent Jewelers Directory | Loupe",
+  description: "Browse verified independent ateliers, goldsmiths, and heritage jewelry houses — connect directly with the makers.",
 };
 
 const categories = [
@@ -55,9 +55,9 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
         </div>
         <div className={styles.heroWash} />
         <div className={styles.heroContent}>
-          <p className={styles.eyebrow}>Certified sellers</p>
-          <h1>Jewelers we&rsquo;re proud to host</h1>
-          <p className={styles.intro}>Discover independent jewelers, renowned ateliers, and trusted<br className={styles.desktopBreak} /> sellers from around the world — all in one curated marketplace.</p>
+          <p className={styles.eyebrow}>Verified Directory</p>
+          <h1>Independent Jewelers &amp; Ateliers</h1>
+          <p className={styles.intro}>Discover master jewelers, bespoke goldsmiths, and heritage houses.<br className={styles.desktopBreak} /> Browse their showcases and connect directly.</p>
           <form id="jewelers-search" action="/jewelers" className={styles.search} role="search">
             <Search size={20} strokeWidth={1.5} aria-hidden />
             <label className="sr-only" htmlFor="jeweler-query">Search jewelers</label>
@@ -65,13 +65,13 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
             {category && <input type="hidden" name="category" value={category} />}
             <button type="submit" aria-label="Search jewelers"><Search size={20} strokeWidth={1.5} /></button>
           </form>
-          <ul className={styles.assurances} aria-label="Our marketplace assurances">
-            <li><Gem size={28} strokeWidth={1.3} /><span>Verified<br />jewelers</span></li>
-            <li><Star size={28} strokeWidth={1.3} /><span>Independent<br />collections</span></li>
-            <li><ShieldCheck size={28} strokeWidth={1.3} /><span>Trusted<br />marketplace</span></li>
+          <ul className={styles.assurances} aria-label="Our directory assurances">
+            <li><ShieldCheck size={28} strokeWidth={1.3} /><span>Verified<br />jewelers</span></li>
+            <li><Gem size={28} strokeWidth={1.3} /><span>Independent<br />showcases</span></li>
+            <li><MessageSquare size={28} strokeWidth={1.3} /><span>Direct<br />contact</span></li>
           </ul>
         </div>
-        <p className={styles.signature}>Real jewelers.<br />Remarkable stories.</p>
+        <p className={styles.signature}>Real artisans.<br />Remarkable stories.</p>
       </header>
 
       <section className={styles.directory} aria-label="Find your jeweler">
@@ -111,14 +111,14 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
                     <h2><Link href={href}>{seller.storeName}</Link><BadgeCheck size={18} className={styles.verified} aria-label="Verified jeweler" /></h2>
                     <p className={styles.location}>{seller.city}, {countryName(seller.country)}{seller.foundedYear && <> <span>·</span> Est. {seller.foundedYear}</>}</p>
                     <div className={styles.details}>
-                      <span className={styles.rating}><Star size={14} fill="currentColor" strokeWidth={1.5} />{seller.ratingCount ? <><strong>{seller.ratingAverage.toFixed(1)}</strong> <span>({seller.ratingCount})</span></> : <span>New jeweler</span>}</span>
+                      <span className={styles.rating}><Star size={14} fill="currentColor" strokeWidth={1.5} />{seller.ratingCount ? <><strong>{seller.ratingAverage.toFixed(1)}</strong> <span>({seller.ratingCount})</span></> : <span>New atelier</span>}</span>
                       {seller.specialties[0] && <span className={styles.specialty} title={seller.specialties.join(" · ")}><Tag size={13} />{seller.specialties[0]}</span>}
                     </div>
                     {products.length > 0 ? <div className={styles.products}>
                       {products.slice(0, 3).map((product) => <Link key={product.slug} href={"/product/" + product.slug} className={styles.product} aria-label={product.title}><Image src={product.images[0].url} alt={product.title} fill sizes="90px" className="object-cover" /></Link>)}
                       {products.length > 3 && <Link href={href} className={styles.more} aria-label={"View all pieces from " + seller.storeName}>{seller.activeListingCount > 3 ? "+" + (seller.activeListingCount - 3) : <ArrowUpRight size={19} />}</Link>}
                     </div> : <p className={styles.tagline}>{seller.tagline ?? "Discover the story behind the atelier."}</p>}
-                    <Link href={href} className={styles.collectionLink}>View collection <ArrowRight size={15} /></Link>
+                    <Link href={href} className={styles.collectionLink}>View atelier &amp; collection <ArrowRight size={15} /></Link>
                   </div>
                 </article>
               );

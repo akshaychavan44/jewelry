@@ -75,7 +75,7 @@
   .invitationImage:hover .invitationPhoto, .invitationLinks a:hover svg { transform: none; }
 }
 
-.journal { background: #fcf8f0; padding-block: 56px 72px; scroll-margin-top: 84px; }
+.journal { background: var(--color-ivory); padding-block: 56px 72px; scroll-margin-top: 84px; }
 @media (width < 48rem) {
   .journal { padding-block: 40px 52px; }
 }

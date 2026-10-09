@@ -1,10 +1,10 @@
 export function PageHeader({ title, description, action, eyebrow }: { title: string; description?: React.ReactNode; action?: React.ReactNode; eyebrow?: string }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
-      <div>
+      <div className="min-w-0 max-w-full">
         {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
         <h1 className="display-md text-ink">{title}</h1>
-        {description && <p className="mt-1.5 max-w-2xl text-[14.5px] text-ink-soft">{description}</p>}
+        {description && <p className="mt-2 max-w-[49ch] text-base leading-relaxed text-ink-soft">{description}</p>}
       </div>
       {action}
     </div>

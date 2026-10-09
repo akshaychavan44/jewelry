@@ -1,6 +1,6 @@
 .hero { position: relative; height: auto; background: var(--color-ivory); }
 .hero[data-scroll-ready="true"] { height: 350svh; }
-.scene { --progress: 0; --prompt-opacity: 1; --skip-opacity: 1; position: sticky; top: 0; height: 100svh; min-height: 100vh; overflow: hidden; isolation: isolate; color: #fffaf3; background: #1a1816; }
+.scene { --progress: 0; --prompt-opacity: 1; --skip-opacity: 1; position: sticky; top: 0; height: 100svh; min-height: 100vh; overflow: hidden; isolation: isolate; color: var(--color-porcelain); background: #1a1816; }
 .media { position: absolute; inset: 0; height: 100%; overflow: hidden; animation: entrance 1.7s var(--ease-silk) both; }
 .media::before { content: ""; position: absolute; inset: 0 auto 0 0; width: calc(100% / .88); background: url('/media/loupe-entrance-poster-1080p.jpg') left center / cover no-repeat; }
 .video { position: absolute; top: 0; left: 0; max-width: none; object-fit: cover; opacity: 0; will-change: transform, opacity; transform: translate3d(0, 0, 0); image-rendering: -webkit-optimize-contrast; image-rendering: high-quality; backface-visibility: hidden; }
@@ -25,7 +25,7 @@
   border-radius: 9999px;
   border: 1px solid rgba(255, 250, 243, 0.35);
   background: rgba(26, 24, 22, 0.55);
-  color: #fffaf3;
+  color: var(--color-porcelain);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.12em;

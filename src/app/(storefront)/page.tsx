@@ -3,10 +3,9 @@ import { ArrowUpRight } from "lucide-react";
 import { CollectionInvitation } from "@/components/home/landing-collections";
 import { StaticHero } from "@/components/home/static-hero";
 import { LandingExperience } from "@/components/home/landing-experience";
-import { VideoShowcase } from "@/components/home/video-showcase";
+import { CollectionShowcase } from "@/components/home/collection-showcase";
 import styles from "@/components/home/landing.module.css";
 import { ProductGrid } from "@/components/catalog/product-card";
-import { DiamondClarityShowcase } from "@/components/home/diamond-clarity-showcase";
 import {
   CategoryRow,
   CustomOrderBand,
@@ -49,7 +48,7 @@ export default async function HomePage() {
   return (
     <LandingExperience>
       <StaticHero />
-      <VideoShowcase />
+      <CollectionShowcase />
       <StorySection stats={stats} />
       <CategoryRow categories={categories} />
 
@@ -84,10 +83,6 @@ export default async function HomePage() {
           <ProductGrid products={trending} savedIds={saved} />
         </div>
       </section>}
-
-      <section className={`${styles.section} ${styles.journal}`} aria-labelledby="clarity-guide-heading">
-        <DiamondClarityShowcase />
-      </section>
 
       <CustomOrderBand />
       <KindWords />

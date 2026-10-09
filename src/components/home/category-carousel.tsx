@@ -18,26 +18,26 @@ interface CategoryCarouselProps {
   categories: CategoryItem[];
 }
 
-// Curated 4K / HD editorial jewelry photography on luxury studio backdrops
+// Curated HD luxury editorial jewelry photography provided by the user
 const CATEGORY_HD_IMAGES: Record<string, string> = {
-  rings: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=85",
-  necklaces: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1200&q=85",
-  earrings: "https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=1200&q=85",
-  bracelets: "https://images.unsplash.com/photo-1611652032931-10fc009c980a?auto=format&fit=crop&w=1200&q=85",
-  "high-jewelry": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=85",
-  vintage: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&w=1200&q=85",
+  rings: "/media/categories/category-rings.jpg",
+  necklaces: "/media/categories/category-necklaces.jpg",
+  earrings: "/media/categories/category-earrings.jpg",
+  bracelets: "/media/categories/category-bracelets.jpg",
+  "high-jewelry": "/media/categories/category-high-jewelry.jpg",
+  vintage: "/media/categories/category-vintage.jpg",
 };
 
 // Repeat the array 5 times to enable seamless infinite circular wrapping
 const REPEATS = 5;
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  rings: "A promise, a milestone, a little everyday brilliance. Find the ring that tells your story.",
-  necklaces: "Delicate chains and extraordinary pendants. Discover a piece to keep close.",
-  earrings: "From quiet sparkle to a statement silhouette. The finishing touch, beautifully considered.",
-  bracelets: "Precious details for every gesture. Explore fine chains, sculptural cuffs and timeless bracelets.",
-  "high-jewelry": "Exceptional stones. Remarkable craftsmanship. Discover jewelry with an extraordinary presence.",
-  vintage: "Treasures with a past and a future. Discover distinctive pieces ready for their next chapter.",
+  rings: "A promise, a milestone, a little everyday brilliance. Find the handcrafted ring that tells your story.",
+  necklaces: "Delicate chains and extraordinary emerald teardrop pendants. Discover a piece to keep close.",
+  earrings: "From traditional jhumkas with pearls to quiet diamond sparkle. The finishing touch, beautifully considered.",
+  bracelets: "Precious details for every gesture. Explore intricate filigree cuffs, kadas, and timeless bracelets.",
+  "high-jewelry": "Exceptional stones and remarkable master craftsmanship. Discover jewelry with an extraordinary presence.",
+  vintage: "Treasures with a past and a future. Discover distinctive heirlooms ready for their next chapter.",
 };
 
 export function CategoryCarousel({ categories }: CategoryCarouselProps) {
@@ -245,14 +245,14 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
     }, durationMs);
   }, []);
 
-  // Continuous auto circular loop rotation at 1s
+  // Continuous auto circular loop rotation at smooth 3.6s cadence
   useEffect(() => {
     if (n < 2 || !isVisible || isPaused || isInteracting || reducedMotion || expandedCategory) return;
     const timer = setInterval(() => {
       if (!document.hidden) {
         scrollToVirtualIndex(currentVirtualIndex + 1);
       }
-    }, 1000);
+    }, 3600);
     return () => clearInterval(timer);
   }, [n, isVisible, isPaused, isInteracting, reducedMotion, expandedCategory, currentVirtualIndex, scrollToVirtualIndex]);
 
@@ -374,170 +374,172 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
       </div>
 
       <div className={styles.stage}>
-      <div className={styles.orbit} aria-hidden="true" />
-      {/* Infinite Horizontal Scroll Track with Refined 3D Circular Arc */}
-      <div
-        ref={containerRef}
-        onScroll={handleScroll}
-        className={cn("scrollbar-none", styles.track)}
-        style={{
-          scrollPadding: "0 calc(50vw - 150px)",
-          perspective: "1400px",
-          perspectiveOrigin: "center center",
-        }}
-      >
-        {repeatedItems.map((c) => {
-          const offset = c.virtualIndex - currentVirtualIndex;
-          const absOffset = Math.abs(offset);
-          const isActive = absOffset === 0;
+        <div className={styles.orbit} aria-hidden="true" />
+        {/* Infinite Horizontal Scroll Track with Refined 3D Circular Arc */}
+        <div
+          ref={containerRef}
+          onScroll={handleScroll}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          className={cn("scrollbar-none", styles.track)}
+          style={{
+            scrollPadding: "0 calc(50vw - 150px)",
+            perspective: "1400px",
+            perspectiveOrigin: "center center",
+          }}
+        >
+          {repeatedItems.map((c) => {
+            const offset = c.virtualIndex - currentVirtualIndex;
+            const absOffset = Math.abs(offset);
+            const isActive = absOffset === 0;
 
-          // Gentle luxury circular curvature and elevation
-          let scale = 0.74;
-          let translateY = 36;
-          let rotateY = offset < 0 ? 16 : -16;
-          let opacity = 0.35;
-          let zIndex = 5;
+            // Gentle luxury circular curvature and elevation
+            let scale = 0.78;
+            let translateY = 28;
+            let rotateY = offset < 0 ? 12 : -12;
+            let opacity = 0.45;
+            let zIndex = 5;
 
-          if (absOffset === 0) {
-            scale = 1.08;
-            translateY = 0;
-            rotateY = 0;
-            opacity = 1;
-            zIndex = 30;
-          } else if (absOffset === 1) {
-            scale = 0.94;
-            translateY = 14;
-            rotateY = offset < 0 ? 8 : -8;
-            opacity = 0.85;
-            zIndex = 20;
-          } else if (absOffset === 2) {
-            scale = 0.84;
-            translateY = 26;
-            rotateY = offset < 0 ? 14 : -14;
-            opacity = 0.58;
-            zIndex = 10;
-          }
+            if (absOffset === 0) {
+              scale = 1.08;
+              translateY = 0;
+              rotateY = 0;
+              opacity = 1;
+              zIndex = 30;
+            } else if (absOffset === 1) {
+              scale = 0.92;
+              translateY = 12;
+              rotateY = offset < 0 ? 6 : -6;
+              opacity = 0.85;
+              zIndex = 20;
+            } else if (absOffset === 2) {
+              scale = 0.82;
+              translateY = 22;
+              rotateY = offset < 0 ? 10 : -10;
+              opacity = 0.58;
+              zIndex = 10;
+            }
 
-          const staggerDelay = `${c.originalIndex * 120}ms`;
-          const flashDelay = `${c.originalIndex * 120 + 320}ms`;
+            const staggerDelay = `${c.originalIndex * 120}ms`;
+            const flashDelay = `${c.originalIndex * 120 + 320}ms`;
 
-          return (
-            <div
-              key={c.uniqueKey}
-              data-virtual-index={c.virtualIndex}
-              className={cn(
-                styles.card,
-                c.isInitialSet && "loupe-stagger-card",
-                c.isInitialSet && isInView && "is-revealed"
-              )}
-              style={
-                c.isInitialSet
-                  ? {
-                      animationDelay: staggerDelay,
-                    }
-                  : undefined
-              }
-            >
-              {/* 3D Circular Arc Wrapper with Zoom & Curvature */}
+            return (
               <div
-                className={styles.arc}
-                style={{
-                  transform: `translateY(${translateY}px) scale(${scale}) rotateY(${rotateY}deg)`,
-                  opacity,
-                  zIndex,
-                  transformStyle: "preserve-3d",
-                }}
+                key={c.uniqueKey}
+                data-virtual-index={c.virtualIndex}
+                className={cn(
+                  styles.card,
+                  c.isInitialSet && "loupe-stagger-card",
+                  c.isInitialSet && isInView && "is-revealed"
+                )}
+                style={
+                  c.isInitialSet
+                    ? {
+                        animationDelay: staggerDelay,
+                      }
+                    : undefined
+                }
               >
-                <Link
-                  href={`/shop/${c.slug}`}
-                  onClick={(e) => handleCardClick(e, c.virtualIndex, isActive, c)}
-                  className={cn("group", styles.link)}
-                  tabIndex={absOffset <= 2 ? 0 : -1}
-                  aria-current={isActive ? "true" : undefined}
-                  aria-haspopup="dialog"
-                  aria-label={`Preview ${c.name}`}
+                {/* 3D Circular Arc Wrapper with Zoom & Curvature */}
+                <div
+                  className={styles.arc}
+                  style={{
+                    transform: `translateY(${translateY}px) scale(${scale}) rotateY(${rotateY}deg)`,
+                    opacity,
+                    zIndex,
+                    transformStyle: "preserve-3d",
+                  }}
                 >
-                  {/* Outer Frame with Arched Border */}
-                  <div
-                    className={cn(
-                      styles.frame,
-                      isActive
-                        ? "bg-gradient-to-b from-[#f0d8a8] via-[#cda260] to-[#8a6835] shadow-[0_20px_50px_-10px_rgba(168,134,79,0.48)]"
-                        : "bg-gradient-to-b from-[#d5c3ab]/60 via-[#c4b197]/40 to-[#baa58a]/30 shadow-soft hover:bg-gradient-to-b hover:from-[#e5ca93]/80 hover:via-[#b58f55]/60 hover:to-[#785b30]/50 hover:shadow-[0_12px_30px_-8px_rgba(168,134,79,0.3)]"
-                    )}
+                  <Link
+                    href={`/shop/${c.slug}`}
+                    onClick={(e) => handleCardClick(e, c.virtualIndex, isActive, c)}
+                    className={cn("group", styles.link)}
+                    tabIndex={absOffset <= 2 ? 0 : -1}
+                    aria-current={isActive ? "true" : undefined}
+                    aria-haspopup="dialog"
+                    aria-label={`Preview ${c.name}`}
                   >
-                    {/* Gold Flash Light Beam Effect on Reveal */}
-                    {c.isInitialSet && isInView && (
+                    {/* Outer Frame with Gold Bezel Border */}
+                    <div
+                      className={cn(
+                        styles.frame,
+                        isActive
+                          ? "bg-gradient-to-b from-[#fae7c2] via-[#d4a559] to-[#8f682c] shadow-[0_20px_48px_-8px_rgba(168,134,79,0.38)]"
+                          : "bg-gradient-to-b from-[#dfceb7]/70 via-[#cdb99f]/50 to-[#bba589]/40 shadow-soft hover:bg-gradient-to-b hover:from-[#edd6a8]/90 hover:via-[#c19b62]/70 hover:to-[#8a6835]/60 hover:shadow-[0_14px_32px_-8px_rgba(168,134,79,0.28)]"
+                      )}
+                    >
+                      {/* Gold Flash Light Beam Effect on Reveal */}
+                      {c.isInitialSet && isInView && (
+                        <div
+                          className="pointer-events-none absolute inset-x-0 -inset-y-12 z-20 bg-gradient-to-b from-transparent via-white/90 via-45% to-transparent loupe-gold-flash"
+                          style={{ animationDelay: flashDelay }}
+                        />
+                      )}
+
+                      {/* Active Halo Shimmer */}
                       <div
-                        className="pointer-events-none absolute inset-x-0 -inset-y-12 z-20 bg-gradient-to-b from-transparent via-white/90 via-45% to-transparent loupe-gold-flash"
-                        style={{ animationDelay: flashDelay }}
-                      />
-                    )}
-
-                    {/* Active Halo Shimmer */}
-                    <div
-                      className={cn(
-                        "pointer-events-none absolute inset-0 rounded-full transition-opacity duration-550 z-10",
-                        isActive
-                          ? "opacity-100 ring-1 ring-gold-mist/70"
-                          : "opacity-0 group-hover:opacity-70 ring-1 ring-gold-mist/40"
-                      )}
-                    />
-
-                    {/* Arched Image Container with HD Jewelry Imagery */}
-                    <div className={styles.image}>
-                      <Image
-                        src={c.displayImage}
-                        alt={c.name}
-                        fill
-                        sizes="(min-width: 1440px) 260px, (min-width: 768px) 20vw, 200px"
                         className={cn(
-                          "object-cover transition-transform duration-700 ease-silk",
-                          isActive ? "scale-104" : "group-hover:scale-108"
+                          "pointer-events-none absolute inset-0 rounded-full transition-opacity duration-550 z-10",
+                          isActive
+                            ? "opacity-100 ring-1 ring-gold-mist/80"
+                            : "opacity-0 group-hover:opacity-70 ring-1 ring-gold-mist/40"
                         )}
-                        priority={c.isInitialSet}
                       />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/20 via-transparent to-transparent opacity-50 transition-opacity duration-500 group-hover:opacity-15" />
+
+                      {/* Circular Medallion Image Container with HD Jewelry Imagery */}
+                      <div className={styles.image}>
+                        <Image
+                          src={c.displayImage}
+                          alt={c.name}
+                          fill
+                          sizes="(min-width: 1440px) 280px, (min-width: 768px) 22vw, 200px"
+                          className={cn(
+                            "object-cover transition-transform duration-700 ease-silk",
+                            isActive ? "scale-104" : "group-hover:scale-108"
+                          )}
+                          priority={c.isInitialSet}
+                        />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/20 via-transparent to-transparent opacity-40 transition-opacity duration-500 group-hover:opacity-10" />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Category Text & Action */}
-                  <div className={styles.caption}>
-                    <p
-                      className={cn(
-                        "font-display text-[22px] text-ink transition-colors duration-300 md:text-[26px]",
-                        isActive ? "text-ink" : "text-ink-soft group-hover:text-ink"
-                      )}
-                    >
-                      {c.name}
-                    </p>
+                    {/* Category Text & Action */}
+                    <div className={styles.caption}>
+                      <p
+                        className={cn(
+                          "font-display text-[22px] tracking-tight transition-colors duration-300 md:text-[26px]",
+                          isActive ? "text-ink font-normal" : "text-ink-soft group-hover:text-ink"
+                        )}
+                      >
+                        {c.name}
+                      </p>
 
-                    {/* Active Indicator Underline */}
-                    <div
-                      className={cn(
-                        "mt-1 h-[1.5px] bg-gold-deep transition-all duration-500 ease-silk",
-                        isActive ? "w-14 opacity-100" : "w-0 opacity-0 group-hover:w-10 group-hover:opacity-70"
-                      )}
-                    />
+                      {/* Active Indicator Underline */}
+                      <div
+                        className={cn(
+                          "mt-1.5 h-[1.5px] bg-gold-deep transition-all duration-500 ease-silk",
+                          isActive ? "w-12 opacity-100" : "w-0 opacity-0 group-hover:w-8 group-hover:opacity-70"
+                        )}
+                      />
 
-                    {/* Explore CTA */}
-                    <span
-                      className={cn(
-                        "caps mt-2 inline-flex items-center gap-1 text-[11px] font-medium tracking-wider text-gold-deep transition-all duration-500 ease-silk",
-                        isActive
-                          ? "translate-y-0 opacity-100"
-                          : "-translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
-                      )}
-                    >
-                      Discover {c.name} →
-                    </span>
-                  </div>
-                </Link>
+                      {/* Explore CTA */}
+                      <span
+                        className={cn(
+                          "caps mt-2 inline-flex items-center gap-1 text-[11px] font-medium tracking-wider text-gold-deep transition-all duration-500 ease-silk",
+                          isActive
+                            ? "translate-y-0 opacity-100"
+                            : "-translate-y-1 opacity-0 group-hover:translate-y-0 group-hover:opacity-100"
+                        )}
+                      >
+                        Discover {c.name} →
+                      </span>
+                    </div>
+                  </Link>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Luxury Progress Bar Track */}

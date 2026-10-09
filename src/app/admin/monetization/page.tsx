@@ -29,13 +29,13 @@ export default async function MonetizationPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Business" title="Monetization" description="How Loupe earns: commission on each sale, optional listing fees, and featured-store plans. Changes apply to new orders only." />
+      <PageHeader eyebrow="Business" title="Listing Plans & Subscriptions" description="Directory membership plans and subscription billing for jewelers on Loupe. Jewelers manage direct client transactions with 0% sales commission." />
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <StatTile label="Net commission · 30 days" value={usd(revenue.commission)} hint="After refunds and reversals" />
-        <StatTile label="Listing fees · 30 days" value={usd(revenue.listingFees)} hint={num(settings.listingFeeMinor) ? `${formatMoney(settings.listingFeeMinor, settings.listingFeeCurrency)} per new listing` : "Listing fees are off"} />
-        <StatTile label="Plan subscriptions · 30 days" value={usd(revenue.subscriptions)} hint={`${subscriberCounts.reduce((n, s) => n + s._count._all, 0)} paying jewelers`} />
-        <StatTile label="Tax & duties collected" value={usd(revenue.taxCollected + revenue.dutiesCollected)} hint="Remitted as marketplace facilitator — not revenue" />
+        <StatTile label="Plan subscriptions · 30 days" value={usd(revenue.subscriptions)} hint={`${subscriberCounts.reduce((n, s) => n + s._count._all, 0)} active paying jewelers`} />
+        <StatTile label="Active subscribers" value={subscriberCounts.reduce((n, s) => n + s._count._all, 0).toLocaleString("en-US")} hint="Jewelers on active listing plans" />
+        <StatTile label="Listing tiers" value={plans.length.toLocaleString("en-US")} hint="Active subscription tiers" />
+        <StatTile label="Platform fee model" value="0% Commission" hint="Direct jeweler-client sales" />
       </div>
 
       <Card className="mt-6">

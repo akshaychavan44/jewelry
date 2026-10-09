@@ -8,15 +8,11 @@ export default async function AccountLayout({ children }: { children: React.Reac
   const badges = await getAccountBadges(user.id);
   const items: NavItem[] = [
     { href: "/account", label: "Overview", icon: "overview", exact: true },
-    { href: "/account/orders", label: "Orders", icon: "orders", badge: badges.openOrders },
-    { href: "/account/offers", label: "Offers", icon: "offers", badge: badges.offers },
-    { href: "/account/messages", label: "Messages", icon: "messages", badge: badges.unread },
-    { href: "/account/wishlist", label: "Wishlist", icon: "wishlist" },
-    { href: "/account/favorite-stores", label: "Favourite jewelers", icon: "stores" },
+    { href: "/account/messages", label: "Messages & Inquiries", icon: "messages", badge: badges.unread },
     { href: "/account/custom-requests", label: "Custom requests", icon: "custom" },
-    { href: "/account/warranty", label: "Warranty & repairs", icon: "warranty" },
-    { href: "/account/addresses", label: "Addresses", icon: "addresses" },
-    { href: "/account/payment-methods", label: "Payment methods", icon: "payments" },
+    { href: "/account/offers", label: "Price inquiries", icon: "offers", badge: badges.offers },
+    { href: "/account/wishlist", label: "Saved pieces", icon: "wishlist" },
+    { href: "/account/favorite-stores", label: "Saved jewelers", icon: "stores" },
     { href: "/account/settings", label: "Settings", icon: "settings" },
   ];
   return (

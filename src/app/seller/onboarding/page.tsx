@@ -34,17 +34,17 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
         <p className="eyebrow mt-6">Application received</p>
         <h1 className="display-lg mt-3 text-ink">We&rsquo;re reviewing {seller.storeName}</h1>
         <p className="mx-auto mt-4 max-w-lg text-[15.5px] text-ink-soft">
-          Submitted {formatDate(seller.submittedAt, "long")}. Our verification team checks your registration against public registers, confirms your identity and payout account — usually within two working days.
+          Submitted {formatDate(seller.submittedAt, "long")}. Our verification team checks your registration against business registers and validates your atelier credentials — usually within two working days.
         </p>
         <ol className="mx-auto mt-10 max-w-md space-y-3 text-left">
-          {["Application submitted", "Business registry & sanctions checks", "Identity & payout verification", "Store goes live"].map((s, i) => (
+          {["Application submitted", "Business registry checks", "Identity & atelier verification", "Listing profile goes live"].map((s, i) => (
             <li key={s} className="flex items-center gap-3 rounded-[3px] border border-line bg-porcelain px-4 py-3 text-[14px]">
               <span className={cn("grid size-6 place-items-center rounded-full", i === 0 ? "bg-sage text-white" : "border border-line-strong text-muted")}>{i === 0 ? <Check className="size-3.5" /> : <span className="text-[11px]">{i + 1}</span>}</span>
               <span className={i === 0 ? "text-ink" : "text-ink-soft"}>{s}</span>
             </li>
           ))}
         </ol>
-        <p className="mt-8 text-[13.5px] text-muted">Your seller dashboard unlocks as soon as you&rsquo;re approved. We&rsquo;ll email you and notify you here.</p>
+        <p className="mt-8 text-[13.5px] text-muted">Your jeweler dashboard unlocks as soon as you&rsquo;re approved. We&rsquo;ll email you and notify you here.</p>
       </div>
     );
   }

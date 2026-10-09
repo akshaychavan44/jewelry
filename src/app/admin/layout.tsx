@@ -15,14 +15,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const items: NavItem[] = [
     { href: "/admin", label: "Platform overview", icon: "analytics", exact: true },
     { href: "/admin/kyc", label: "Jeweler verification", icon: "kyc", badge: q.kyc },
-    { href: "/admin/disputes", label: "Disputes", icon: "disputes", badge: q.disputes },
     { href: "/admin/certificates", label: "Certificates", icon: "verified", badge: q.certificates },
-    { href: "/admin/orders", label: "Orders", icon: "orders" },
-    { href: "/admin/payouts", label: "Payouts", icon: "payouts", badge: q.heldPayouts },
     { href: "/admin/users", label: "Users", icon: "users" },
-    { href: "/admin/monetization", label: "Monetization", icon: "monetization" },
+    { href: "/admin/monetization", label: "Listing Plans & Billing", icon: "monetization" },
     { href: "/admin/audit", label: "Audit log", icon: "audit" },
   ];
+
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[256px_1fr]">

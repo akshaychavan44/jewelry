@@ -124,14 +124,14 @@ export function DiamondClarityShowcase() {
             </span>
           </div>
 
-          <h2 id="clarity-guide-heading" className="mt-5 max-w-[560px] font-sans text-[40px] font-medium leading-[1.08] tracking-[-0.045em] text-[#28231d] sm:text-[50px] xl:text-[58px]">
+          <h2 id="clarity-guide-heading" className="mt-5 max-w-[640px] font-display text-[42px] font-normal leading-[1.08] tracking-[-0.025em] text-[#28231d] sm:text-[52px] xl:text-[62px]">
             Diamond clarity,<br />made clear.
           </h2>
 
-          <p className="mt-5 font-sans text-[18px] font-medium leading-snug tracking-[-0.015em] text-[#4d4235] sm:text-[20px]">
+          <p className="mt-5 font-sans text-[18px] font-medium leading-snug text-[#4d4235] sm:text-[20px]">
             Small details. A more confident choice.
           </p>
-          <p className="mt-3 max-w-[540px] text-[16px] leading-[1.7] text-[#62574b] sm:text-[18px]">
+          <p className="mt-3 max-w-[620px] text-[16px] leading-[1.7] text-[#62574b] sm:text-[18px]">
             Every diamond has a story. Discover how natural inclusions affect its clarity, beauty and value — and find the right balance for you.
           </p>
 

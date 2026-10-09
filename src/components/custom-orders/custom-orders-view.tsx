@@ -22,6 +22,7 @@ interface Props {
   categories: { id: string; name: string }[];
   seller?: { storeName: string; slug: string } | null;
   sellerSlug?: string;
+  jewelers?: { id: string; storeName: string; slug: string; city?: string | null }[];
 }
 
 const RECENT_PIECES = [
@@ -69,6 +70,7 @@ export function CustomOrdersView({
   categories,
   seller,
   sellerSlug,
+  jewelers,
 }: Props) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
@@ -356,6 +358,7 @@ export function CustomOrdersView({
                 currency={currency}
                 sellerSlug={sellerSlug}
                 sellerName={seller?.storeName}
+                jewelers={jewelers}
               />
             ) : (
               <div className="text-center py-6">

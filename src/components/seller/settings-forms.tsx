@@ -141,7 +141,7 @@ export function RateCardEditor({ initial, currency }: { initial: Rate[]; currenc
           Save rate card
         </Button>
       </div>
-      <p className="mt-3 text-[12.5px] text-muted">Every service is insured and signature-tracked. Above the platform&rsquo;s high-value threshold, buyers only see your secure-courier options.</p>
+      <p className="mt-3 text-[12.5px] text-muted">Shipping terms, fulfillment timeframes and direct dispatch options displayed to prospective customers.</p>
     </div>
   );
 }
@@ -155,7 +155,7 @@ export function PlanPicker({ plans, current }: { plans: { code: string; name: st
         <div key={p.code} className={cn("flex flex-col rounded-[3px] border p-5", p.code === current ? "border-sage bg-sage-mist/40" : "border-line bg-ivory")}>
           <p className="caps text-ink">{p.name}</p>
           <p className="mt-2 text-[22px] font-semibold text-ink">{p.price}</p>
-          <p className="text-[13px] text-sage-deep">{p.commission} commission</p>
+          <p className="text-[13px] text-sage-deep">0% sales commission · Direct client sales</p>
           <ul className="mt-4 flex-1 space-y-1.5 text-[13px] text-ink-soft">
             {p.features.map((f) => (
               <li key={f}>✦ {f}</li>

@@ -14,7 +14,12 @@ class SuspendedAccount extends CredentialsSignin {
   code = "suspended";
 }
 
+class WrongLoginPortal extends CredentialsSignin {
+  code = "wrong_portal";
+}
+
 const credentialsSchema = z.object({
+  intent: z.enum(["buyer", "seller", "admin"]).default("buyer"),
   email: z.email().transform((v) => v.trim().toLowerCase()),
   password: z.string().min(1),
 });
@@ -28,7 +33,7 @@ export const oauthProviders = {
 const providers: Provider[] = [
   Credentials({
     name: "Email",
-    credentials: { email: {}, password: {} },
+    credentials: { email: {}, password: {}, intent: {} },
     async authorize(raw) {
       const parsed = credentialsSchema.safeParse(raw);
       if (!parsed.success) return null;
@@ -39,6 +44,12 @@ const providers: Provider[] = [
       const valid = await bcrypt.compare(parsed.data.password, user.passwordHash);
       if (!valid) return null;
       if (user.status !== "ACTIVE") throw new SuspendedAccount();
+      // Check the stored role after validating the password and before issuing a session.
+      if (parsed.data.intent === "admin") {
+        if (user.role !== "ADMIN") throw new WrongLoginPortal();
+      } else if (user.role !== "ADMIN" && (user.role === "SELLER") !== (parsed.data.intent === "seller")) {
+        throw new WrongLoginPortal();
+      }
       await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
       return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
     },

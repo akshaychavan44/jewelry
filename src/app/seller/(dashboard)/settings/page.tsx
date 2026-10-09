@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/account/page-header";
 import { StoreProfileForm } from "@/components/seller/onboarding-forms";
 import { PlanPicker, PoliciesForm, RateCardEditor } from "@/components/seller/settings-forms";
+import { PublicContactForm } from "@/components/seller/public-contact-form";
 import { Card, CardHeader } from "@/components/ui/display";
 import { bpsToPercent, formatMoney, toMajor } from "@/lib/money";
 import { num } from "@/lib/utils";
@@ -11,7 +12,7 @@ import { db } from "@/server/db";
 export default async function SellerSettings() {
   const { seller } = await requireSeller();
   const [full, rates, plans, settings] = await Promise.all([
-    db.sellerProfile.findUniqueOrThrow({ where: { id: seller.id }, include: { returnAddress: true, subscription: { include: { plan: true } } } }),
+    db.sellerProfile.findUniqueOrThrow({ where: { id: seller.id }, include: { locations: { orderBy: { id: "asc" } }, returnAddress: true, subscription: { include: { plan: true } } } }),
     db.shippingRate.findMany({ where: { sellerId: seller.id }, orderBy: [{ zone: "asc" }, { method: "asc" }] }),
     db.subscriptionPlan.findMany({ where: { isActive: true }, orderBy: { position: "asc" } }),
     db.platformSettings.findUniqueOrThrow({ where: { id: "platform" } }),
@@ -25,6 +26,20 @@ export default async function SellerSettings() {
           <CardHeader title="Store profile" description="Shown on your atelier profile, product showcases and the jeweler directory." />
           <div className="p-5">
             <StoreProfileForm store={{ ...full, returnAddress: full.returnAddress }} action={updateStoreProfileAction} submitLabel="Save profile" />
+          </div>
+        </Card>
+        <Card>
+          <CardHeader title="Public contact & showroom" description="Help customers call, WhatsApp or visit your business directly." />
+          <div className="p-5">
+            <PublicContactForm key={full.locations[0]?.id ?? "new"} initial={{
+              id: full.locations[0]?.id,
+              name: full.locations[0]?.name ?? full.storeName,
+              line1: full.locations[0]?.line1 ?? "",
+              city: full.locations[0]?.city ?? full.city ?? "",
+              phone: full.locations[0]?.phone ?? "",
+              hours: full.locations[0]?.hours ?? "",
+              appointmentOnly: full.locations[0]?.appointmentOnly ?? false,
+            }} />
           </div>
         </Card>
         <Card>

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/catalog/product-card";
 import { FollowStoreButton } from "@/components/catalog/save-buttons";
 import { TopRated, VerifiedJeweler } from "@/components/brand/trust";
+import { DirectContact } from "@/components/product/direct-contact";
 import { EmptyState, Monogram, Stars } from "@/components/ui/display";
 import { formatDate, formatResponseTime } from "@/lib/format";
 import { countryName } from "@/lib/regions";
@@ -116,9 +117,9 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
                   </p>
                 )}
                 {l.phone && (
-                  <p className="mt-2 flex items-center gap-2 text-[14px] text-ink-soft">
+                  <div className="mt-3 space-y-3"><p className="flex items-center gap-2 text-[14px] text-ink-soft">
                     <Phone className="size-4 shrink-0" strokeWidth={1.5} /> {l.phone}
-                  </p>
+                  </p><DirectContact phone={l.phone} title={`the collection at ${seller.storeName}`} /></div>
                 )}
               </div>
             ))}
@@ -130,11 +131,6 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
                   <a href={seller.website} target="_blank" rel="noopener noreferrer" className="underline hover:text-ink">
                     {seller.website.replace(/^https?:\/\//, "")}
                   </a>
-                </p>
-              )}
-              {seller.returnAddress?.phone && (
-                <p className="flex items-center gap-2">
-                  <Phone className="size-4 shrink-0 text-muted" /> {seller.returnAddress.phone}
                 </p>
               )}
               <p className="text-[13px] text-muted">

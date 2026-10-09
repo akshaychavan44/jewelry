@@ -2,7 +2,7 @@ import { AlertTriangle, Check, Clock, ShieldOff } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BusinessForm, PayoutForm, StoreProfileForm, SubmitApplicationForm } from "@/components/seller/onboarding-forms";
+import { BusinessForm, StoreProfileForm, SubmitApplicationForm } from "@/components/seller/onboarding-forms";
 import { formatDate } from "@/lib/format";
 import { countryName } from "@/lib/regions";
 import { cn, firstParam, humanize, type SearchParams } from "@/lib/utils";
@@ -12,11 +12,13 @@ import type { KycDocumentType } from "@/generated/prisma/enums";
 
 export const metadata: Metadata = { title: "Open your store" };
 
-const STEPS = ["Store profile", "Business verification", "Payouts", "Review & submit"];
+const STEPS = ["Store profile", "Business verification", "Review & submit"];
 
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const user = await requireUser("/seller/onboarding");
-  if (user.role !== "SELLER") redirect("/sell");
+  if (user.role === "BUYER") {
+    await db.user.update({ where: { id: user.id }, data: { role: "SELLER" } });
+  }
   const seller = await db.sellerProfile.findUnique({
     where: { userId: user.id },
     include: {
@@ -64,8 +66,12 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
 
   const requested = Number(firstParam((await searchParams).step));
   const maxStep = seller?.onboardingStep ?? 1;
-  const step = Number.isFinite(requested) && requested >= 1 && requested <= Math.min(4, maxStep) ? requested : Math.min(4, maxStep);
-  const uploaded = Object.fromEntries((seller?.kycDocuments ?? []).map((d) => [d.type, d.file.fileName])) as Partial<Record<KycDocumentType, string>>;
+  const step = Number.isFinite(requested) && requested >= 1 && requested <= Math.min(3, maxStep) ? requested : Math.min(3, maxStep);
+  const uploaded = Object.fromEntries(
+    (seller?.kycDocuments ?? [])
+      .filter((d) => d.file?.fileName)
+      .map((d) => [d.type, d.file.fileName])
+  ) as Partial<Record<KycDocumentType, string>>;
 
   return (
     <>
@@ -82,7 +88,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
         </div>
       )}
 
-      <ol className="mt-10 mb-10 grid grid-cols-4 gap-2" aria-label="Application steps">
+      <ol className="mt-10 mb-10 grid grid-cols-3 gap-2" aria-label="Application steps">
         {STEPS.map((label, i) => {
           const n = i + 1;
           const reachable = n <= maxStep;
@@ -114,24 +120,14 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
         )}
         {step === 2 && seller && <BusinessForm values={seller} uploaded={uploaded} />}
         {step === 3 && seller && (
-          <PayoutForm
-            stripeConnected={!!seller.stripeAccountId}
-            stripeLive={!!process.env.STRIPE_SECRET_KEY}
-            bank={seller.bankAccountLast4 ? { holder: seller.bankAccountHolder, bankName: seller.bankName, last4: seller.bankAccountLast4 } : null}
-            country={seller.country}
-            currency={seller.defaultCurrency}
-          />
-        )}
-        {step === 4 && seller && (
           <div className="space-y-8">
             <dl className="grid gap-x-8 gap-y-4 text-[14px] sm:grid-cols-2">
               {[
-                ["Store", `${seller.storeName} · ${seller.city}, ${countryName(seller.country)}`],
+                ["Store", `${seller.storeName}${seller.city ? ` · ${seller.city}` : ""}${seller.country ? `, ${countryName(seller.country)}` : ""}`],
                 ["Currency", seller.defaultCurrency],
                 ["Business", `${seller.legalBusinessName ?? "—"} (${seller.businessType ? humanize(seller.businessType) : "—"})`],
                 ["Registration", seller.registrationNumber ?? "—"],
                 ["Tax ID", seller.taxIdLast4 ? `••••${seller.taxIdLast4}` : "—"],
-                ["Payouts", seller.payoutMethod === "STRIPE_CONNECT" ? "Stripe Connect" : seller.bankAccountLast4 ? `${seller.bankName} ••••${seller.bankAccountLast4}` : "Not set"],
                 ["Documents", Object.keys(uploaded).map((t) => humanize(t)).join(", ") || "None uploaded"],
                 ["Return address", seller.returnAddress ? `${seller.returnAddress.line1}, ${seller.returnAddress.city}` : "—"],
               ].map(([label, value]) => (

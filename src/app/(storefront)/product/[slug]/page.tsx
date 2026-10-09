@@ -71,7 +71,13 @@ export default async function ProductPage({ params }: Props) {
   ];
 
   return (
-    <div className="pb-8">
+    <div className="pb-24 md:pb-8">
+      {product.status !== "SOLD" && user?.id !== product.seller.user.id && (
+        <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-4 border-t border-line bg-porcelain/95 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
+          <p className="min-w-0 flex-1 truncate text-[12px] text-ink-soft">Listed by {product.seller.storeName}</p>
+          <a href="#product-contact" className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-ink px-5 text-[13px] font-medium text-ivory">Contact jeweler</a>
+        </div>
+      )}
       <div className="shell pt-6">
         <nav aria-label="Breadcrumb" className="mb-6 text-[12.5px] text-muted">
           <ol className="flex flex-wrap items-center gap-1.5">
@@ -91,7 +97,7 @@ export default async function ProductPage({ params }: Props) {
           </ol>
         </nav>
 
-        <div className="grid gap-10 lg:grid-cols-[1.12fr_1fr] lg:gap-16">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-14">
           <div className="space-y-6 lg:sticky lg:top-28 lg:self-start">
             <ProductGallery images={product.images.map((i) => ({ url: i.url, alt: i.alt, angle: i.angle }))} title={product.title} />
             {product.widthMm && product.heightMm && <ScaleVisualizer widthMm={product.widthMm} heightMm={product.heightMm} depthMm={product.depthMm} label={product.title} />}
@@ -109,12 +115,17 @@ export default async function ProductPage({ params }: Props) {
               </a>
             )}
 
+            <div className="mt-5">
+              <VendorCard seller={product.seller} following={!!following} />
+            </div>
+
             <div className="mt-8">
               <PurchasePanel
                 product={{
                   id: product.id,
                   title: product.title,
                   sellerName: product.seller.storeName,
+                  publicPhone: product.seller.locations.find((location) => location.phone?.trim())?.phone ?? null,
                   sizingMode: product.sizingMode,
                   ringSizeMin: product.ringSizeMin,
                   ringSizeMax: product.ringSizeMax,
@@ -140,10 +151,9 @@ export default async function ProductPage({ params }: Props) {
 
             <div className="mt-10 space-y-6">
               <CertificateList certificates={certificates} metal={product.primaryMetal} />
-              <VendorCard seller={product.seller} following={!!following} />
             </div>
 
-            <Accordion type="multiple" defaultValue={["description"]} className="mt-8 border-t border-line">
+            <Accordion type="multiple" defaultValue={["description", "details"]} className="mt-8 border-t border-line">
               <AccordionItem value="description">
                 <AccordionTrigger>Description</AccordionTrigger>
                 <AccordionContent>
@@ -169,7 +179,7 @@ export default async function ProductPage({ params }: Props) {
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="shipping">
-                <AccordionTrigger>Direct Atelier Policies &amp; Inquiries</AccordionTrigger>
+                <AccordionTrigger>How to buy &amp; delivery</AccordionTrigger>
                 <AccordionContent className="space-y-3 text-[14px] leading-relaxed text-ink-soft">
                   <p>
                     This piece is crafted and listed directly by <strong>{product.seller.storeName}</strong> located in {product.seller.city ? `${product.seller.city}, ` : ""}{countryName(product.shipsFromCountry)}.

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const HELP_PAGES = [
-  { href: "/help/shipping-returns", label: "Shipping & returns" },
   { href: "/help/terms", label: "Terms of use" },
   { href: "/help/privacy", label: "Privacy" },
 ];

@@ -57,7 +57,7 @@ export const footerNav = [
     title: "For Jewelers",
     links: [
       { label: "List your business", href: "/sell" },
-      { label: "Jeweler login", href: "/login" },
+      { label: "Jeweler login", href: "/jeweler/login" },
       { label: "Direct policies", href: "/help/shipping-returns" },
       { label: "Terms of service", href: "/help/terms" },
     ],

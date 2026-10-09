@@ -7,6 +7,7 @@ import { Field, FormError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/menus";
 import { SubmitButton } from "@/components/ui/submit-button";
+import type { LoginIntent } from "@/lib/auth-routing";
 import { type AuthFormState, loginAction, registerAction } from "@/server/actions/auth";
 import { oauthSignIn } from "@/server/actions/oauth";
 
@@ -59,10 +60,11 @@ export function Divider({ label = "or with email" }: { label?: string }) {
   );
 }
 
-export function LoginForm({ callbackUrl, initialError }: { callbackUrl?: string; initialError?: string }) {
+export function LoginForm({ intent, callbackUrl, initialError }: { intent: LoginIntent; callbackUrl?: string; initialError?: string }) {
   const [state, action] = useActionState<AuthFormState, FormData>(loginAction, { error: initialError });
   return (
     <form action={action} className="space-y-5" noValidate>
+      <input type="hidden" name="intent" value={intent} />
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
       <FormError message={state.error} />
       <Field label="Email" htmlFor="email" error={state.fieldErrors?.email}>
@@ -72,7 +74,7 @@ export function LoginForm({ callbackUrl, initialError }: { callbackUrl?: string;
         <Input id="password" name="password" type="password" autoComplete="current-password" required aria-invalid={!!state.fieldErrors?.password} />
       </Field>
       <SubmitButton size="lg" className="w-full" pendingLabel="Signing in…">
-        Sign in
+        {intent === "seller" ? "Sign in as a jeweler" : intent === "admin" ? "Sign in to Admin Console" : "Sign in as a customer"}
       </SubmitButton>
     </form>
   );

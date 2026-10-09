@@ -160,7 +160,7 @@ export function MobileFilters({ groups, activeCount }: { groups: FilterGroups; a
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="subtle" size="sm" className="lg:hidden">
+        <Button variant="subtle" size="sm" className="rounded-full px-4">
           <SlidersHorizontal /> Filters{activeCount > 0 && ` (${activeCount})`}
         </Button>
       </DialogTrigger>

@@ -11,8 +11,8 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   return (
     <ListingPage
       searchParams={await searchParams}
-      title="All jewelry"
-      description="Every piece from every verified jeweler on Loupe — filter by metal, stone, certification and where it ships."
+      title="Find a piece that feels like you."
+      description="Discover fine jewelry from independent ateliers. Meet the maker, explore the details, and make it yours directly with the jeweler."
       basePath="/shop"
       breadcrumbs={[{ href: "/shop", label: "Shop" }]}
     />

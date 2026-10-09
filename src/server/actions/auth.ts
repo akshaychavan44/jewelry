@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import type { Role } from "@/generated/prisma/enums";
+import { homeFor, safeCallback, type LoginIntent } from "@/lib/auth-routing";
 import { signIn, signOut, unstable_update } from "@/server/auth";
 import { requireUser } from "@/server/auth/session";
 import { db } from "@/server/db";
@@ -12,24 +12,20 @@ import { mergeGuestCart } from "@/server/services/cart";
 
 export type AuthFormState = { error?: string; fieldErrors?: Record<string, string[] | undefined> };
 
-/** Only allow same-origin relative redirects. */
-function safeCallback(value: FormDataEntryValue | null) {
-  const v = typeof value === "string" ? value : "";
-  return v.startsWith("/") && !v.startsWith("//") ? v : null;
-}
-
-function homeFor(role: Role) {
-  return role === "ADMIN" ? "/admin" : role === "SELLER" ? "/seller" : "/account";
-}
-
-async function signInWithPassword(email: string, password: string): Promise<string | null> {
+async function signInWithPassword(email: string, password: string, intent: LoginIntent): Promise<string | null> {
   try {
-    const url = await signIn("credentials", { email, password, redirect: false });
+    const url = await signIn("credentials", { email, password, intent, redirect: false });
     if (typeof url === "string" && url.includes("error=")) return "Email or password is incorrect.";
     return null;
   } catch (error) {
     if (error instanceof AuthError) {
       const code = (error as AuthError & { code?: string }).code;
+      if (code === "wrong_portal") {
+        if (intent === "admin") return "This account does not have administrator privileges.";
+        return intent === "seller"
+          ? "This is a customer account. Choose Customer login to sign in."
+          : "This is a jeweler account. Choose Jeweler login to sign in.";
+      }
       if (code === "suspended") return "This account has been suspended. Contact concierge@loupe.example for help.";
       return "Email or password is incorrect.";
     }
@@ -38,15 +34,16 @@ async function signInWithPassword(email: string, password: string): Promise<stri
 }
 
 const loginSchema = z.object({
+  intent: z.enum(["buyer", "seller", "admin"]).default("buyer"),
   email: z.email("Enter a valid email address.").transform((v) => v.trim().toLowerCase()),
   password: z.string().min(1, "Enter your password."),
 });
 
 export async function loginAction(_: AuthFormState, formData: FormData): Promise<AuthFormState> {
-  const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
+  const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password"), intent: formData.get("intent") });
   if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
 
-  const error = await signInWithPassword(parsed.data.email, parsed.data.password);
+  const error = await signInWithPassword(parsed.data.email, parsed.data.password, parsed.data.intent);
   if (error) return { error };
 
   const user = await db.user.findFirst({ where: { email: { equals: parsed.data.email, mode: "insensitive" } }, select: { id: true, role: true } });
@@ -90,7 +87,7 @@ export async function registerAction(_: AuthFormState, formData: FormData): Prom
     },
   });
 
-  const error = await signInWithPassword(email, password);
+  const error = await signInWithPassword(email, password, intent);
   if (error) return { error };
   await mergeGuestCart(user.id);
   redirect(intent === "seller" ? "/seller/onboarding" : (safeCallback(formData.get("callbackUrl")) ?? "/account"));
@@ -103,7 +100,6 @@ export async function signOutAction() {
 /** An existing buyer opens a store: upgrade the role and refresh the session. */
 export async function becomeSellerAction() {
   const user = await requireUser("/sell");
-  if (user.role === "ADMIN") redirect("/admin");
   if (user.role !== "SELLER") {
     await db.user.update({ where: { id: user.id }, data: { role: "SELLER" } });
     await unstable_update({});

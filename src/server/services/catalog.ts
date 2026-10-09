@@ -56,7 +56,9 @@ export const cardSelect = {
   ratingAverage: true,
   ratingCount: true,
   seller: { select: { storeName: true, slug: true } },
-  images: { orderBy: { position: "asc" }, take: 2, select: { url: true, alt: true } },
+  // Relations are batched by the adapter; a nested limit would apply to the
+  // entire batch. toCard picks the first two images for each product instead.
+  images: { orderBy: { position: "asc" }, select: { url: true, alt: true } },
 } satisfies Prisma.ProductSelect;
 
 type CardRow = Prisma.ProductGetPayload<{ select: typeof cardSelect }>;

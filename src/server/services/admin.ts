@@ -241,7 +241,13 @@ export async function getKycReview(sellerId: string) {
 
   const latest = seller.kycSubmissions[0] ?? null;
   const docs = latest?.documents ?? [];
-  const missing = settings.requiredKycDocuments.filter((t) => !docs.some((d) => d.type === t));
+  const rawReqDocs = settings.requiredKycDocuments;
+  const requiredDocs: KycDocumentType[] = Array.isArray(rawReqDocs)
+    ? rawReqDocs
+    : typeof rawReqDocs === "string"
+      ? ((rawReqDocs as string).replace(/[{}"']/g, "").split(",").map((s) => s.trim()).filter(Boolean) as KycDocumentType[])
+      : ["TAX_REGISTRATION", "BUSINESS_LICENSE", "GOVERNMENT_ID"];
+  const missing = requiredDocs.filter((t) => !docs.some((d) => d.type === t));
   const payoutReady = seller.payoutMethod === "STRIPE_CONNECT" ? seller.stripeDetailsSubmitted : !!seller.bankAccountLast4;
 
   const checks = [

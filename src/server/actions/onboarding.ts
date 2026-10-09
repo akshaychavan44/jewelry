@@ -16,7 +16,7 @@ export type StepState = { ok?: boolean; message?: string; fieldErrors?: Record<s
 
 async function sellerUser() {
   const user = await assertUser();
-  if (user.role !== "SELLER") throw new OnboardingError("Open a jeweler account first.");
+  if (user.role !== "SELLER" && user.role !== "ADMIN") throw new OnboardingError("Open a jeweler account first.");
   return user;
 }
 
@@ -113,15 +113,44 @@ export async function saveBusinessAction(_: StepState, formData: FormData): Prom
     const raw = Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string"));
     const parsed = businessSchema.safeParse(raw);
     if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
-    const existing = await db.sellerProfile.findUnique({ where: { userId: user.id }, select: { taxIdLast4: true } });
-    if (!parsed.data.taxId && !existing?.taxIdLast4) return { fieldErrors: { taxId: ["Enter your tax ID (VAT, GST, EIN…)."] } };
+
+    const existing = await db.sellerProfile.findUnique({
+      where: { userId: user.id },
+      include: { kycDocuments: { where: { submissionId: null } } },
+    });
+
+    if (!parsed.data.taxId && !existing?.taxIdLast4) {
+      return { fieldErrors: { taxId: ["Enter your tax ID (VAT, GST, EIN…)."] } };
+    }
+
+    const docTax = file(formData.get("doc_TAX_REGISTRATION"));
+    const docBiz = file(formData.get("doc_BUSINESS_LICENSE"));
+    const docId = file(formData.get("doc_GOVERNMENT_ID"));
+    const docProof = file(formData.get("doc_PROOF_OF_ADDRESS"));
+
+    const hasTaxDoc = !!docTax || (existing?.kycDocuments.some((d) => d.type === "TAX_REGISTRATION") ?? false);
+    const hasBizDoc = !!docBiz || (existing?.kycDocuments.some((d) => d.type === "BUSINESS_LICENSE") ?? false);
+    const hasIdDoc = !!docId || (existing?.kycDocuments.some((d) => d.type === "GOVERNMENT_ID") ?? false);
+
+    const docErrors: Record<string, string[]> = {};
+    if (!hasTaxDoc) docErrors.doc_TAX_REGISTRATION = ["Tax registration document is required."];
+    if (!hasBizDoc) docErrors.doc_BUSINESS_LICENSE = ["Business licence / registration is required."];
+    if (!hasIdDoc) docErrors.doc_GOVERNMENT_ID = ["Identity document is required."];
+
+    if (Object.keys(docErrors).length > 0) {
+      return {
+        fieldErrors: docErrors,
+        message: "Please upload all required verification documents to continue.",
+      };
+    }
+
     await saveBusinessVerification(user.id, {
       ...parsed.data,
       documents: {
-        TAX_REGISTRATION: file(formData.get("doc_TAX_REGISTRATION")),
-        BUSINESS_LICENSE: file(formData.get("doc_BUSINESS_LICENSE")),
-        GOVERNMENT_ID: file(formData.get("doc_GOVERNMENT_ID")),
-        PROOF_OF_ADDRESS: file(formData.get("doc_PROOF_OF_ADDRESS")),
+        TAX_REGISTRATION: docTax,
+        BUSINESS_LICENSE: docBiz,
+        GOVERNMENT_ID: docId,
+        PROOF_OF_ADDRESS: docProof,
       },
     });
   } catch (error) {

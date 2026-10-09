@@ -77,7 +77,7 @@ export function HeaderClient({ categories, currency, user }: Props) {
   const isShopActive = pathname.startsWith("/shop") || pathname.startsWith("/categories");
   const isJewelersActive = pathname.startsWith("/jewelers");
   const isCustomOrdersActive = pathname.startsWith("/custom-orders");
-  const isGuidesActive = pathname.startsWith("/guides");
+  const isGuidesActive = pathname.startsWith("/guides") || pathname.startsWith("/styling");
   const isSellActive = pathname.startsWith("/sell");
 
   return (
@@ -138,7 +138,10 @@ export function HeaderClient({ categories, currency, user }: Props) {
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
           <AccountMenu user={user} />
-          <Link href="/sell" className={cn(navLink, "hidden md:inline-flex items-center gap-1.5 rounded-[2px] border border-ink/30 px-3 py-1 text-[11.5px] hover:border-ink hover:bg-ink hover:text-ivory transition-all")}>
+          <Link
+            href={user ? "/seller/onboarding" : "/register?intent=seller"}
+            className={cn(styles.listBusinessButton, "caps hidden md:inline-flex")}
+          >
             List Your Business
           </Link>
         </div>
@@ -154,9 +157,9 @@ export function HeaderClient({ categories, currency, user }: Props) {
           megaOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-1 opacity-0",
         )}
       >
-        <div className="shell grid grid-cols-[repeat(4,minmax(0,1fr))_1.3fr] gap-10 py-10">
+        <div className="shell flex gap-12 py-10">
           {categories.slice(0, 4).map((c) => (
-            <div key={c.slug}>
+            <div key={c.slug} className="w-48 shrink-0">
               <Link href={`/shop/${c.slug}`} className="font-display text-[22px] text-ink hover:text-sage-deep">
                 {c.name}
               </Link>
@@ -176,16 +179,6 @@ export function HeaderClient({ categories, currency, user }: Props) {
               </ul>
             </div>
           ))}
-          <div className="grid grid-cols-2 gap-4">
-            {categories.slice(4).map((c) => (
-              <Link key={c.slug} href={`/shop/${c.slug}`} className="group">
-                <div className="relative aspect-[4/5] overflow-hidden bg-sand">
-                  {c.imageUrl && <Image src={c.imageUrl} alt="" fill sizes="200px" className="object-cover transition-transform duration-700 ease-silk group-hover:scale-[1.03]" />}
-                </div>
-                <p className="caps mt-3 text-ink">{c.name}</p>
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -227,8 +220,10 @@ export function HeaderClient({ categories, currency, user }: Props) {
                 ["/jewelers", "Our jewelers"],
                 ["/custom-orders", "Custom orders"],
                 ["/guides", "Guides"],
+                ["/styling", "Styling inspiration"],
                 ["/sell", "List your business"],
-                [user ? "/account" : "/login", user ? "My account" : "Sign in"],
+                [user ? "/account" : "/login", user ? "My account" : "Customer login"],
+                ...(!user ? [["/jeweler/login", "Jeweler login"]] : []),
               ].map(([href, label]) => (
                 <li key={href}>
                   <Link href={href} className="caps text-ink">
@@ -280,15 +275,21 @@ function CurrencyMenu({ currency, className }: { currency: CurrencyCode; classNa
 function AccountMenu({ user }: { user: Props["user"] }) {
   if (!user) {
     return (
-      <Link href="/login" className={cn(navLink, "inline-flex items-center gap-2 p-2 md:p-0")} aria-label="Sign in">
-        <span className="hidden lg:inline">Sign in</span>
-        <User className="size-[18px] md:size-4" strokeWidth={1.6} />
-      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger className={cn(navLink, "inline-flex h-11 items-center gap-2 outline-none")} aria-label="Sign in options">
+          <span className="hidden lg:inline">Sign in</span>
+          <User className="size-[18px] md:size-4" strokeWidth={1.6} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-60">
+          <DropdownMenuItem asChild><Link href="/login"><User /> Customer login</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link href="/jeweler/login"><Store /> Jeweler login</Link></DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     );
   }
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn(navLink, "inline-flex items-center gap-2 p-2 outline-none md:p-0")} aria-label="Account menu">
+      <DropdownMenuTrigger className={cn(navLink, "inline-flex h-11 items-center gap-2 outline-none")} aria-label="Account menu">
         <span className="hidden lg:inline">Account</span>
         <User className="size-[18px] md:size-4" strokeWidth={1.6} />
       </DropdownMenuTrigger>

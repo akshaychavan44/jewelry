@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { Role } from "@/generated/prisma/enums";
+import { loginForDestination } from "@/lib/auth-routing";
 import { db } from "@/server/db";
 import { auth } from "./index";
 
@@ -35,7 +36,7 @@ export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>
 
 export async function requireUser(callbackUrl?: string) {
   const user = await getCurrentUser();
-  if (!user) redirect(`/login${callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`);
+  if (!user) redirect(loginForDestination(callbackUrl));
   return user;
 }
 

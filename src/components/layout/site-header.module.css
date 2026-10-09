@@ -63,7 +63,8 @@
 .navItem:hover::after,
 .navItem:focus-visible::after,
 .navItem[aria-expanded='true']::after,
-.navItem[data-active='true']::after {
+.navItem[data-active='true']::after,
+.navItem[data-state='open']::after {
   transform: scaleX(1);
 }
 
@@ -133,13 +134,27 @@
   color: #896536;
 }
 
-.utilities > .navItem:last-child {
-  padding-left: 16px;
-  border-left: 1px solid #e8e2d6;
+.listBusinessButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid rgba(47, 36, 26, 0.28);
+  border-radius: 2px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: #231d17;
+  background: transparent;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
-.utilities > .navItem:last-child::after {
-  left: 16px;
+.listBusinessButton:hover {
+  border-color: #231d17;
+  background: #231d17;
+  color: #faf9f5;
 }
 
 @media (min-width: 1280px) {
@@ -171,12 +186,12 @@
     min-width: 40px;
     justify-content: center;
   }
-  .utilities > .navItem:last-child {
-    padding-left: 10px;
-  }
 }
 
 @media (max-width: 767px) {
+  .listBusinessButton {
+    display: none;
+  }
   .bar {
     padding-inline: 14px;
   }
@@ -189,10 +204,6 @@
   }
   .utilities {
     gap: 2px;
-  }
-  .utilities > .navItem:last-child {
-    padding-left: 4px;
-    border-left: 0;
   }
 }
 

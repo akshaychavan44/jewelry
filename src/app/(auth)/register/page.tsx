@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/components/auth/forms";
+import { loginHref, safeCallback } from "@/lib/auth-routing";
 import { firstParam, type SearchParams } from "@/lib/utils";
 import { getCurrentUser } from "@/server/auth/session";
 
@@ -10,9 +11,9 @@ export const metadata: Metadata = { title: "Create an account" };
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const intent = firstParam(sp.intent) === "seller" ? "seller" : "buyer";
-  const callbackUrl = firstParam(sp.callbackUrl);
+  const callbackUrl = safeCallback(firstParam(sp.callbackUrl));
   const user = await getCurrentUser();
-  if (user) redirect(intent === "seller" ? "/sell" : "/account");
+  if (user) redirect(intent === "seller" ? "/seller/onboarding" : "/account");
 
   return (
     <>
@@ -21,13 +22,13 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
       <p className="mt-1.5 mb-6 text-[14.5px] text-ink-soft">
         {intent === "seller"
           ? "Start with your personal account. Next, you'll set up your store and verify your business — it takes about ten minutes."
-          : "Save pieces, make offers, follow jewelers and track insured deliveries."}
+          : "Shop jewelry, send inquiries, save pieces and track your orders."}
       </p>
       <RegisterForm intent={intent} callbackUrl={callbackUrl} />
       <p className="mt-6 text-center text-[14px] text-ink-soft">
         Already have an account?{" "}
-        <Link href="/login" className="text-ink underline underline-offset-4">
-          Sign in
+        <Link href={loginHref(intent, callbackUrl)} className="text-ink underline underline-offset-4">
+          {intent === "seller" ? "Jeweler login" : "Customer login"}
         </Link>
       </p>
     </>

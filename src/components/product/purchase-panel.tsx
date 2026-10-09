@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { WishlistButton } from "@/components/catalog/save-buttons";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Field } from "@/components/ui/field";
+import { Field, FormError } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/menus";
 import type { EngravingStyle, MetalColor, MetalType, SizingMode } from "@/generated/prisma/enums";
@@ -18,11 +18,13 @@ import { askJewelerAction, makeOfferAction } from "@/server/actions/product";
 import type { VariantOption } from "@/server/services/product";
 import { EngravingField } from "./engraving";
 import { RingSizePicker } from "./ring-size";
+import { DirectContact } from "./direct-contact";
 
 export type PanelProduct = {
   id: string;
   title: string;
   sellerName: string;
+  publicPhone?: string | null;
   sizingMode: SizingMode;
   ringSizeMin: number | null;
   ringSizeMax: number | null;
@@ -57,6 +59,7 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sa
   const [inquiryOpen, setInquiryOpen] = useState(false);
   const [inquiryMessage, setInquiryMessage] = useState("");
   const [inquiryPending, startInquiry] = useTransition();
+  const [inquiryError, setInquiryError] = useState<string>();
 
   const axes = useMemo(
     () => ({
@@ -71,11 +74,11 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sa
   const initial = variants.find((v) => v.available) ?? variants[0];
 
   const [sel, setSel] = useState({
-    id: initial.id,
-    metal: metalKey(initial),
-    carat: initial.caratWeight,
-    ringSize: initial.ringSize,
-    chain: initial.chainLengthMm,
+    id: initial?.id ?? "",
+    metal: initial ? metalKey(initial) : "",
+    carat: initial?.caratWeight ?? null,
+    ringSize: initial?.ringSize ?? null,
+    chain: initial?.chainLengthMm ?? null,
   });
   const [madeToSize, setMadeToSize] = useState<number | null>(null);
   const [engraving, setEngraving] = useState({ enabled: false, text: "", style: "SCRIPT" as EngravingStyle });
@@ -122,22 +125,24 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sa
       ? `${inquiryMessage.trim()}\n\n[Piece Inquired: ${product.title} · Specs: ${specsList.join(", ")}]`
       : inquiryMessage.trim();
 
+    setInquiryError(undefined);
     startInquiry(async () => {
-      const res = await askJewelerAction({ productId: product.id, message: fullMessage });
-      if (res.ok) {
-        toast.success(res.message, { action: res.href ? { label: "Open conversation", onClick: () => router.push(res.href!) } : undefined });
-        setInquiryMessage("");
-        setInquiryOpen(false);
-      } else {
-        toast.error(res.message);
-      }
+      try {
+        const res = await askJewelerAction({ productId: product.id, message: fullMessage.slice(0, 2000) });
+        if (res.ok) {
+          toast.success(res.message, { action: res.href ? { label: "Open conversation", onClick: () => router.push(res.href!) } : undefined });
+          setInquiryMessage("");
+          setInquiryOpen(false);
+        } else if (res.requiresAuth) router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+        else setInquiryError(res.message);
+      } catch { setInquiryError("Unable to send your inquiry right now. Please try again."); }
     });
   };
 
   return (
     <div className="space-y-6">
       {/* Price */}
-      <div className="flex items-end justify-between gap-4 border-b border-line pb-6">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
         <div>
           {product.sold ? (
             <p className="font-display text-[30px] text-muted">Sold / Archived</p>
@@ -152,7 +157,7 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sa
             <p className="text-[15px] text-muted">Choose an available configuration</p>
           )}
           <p className="mt-2 text-[12.5px] text-muted">
-            Direct atelier price · Contact jeweler directly for purchases, payment &amp; delivery.
+            Listed price · Confirm the final price and availability with the jeweler.
           </p>
         </div>
         {variant?.breakdown && (
@@ -299,11 +304,21 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sa
             </p>
           ) : (
             <>
+              <div id="product-contact" className="scroll-mt-28 space-y-3 rounded-xl border border-line bg-porcelain p-4 sm:p-5">
+                <p className="text-[15px] font-medium text-ink">Interested in this piece?</p>
+                <p className="text-[13px] leading-relaxed text-ink-soft">Speak directly with {product.sellerName} about availability, sizing, payment and delivery.</p>
+                <DirectContact phone={product.publicPhone} title={product.title} />
+              </div>
               <div className="flex gap-2">
                 <Dialog open={inquiryOpen} onOpenChange={setInquiryOpen}>
                   <DialogTrigger asChild>
-                    <Button size="lg" className="flex-1">
-                      <Send className="mr-2 size-4" /> Inquire About This Piece
+                    <Button size="lg" variant="subtle" className="min-w-0 flex-1 normal-case tracking-normal" onClick={(event) => {
+                      if (!signedIn) {
+                        event.preventDefault();
+                        router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+                      }
+                    }}>
+                      <Send className="size-4" /> Send inquiry
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -315,13 +330,16 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sa
                     </DialogHeader>
                     <form onSubmit={handleSendInquiry}>
                       <DialogBody className="space-y-4">
+                        <FormError message={inquiryError} />
                         <Field label="Your message or question" htmlFor="inquiry-message">
                           <Textarea
                             id="inquiry-message"
                             value={inquiryMessage}
                             onChange={(e) => setInquiryMessage(e.target.value)}
                             required
-                            maxLength={2000}
+                            maxLength={1800}
+                            minLength={5}
+                            disabled={inquiryPending}
                             placeholder="I'm interested in this piece. Could we arrange a viewing, discuss delivery to my city, or confirm details?"
                             className="min-h-28"
                           />
@@ -344,17 +362,10 @@ export function PurchasePanel({ product, variants, engravingFee, resizingFee, sa
                 <WishlistButton productId={product.id} saved={saved} variant="full" className="w-auto px-4" />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div>
                 {product.acceptsOffers && variant?.available ? (
                   <OfferDialog product={product} variant={variant} signedIn={signedIn} loginHref={`/login?callbackUrl=${encodeURIComponent(pathname)}`} />
                 ) : null}
-                <AskDialog
-                  productId={product.id}
-                  sellerName={product.sellerName}
-                  signedIn={signedIn}
-                  loginHref={`/login?callbackUrl=${encodeURIComponent(pathname)}`}
-                  className={product.acceptsOffers ? "" : "col-span-2"}
-                />
               </div>
             </>
           )}
@@ -481,62 +492,6 @@ function OfferDialog({ product, variant, signedIn, loginHref }: { product: Panel
             </Button>
             <Button type="submit" pending={pending} disabled={!amount}>
               Send offer
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function AskDialog({ productId, sellerName, signedIn, loginHref, className }: { productId: string; sellerName: string; signedIn: boolean; loginHref: string; className?: string }) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [pending, start] = useTransition();
-  if (!signedIn) {
-    return (
-      <Button variant="subtle" size="lg" className={className} onClick={() => router.push(loginHref)}>
-        <MessageCircle /> Direct question
-      </Button>
-    );
-  }
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="subtle" size="lg" className={className}>
-          <MessageCircle /> Direct question
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Message {sellerName}</DialogTitle>
-          <DialogDescription>Questions about sizing, stones, provenance or showroom appointments go straight to the jeweler.</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            start(async () => {
-              const res = await askJewelerAction({ productId, message });
-              if (res.ok) {
-                toast.success(res.message, { action: res.href ? { label: "Open conversation", onClick: () => router.push(res.href!) } : undefined });
-                setMessage("");
-                setOpen(false);
-              } else toast.error(res.message);
-            });
-          }}
-        >
-          <DialogBody>
-            <Field label="Your message" htmlFor="ask-message">
-              <Textarea id="ask-message" value={message} onChange={(e) => setMessage(e.target.value)} required maxLength={2000} placeholder="Is this available to view in your showroom? Can the band width be customized?" />
-            </Field>
-          </DialogBody>
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" pending={pending}>
-              Send message
             </Button>
           </DialogFooter>
         </form>

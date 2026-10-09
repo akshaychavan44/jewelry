@@ -143,16 +143,22 @@ export async function markStripeConnected(userId: string, accountId: string, dem
   });
 }
 
-/** Step 4 — freezes a snapshot and queues the application for review. */
+/** Step 3 — freezes a snapshot and queues the application for review. */
 export async function submitApplication(userId: string) {
   const seller = await db.sellerProfile.findUnique({ where: { userId }, include: { kycDocuments: { where: { submissionId: null } } } });
   if (!seller) throw new OnboardingError("Set up your store profile first.");
   if (!EDITABLE.includes(seller.verificationStatus as (typeof EDITABLE)[number])) throw new OnboardingError("Your application has already been submitted.");
-  const settings = await db.platformSettings.findUniqueOrThrow({ where: { id: "platform" } });
-  const missing = settings.requiredKycDocuments.filter((t) => !seller.kycDocuments.some((d) => d.type === t));
+  const settings = await db.platformSettings.findUnique({ where: { id: "platform" } });
+  const rawDocs = settings?.requiredKycDocuments;
+  const requiredDocs: KycDocumentType[] = Array.isArray(rawDocs)
+    ? rawDocs
+    : typeof rawDocs === "string"
+      ? ((rawDocs as string).replace(/[{}"']/g, "").split(",").map((s) => s.trim()).filter(Boolean) as KycDocumentType[])
+      : ["TAX_REGISTRATION", "BUSINESS_LICENSE", "GOVERNMENT_ID"];
+  const docsList = seller.kycDocuments ?? [];
+  const missing = requiredDocs.filter((t) => !docsList.some((d) => d.type === t));
   if (missing.length) throw new OnboardingError(`Upload the required documents: ${missing.map((m) => m.toLowerCase().replace(/_/g, " ")).join(", ")}.`);
   if (!seller.legalBusinessName || !seller.registrationNumber) throw new OnboardingError("Complete your business details.");
-  if (!seller.payoutMethod) throw new OnboardingError("Choose how you'd like to be paid.");
 
   const now = new Date();
   await db.$transaction(async (tx) => {
@@ -168,7 +174,7 @@ export async function submitApplication(userId: string) {
           registrationNumber: seller.registrationNumber,
           taxIdLast4: seller.taxIdLast4,
           country: seller.country,
-          payoutMethod: seller.payoutMethod,
+          payoutMethod: seller.payoutMethod ?? null,
           website: seller.website,
         },
       },

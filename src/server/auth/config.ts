@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { loginForDestination } from "@/lib/auth-routing";
 
 // Edge-safe base configuration shared by the proxy (route protection) and the
 // full server config. No database access here — the proxy only decodes the JWT.
@@ -15,9 +16,10 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const path = nextUrl.pathname;
+      if (path === "/admin/login") return true;
       if (!PROTECTED_PREFIXES.some((p) => matches(path, p))) return true;
       const user = auth?.user;
-      if (!user) return false; // → /login?callbackUrl=…
+      if (!user) return Response.redirect(new URL(loginForDestination(`${path}${nextUrl.search}`), nextUrl));
 
       if (matches(path, "/admin") && user.role !== "ADMIN") {
         return Response.redirect(new URL("/", nextUrl));

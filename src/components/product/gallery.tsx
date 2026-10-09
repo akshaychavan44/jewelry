@@ -17,21 +17,22 @@ export function ProductGallery({ images, title }: { images: GalleryImage[]; titl
   const current = images[index] ?? images[0];
   const step = (d: number) => setIndex((i) => (i + d + images.length) % images.length);
 
+  if (!current) return <div className="grid aspect-square place-items-center rounded-xl bg-parchment p-8 text-center text-[14px] text-muted">Photographs for this piece are coming soon.</div>;
+
   return (
     <div className="flex flex-col-reverse gap-3 md:flex-row md:gap-4">
       {images.length > 1 && (
-        <div className="scrollbar-none flex gap-2.5 overflow-x-auto md:w-20 md:flex-col md:overflow-visible" role="tablist" aria-label="Views">
+        <div className="scrollbar-none flex gap-2.5 overflow-x-auto md:w-16 md:flex-col md:overflow-visible" aria-label="Product photographs">
           {images.map((img, i) => (
             <button
               key={img.url}
               type="button"
-              role="tab"
-              aria-selected={i === index}
+              aria-pressed={i === index}
               aria-label={img.angle ?? `View ${i + 1}`}
               onClick={() => setIndex(i)}
-              className={cn("relative aspect-square w-16 shrink-0 overflow-hidden bg-sand transition md:w-full", i === index ? "ring-1 ring-ink ring-offset-2 ring-offset-ivory" : "opacity-70 hover:opacity-100")}
+              className={cn("relative aspect-square w-16 shrink-0 overflow-hidden rounded-lg bg-parchment transition md:w-full", i === index ? "ring-1 ring-ink ring-offset-2 ring-offset-ivory" : "opacity-70 hover:opacity-100")}
             >
-              <Image src={img.url} alt="" fill sizes="80px" className="object-cover" />
+              <Image src={img.url} alt="" fill sizes="80px" className="object-contain" />
             </button>
           ))}
         </div>
@@ -43,18 +44,19 @@ export function ProductGallery({ images, title }: { images: GalleryImage[]; titl
           src={current.url}
           alt={current.alt ?? title}
           priority
+          fit="contain"
           showLens="hover"
           zoom={2.3}
           lensSize={230}
           sizes="(min-width: 1024px) 50vw, 100vw"
-          className="aspect-square bg-sand md:aspect-[4/5]"
+          className="aspect-square rounded-xl bg-[#f6f5f3]"
         />
         {current.angle && <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-ivory/85 px-3 py-1 text-[11px] tracking-[0.12em] text-ink-soft uppercase backdrop-blur-sm">{current.angle}</span>}
         <button type="button" onClick={() => setOpen(true)} className="absolute right-3 bottom-3 grid size-10 place-items-center rounded-full bg-ivory/85 text-ink backdrop-blur-sm transition hover:bg-ivory" aria-label="Open full-screen viewer">
           <Expand className="size-4" strokeWidth={1.6} />
         </button>
         {images.length > 1 && (
-          <div className="absolute inset-y-0 right-0 left-0 flex items-center justify-between px-2 md:hidden">
+          <div className="pointer-events-none absolute inset-y-0 right-0 left-0 flex items-center justify-between px-2 md:hidden [&_button]:pointer-events-auto">
             <button type="button" onClick={() => step(-1)} className="grid size-9 place-items-center rounded-full bg-ivory/80" aria-label="Previous view">
               <ChevronLeft className="size-4" />
             </button>
@@ -76,7 +78,7 @@ export function ProductGallery({ images, title }: { images: GalleryImage[]; titl
         <DialogContent size="xl" className="h-[calc(100dvh-2rem)] max-w-[min(1200px,calc(100vw-2rem))] bg-porcelain">
           <DialogTitle className="sr-only">{title}</DialogTitle>
           <div
-            className={cn("relative flex-1 overflow-hidden", zoomed ? "cursor-zoom-out" : "cursor-zoom-in")}
+            className={cn("relative min-h-0 flex-1 overflow-hidden", zoomed ? "cursor-zoom-out" : "cursor-zoom-in")}
             onClick={(e) => {
               const r = e.currentTarget.getBoundingClientRect();
               setOrigin(`${((e.clientX - r.left) / r.width) * 100}% ${((e.clientY - r.top) / r.height) * 100}%`);

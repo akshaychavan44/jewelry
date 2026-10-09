@@ -22,6 +22,7 @@ export function LoupeImage({
   sizes = "100vw",
   className,
   imageClassName,
+  fit = "cover",
   showLens = "always",
   caption,
   children,
@@ -35,6 +36,7 @@ export function LoupeImage({
   sizes?: string;
   className?: string;
   imageClassName?: string;
+  fit?: "cover" | "contain";
   /** "always" rests the lens on `focus`; "hover" only shows it under a mouse. */
   showLens?: "always" | "hover";
   caption?: React.ReactNode;
@@ -79,7 +81,7 @@ export function LoupeImage({
 
   // Geometry of the object-cover rendered image inside the box.
   const ready = box.w > 0 && natural.w > 0;
-  const scale = ready ? Math.max(box.w / natural.w, box.h / natural.h) : 1;
+  const scale = ready ? (fit === "contain" ? Math.min : Math.max)(box.w / natural.w, box.h / natural.h) : 1;
   const rw = natural.w * scale;
   const rh = natural.h * scale;
   const ox = (box.w - rw) / 2;
@@ -99,7 +101,7 @@ export function LoupeImage({
         fill
         priority={priority}
         sizes={sizes}
-        className={cn("object-cover", imageClassName)}
+        className={cn(fit === "contain" ? "object-contain" : "object-cover", imageClassName)}
         onLoad={(e) => {
           const img = e.currentTarget;
           setNatural({ w: img.naturalWidth, h: img.naturalHeight });

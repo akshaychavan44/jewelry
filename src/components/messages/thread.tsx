@@ -99,7 +99,7 @@ export function MessageThread({ conversationId, messages, meId, readOnly }: { co
               }
             }}
             placeholder="Write a message… (Enter to send, Shift+Enter for a new line)"
-            className="max-h-40 min-h-11 flex-1 resize-y rounded-[2px] border border-line bg-ivory px-3.5 py-2.5 text-[14px] outline-none focus:border-sage"
+            className="max-h-40 min-h-11 flex-1 resize-none rounded-[2px] border border-line bg-ivory px-3.5 py-2.5 text-[14px] outline-none focus:border-sage"
           />
           <Button type="submit" size="icon" pending={pending} aria-label="Send message">
             {!pending && <SendHorizontal />}

@@ -8,6 +8,7 @@ import type { ProductDetail } from "@/server/services/product";
 
 export function ReviewsSection({ detail }: { detail: ProductDetail }) {
   const { rating, reviews, photoReviews } = detail;
+  const visiblePhotoReviews = photoReviews.filter((review) => review.photoUrls[0]?.trim());
   const total = Math.max(1, rating.count);
   return (
     <section id="reviews" aria-labelledby="reviews-heading" className="scroll-mt-28">
@@ -43,13 +44,13 @@ export function ReviewsSection({ detail }: { detail: ProductDetail }) {
             <p className="text-[14px] text-ink-soft">No reviews for this piece yet. Reviews on Loupe can only be left by buyers who received the piece.</p>
           )}
 
-          {photoReviews.length > 0 && (
+          {visiblePhotoReviews.length > 0 && (
             <div className="mt-8">
               <p className="caps mb-3 flex items-center gap-2 text-ink">
                 <Camera className="size-3.5" /> From buyers of this jeweler
               </p>
               <div className="grid grid-cols-4 gap-1.5">
-                {photoReviews.slice(0, 8).map((r) => (
+                {visiblePhotoReviews.slice(0, 8).map((r) => (
                   <Link key={r.id} href={`/product/${r.product.slug}#reviews`} className="relative aspect-square overflow-hidden bg-sand" title={r.title ?? r.product.title}>
                     <Image src={r.photoUrls[0]} alt={`Buyer photo · ${r.product.title}`} fill sizes="70px" className="object-cover" />
                   </Link>
@@ -70,7 +71,7 @@ export function ReviewsSection({ detail }: { detail: ProductDetail }) {
               <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-soft">{r.body}</p>
               {r.photoUrls.length > 0 && (
                 <div className="mt-3 flex gap-2">
-                  {r.photoUrls.map((url) => (
+                  {r.photoUrls.filter((url) => url.trim()).map((url) => (
                     <div key={url} className="relative size-20 overflow-hidden bg-sand">
                       <Image src={url} alt="Buyer photo" fill sizes="80px" className="object-cover" />
                     </div>

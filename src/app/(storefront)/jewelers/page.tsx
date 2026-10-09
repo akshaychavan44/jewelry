@@ -17,35 +17,15 @@ export const metadata: Metadata = {
   description: "Browse verified independent ateliers, goldsmiths, and heritage jewelry houses — connect directly with the makers.",
 };
 
-const categories = [
-  { slug: "", name: "All Jewelers" },
-  { slug: "rings", name: "Rings" },
-  { slug: "necklaces", name: "Necklaces" },
-  { slug: "earrings", name: "Earrings" },
-  { slug: "bracelets", name: "Bracelets" },
-  { slug: "high-jewelry", name: "High Jewelry" },
-  { slug: "custom-orders", name: "Custom Orders" },
-];
-
 export default async function JewelersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const q = firstParam(sp.q)?.trim() || undefined;
   const country = firstParam(sp.country) || undefined;
-  const categoryParam = firstParam(sp.category);
-  const category = categories.some((item) => item.slug === categoryParam) ? categoryParam : undefined;
   const sortParam = firstParam(sp.sort) as DirectorySort | undefined;
   const sort = sortParam && sortParam in DIRECTORY_SORTS ? sortParam : "rating";
-  const [{ sellers, countries }, user] = await Promise.all([listJewelers({ q, country, sort, category }), getCurrentUser()]);
+  const [{ sellers, countries }, user] = await Promise.all([listJewelers({ q, country, sort }), getCurrentUser()]);
   const favorites = user ? await db.favoriteStore.findMany({ where: { userId: user.id }, select: { sellerId: true } }) : [];
   const savedSellerIds = new Set(favorites.map((favorite) => favorite.sellerId));
-  const categoryHref = (slug: string) => {
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (country) params.set("country", country);
-    if (sort !== "rating") params.set("sort", sort);
-    if (slug) params.set("category", slug);
-    return "/jewelers" + (params.size ? "?" + params.toString() : "");
-  };
 
   return (
     <div className={styles.page}>
@@ -62,7 +42,6 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
             <Search size={20} strokeWidth={1.5} aria-hidden />
             <label className="sr-only" htmlFor="jeweler-query">Search jewelers</label>
             <input id="jeweler-query" name="q" defaultValue={q} placeholder="Search jewelers, locations or styles…" />
-            {category && <input type="hidden" name="category" value={category} />}
             <button type="submit" aria-label="Search jewelers"><Search size={20} strokeWidth={1.5} /></button>
           </form>
           <ul className={styles.assurances} aria-label="Our directory assurances">
@@ -76,9 +55,10 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
 
       <section className={styles.directory} aria-label="Find your jeweler">
         <div className={styles.toolbar}>
-          <nav className={styles.categories} aria-label="Jeweler categories">
-            {categories.map((item) => <Link key={item.slug} href={categoryHref(item.slug)} aria-current={(category ?? "") === item.slug ? "page" : undefined}>{item.name}</Link>)}
-          </nav>
+          <div className={styles.results}>
+            <p>{pluralize(sellers.length, "verified jeweler")}{q && <> for &ldquo;{q}&rdquo;</>}</p>
+            {(q || country) && <Link href="/jewelers">Clear filters <span aria-hidden="true">×</span></Link>}
+          </div>
           <div className={styles.filters}>
             <DirectorySelect name="country" value={country ?? ""}>
               <option value="">All locations</option>
@@ -88,10 +68,6 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
               {Object.entries(DIRECTORY_SORTS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             </DirectorySelect>
           </div>
-        </div>
-        <div className={styles.results}>
-          <p>{pluralize(sellers.length, "verified jeweler")}{q && <> for &ldquo;{q}&rdquo;</>}</p>
-          {(q || country || category) && <Link href="/jewelers">Clear filters <span aria-hidden="true">×</span></Link>}
         </div>
         {sellers.length === 0 ? <EmptyState title="No jewelers match that search">Try another location or <Link href="/jewelers" className="underline underline-offset-4">browse all jewelers</Link>.</EmptyState> : (
           <div className={styles.grid}>

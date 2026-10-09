@@ -78,7 +78,7 @@ export const getProductDetail = cache(async (slug: string, ctx: PriceContext, vi
       certificates: { where: { status: { not: "REJECTED" } }, orderBy: { createdAt: "asc" } },
       seller: {
         include: {
-          locations: true,
+          locations: { orderBy: { id: "asc" } },
           shippingRates: { where: { isActive: true } },
           user: { select: { id: true } },
         },

@@ -10,7 +10,7 @@ export function Input({ className, type = "text", ...props }: React.ComponentPro
 }
 
 export function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
-  return <textarea className={cn(fieldBase, "min-h-28 py-3 leading-relaxed", className)} {...props} />;
+  return <textarea className={cn(fieldBase, "min-h-28 py-3 leading-relaxed resize-none", className)} {...props} />;
 }
 
 export function NativeSelect({ className, children, ...props }: React.ComponentProps<"select">) {

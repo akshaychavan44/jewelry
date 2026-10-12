@@ -8,6 +8,8 @@ import { db } from "@/server/db";
 import { saveUpload, UploadError } from "@/server/services/storage";
 import { setInquiryStatus } from "@/server/services/jeweler-directory";
 import type { StepState } from "./onboarding";
+import { notify } from "@/server/services/messaging";
+import { INQUIRY_LABELS } from "@/lib/jeweler-profile";
 
 function refresh(slug: string) {
   revalidatePath("/seller", "layout");
@@ -67,7 +69,14 @@ export async function updateInquiryStatusAction(requestId: string, status: strin
   try {
     const { seller } = await assertSeller();
     const value = z.enum(["NEW", "CONTACTED", "CLOSED"]).parse(status);
-    if (!await setInquiryStatus(seller.id, requestId, value)) return { ok: false, message: "Request not found." };
+    const request = await db.customRequest.findFirst({ where: { id: requestId, sellerId: seller.id }, select: { buyerId: true, title: true } });
+    if (!request) return { ok: false, message: "Request not found." };
+    const updated = await db.$transaction(async tx => {
+      if (!await setInquiryStatus(seller.id, requestId, value, tx)) return false;
+      await notify(tx, request.buyerId, "CUSTOM_REQUEST", `Custom request: ${INQUIRY_LABELS[value]}`, request.title, "/account/custom-requests");
+      return true;
+    });
+    if (!updated) return { ok: false, message: "Request not found." };
     revalidatePath("/seller", "layout");
     revalidatePath("/account/custom-requests");
     return { ok: true, message: "Request status updated." };

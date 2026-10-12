@@ -1,3 +1,5 @@
+import { getDirectorySettings } from "@/server/services/jeweler-directory";
+import { publicProductWhere } from "@/server/services/catalog";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,7 +38,7 @@ async function viewerCountry() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await db.product.findUnique({ where: { slug: (await params).slug }, select: { title: true, shortDescription: true, images: { take: 1, select: { url: true } } } });
+  const product = await db.product.findFirst({ where: { ...(await publicProductWhere("either")), slug: (await params).slug }, select: { title: true, shortDescription: true, images: { take: 1, select: { url: true } } } });
   if (!product) return {};
   return { title: product.title, description: product.shortDescription ?? undefined, openGraph: { images: product.images.map((i) => i.url) } };
 }
@@ -55,6 +57,7 @@ export default async function ProductPage({ params }: Props) {
   ]);
   await track("PRODUCT_VIEW", { userId: user?.id, productId: product.id, sellerId: product.sellerId, path: `/product/${slug}` });
 
+  const contacts = await getDirectorySettings(product.sellerId);
   const category = product.category;
   const specs: [string, string | null | undefined][] = [
     ["Metal", metalLabel(product.primaryMetal, product.metalColor)],
@@ -125,6 +128,7 @@ export default async function ProductPage({ params }: Props) {
                   id: product.id,
                   title: product.title,
                   sellerName: product.seller.storeName,
+                sellerSlug: product.seller.slug, publicWhatsapp: contacts.whatsapp, publicEmail: contacts.publicEmail,
                   publicPhone: product.seller.locations.find((location) => location.phone?.trim())?.phone ?? null,
                   sizingMode: product.sizingMode,
                   ringSizeMin: product.ringSizeMin,
@@ -188,7 +192,7 @@ export default async function ProductPage({ params }: Props) {
                     Payment methods, insured dispatch options, custom sizing, delivery estimates, return policies, and warranties are handled directly between you and the jeweler.
                   </p>
                   <p>
-                    Use the inquiry buttons above or visit the jeweler&rsquo;s profile to message them directly, ask technical questions, or book an appointment.
+                    Use the contact buttons above or visit the jeweler&rsquo;s profile to message them directly, ask technical questions, or book an appointment.
                   </p>
                 </AccordionContent>
               </AccordionItem>

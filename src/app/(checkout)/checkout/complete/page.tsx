@@ -1,6 +1,2 @@
 import { redirect } from "next/navigation";
-
-export default function CheckoutCompletePage() {
-  redirect("/account/messages");
-}
-
+export default function RetiredPage() { redirect("/jewelers"); }

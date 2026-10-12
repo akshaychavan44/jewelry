@@ -6,19 +6,19 @@ import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/display";
 import { requireUser } from "@/server/auth/session";
 import { db } from "@/server/db";
-import { cardSelect, toCard } from "@/server/services/catalog";
+import { cardSelect, toCard, publicProductWhere } from "@/server/services/catalog";
 import { getPriceContext } from "@/server/services/currency";
 
 export default async function WishlistPage() {
   const user = await requireUser("/account/wishlist");
   const [ctx, items] = await Promise.all([
     getPriceContext(),
-    db.wishlistItem.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, include: { product: { select: cardSelect } } }),
+    db.wishlistItem.findMany({ where: { userId: user.id, product: await publicProductWhere("either") }, orderBy: { createdAt: "desc" }, include: { product: { select: cardSelect } } }),
   ]);
   const products = items.map((i) => toCard(i.product, ctx));
   return (
     <>
-      <PageHeader title="Wishlist" description="Pieces you've saved. One-of-a-kind items can sell at any time." />
+      <PageHeader title="Saved Jewelry" description="Your favorite pieces. Hidden or unavailable listings are omitted." />
       {products.length === 0 ? (
         <EmptyState icon={<Heart />} title="Nothing saved yet" action={<Link href="/shop" className={buttonVariants()}>Browse jewelry</Link>}>
           Tap the heart on any piece to keep it here.

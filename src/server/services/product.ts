@@ -87,7 +87,7 @@ export const getProductDetail = cache(async (slug: string, ctx: PriceContext, vi
   });
   if (!product || product.deletedAt) return null;
   const visible = (product.status === "ACTIVE" || product.status === "SOLD") && product.seller.verificationStatus === "APPROVED";
-  if (!visible) return null;
+  if (!visible || !await db.product.findFirst({ where: { ...(await publicProductWhere("either")), id: product.id, status: product.status } })) return null;
 
   const variants: VariantOption[] = await Promise.all(
     product.variants.map(async (v) => {
@@ -196,8 +196,8 @@ export type ProductDetail = NonNullable<Awaited<ReturnType<typeof getProductDeta
 
 export async function getRelatedProducts(productId: string, sellerId: string, categoryId: string, ctx: PriceContext) {
   const [fromSeller, similar] = await Promise.all([
-    db.product.findMany({ where: { ...publicProductWhere, sellerId, id: { not: productId } }, orderBy: [{ isFeatured: "desc" }, { salesCount: "desc" }], take: 4, select: cardSelect }),
-    db.product.findMany({ where: { ...publicProductWhere, categoryId, sellerId: { not: sellerId }, id: { not: productId } }, orderBy: [{ ratingAverage: "desc" }, { salesCount: "desc" }], take: 4, select: cardSelect }),
+    db.product.findMany({ where: { ...(await publicProductWhere()), sellerId, id: { not: productId } }, orderBy: [{ isFeatured: "desc" }, { salesCount: "desc" }], take: 4, select: cardSelect }),
+    db.product.findMany({ where: { ...(await publicProductWhere()), categoryId, sellerId: { not: sellerId }, id: { not: productId } }, orderBy: [{ ratingAverage: "desc" }, { salesCount: "desc" }], take: 4, select: cardSelect }),
   ]);
   return { fromSeller: fromSeller.map((p) => toCard(p, ctx)), similar: similar.map((p) => toCard(p, ctx)) };
 }

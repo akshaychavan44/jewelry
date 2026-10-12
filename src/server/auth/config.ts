@@ -33,12 +33,14 @@ export const authConfig = {
       if (user) {
         token.uid = user.id;
         token.role = user.role ?? "BUYER";
+        token.signedInAt = Date.now();
       }
       return token;
     },
     session({ session, token }) {
       if (typeof token.uid === "string") session.user.id = token.uid;
       if (typeof token.role === "string") session.user.role = token.role as any;
+      session.signedInAt = typeof token.signedInAt === "number" ? token.signedInAt : undefined;
       return session;
     },
   },

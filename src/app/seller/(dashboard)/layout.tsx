@@ -11,7 +11,10 @@ export default async function SellerLayout({ children }: { children: React.React
   const { seller } = await requireSeller();
   const [settings, requests] = await Promise.all([getDirectorySettings(seller.id), inquiryStatusesForSeller(seller.id)]);
   const items: NavItem[] = [
+    { href: "/seller", label: "Overview", icon: "overview", exact: true },
     { href: "/seller/settings", label: "My Business", icon: "stores" },
+    { href: "/seller/products", label: "My Jewelry", icon: "products" },
+    { href: "/seller/reviews", label: "Reviews", icon: "reviews" },
     { href: "/seller/custom-requests", label: "Custom Requests", icon: "custom", badge: requests.filter((r) => r.inquiryStatus === "NEW" && r.status !== "CANCELLED").length },
     { href: "/seller/account", label: "Account", icon: "settings" },
   ];

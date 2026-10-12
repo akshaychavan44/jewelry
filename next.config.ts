@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       // Certificate PDFs and KYC documents are uploaded through server actions.
-      bodySizeLimit: "12mb",
+      bodySizeLimit: "26mb",
     },
   },
 };

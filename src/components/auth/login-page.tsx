@@ -34,7 +34,7 @@ export async function LoginPageContent({ intent, searchParams }: { intent: Login
       <p className="eyebrow mb-2">{seller ? "For jewelers" : "For customers"}</p>
       <h1 className="font-display text-[32px] leading-tight text-ink sm:text-[38px]">{seller ? "Welcome to your store" : "Welcome back"}</h1>
       <p className="mt-1.5 mb-6 text-[14.5px] text-ink-soft">
-        {seller ? "Manage your jewelry, respond to inquiries and keep track of customer orders." : "Find your next piece, make an inquiry and keep track of your purchases."}
+        {seller ? "Manage your business, showcase jewelry, and review custom requests and customer feedback." : "Discover jewelers, send custom requests, and save your favorite pieces."}
       </p>
       <LoginForm key={intent} intent={intent} callbackUrl={callbackUrl} initialError={error ? (ERRORS[error] ?? "Sign-in failed. Please try again.") : undefined} />
       <p className="mt-6 text-center text-[14px] text-ink-soft">

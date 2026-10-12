@@ -92,7 +92,7 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
                     </div>
                     {products.length > 0 ? <div className={styles.products}>
                       {products.slice(0, 3).map((product) => <Link key={product.slug} href={"/product/" + product.slug} className={styles.product} aria-label={product.title}><Image src={product.images[0].url} alt={product.title} fill sizes="90px" className="object-cover" /></Link>)}
-                      {products.length > 3 && <Link href={href} className={styles.more} aria-label={"View all pieces from " + seller.storeName}>{seller.activeListingCount > 3 ? "+" + (seller.activeListingCount - 3) : <ArrowUpRight size={19} />}</Link>}
+                      {products.length > 3 && <Link href={`/shop?seller=${seller.slug}`} className={styles.more} aria-label={"Browse more jewelry from " + seller.storeName}>{seller.activeListingCount > 3 ? "+" + (seller.activeListingCount - 3) : <ArrowUpRight size={19} />}</Link>}
                     </div> : <p className={styles.tagline}>{seller.tagline ?? "Discover the story behind the atelier."}</p>}
                     <Link href={href} className={styles.collectionLink}>View atelier &amp; collection <ArrowRight size={15} /></Link>
                   </div>

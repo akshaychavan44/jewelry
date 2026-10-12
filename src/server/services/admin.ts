@@ -67,8 +67,8 @@ export async function getPlatformAnalytics(rangeDays: number) {
       FROM "AnalyticsEvent"
       WHERE "createdAt" >= ${prevSince} AND "sessionId" IS NOT NULL
       GROUP BY 1 ORDER BY 1`,
-    db.product.count({ where: publicProductWhere }),
-    db.productVariant.aggregate({ where: { isActive: true, product: publicProductWhere }, _sum: { stockQuantity: true } }),
+    db.product.count({ where: await publicProductWhere() }),
+    db.productVariant.aggregate({ where: { isActive: true, product: await publicProductWhere() }, _sum: { stockQuantity: true } }),
     db.sellerProfile.groupBy({ by: ["verificationStatus"], _count: { _all: true } }),
     db.sellerProfile.count({ where: { verificationStatus: "APPROVED", products: { some: { status: "ACTIVE", deletedAt: null } } } }),
     db.sellerProfile.count({ where: { approvedAt: { gte: since } } }),

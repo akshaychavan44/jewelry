@@ -1,5 +1,7 @@
 "use server";
 
+import { getDirectorySettings } from "@/server/services/jeweler-directory";
+import { saveUpload, UploadError } from "@/server/services/storage";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -73,17 +75,19 @@ export async function createServiceRequestAction(input: { orderItemId: string; t
 }
 
 const customSchema = z.object({
-  title: z.string().trim().min(6, "Give your request a short title."),
-  description: z.string().trim().min(40, "Describe the piece in a little more detail (40+ characters)."),
+  title: z.string().trim().min(6, "Give your request a short title.").max(150),
+  description: z.string().trim().min(40, "Describe the piece in a little more detail (40+ characters).").max(5000),
   categoryId: z.string().optional(),
-  sellerSlug: z.string().optional(),
+  sellerSlug: z.string().min(1, "Choose a jeweler."),
+  contactPhone: z.string().trim().regex(/^\+?[\d ()-]{7,25}$/, "Enter a valid contact phone number.").refine(v => v.replace(/\D/g, "").length >= 7 && v.replace(/\D/g, "").length <= 15, "Include a valid number with country code."),
+  contactWhatsapp: z.string().trim().regex(/^\+?[\d ()-]{7,25}$/, "Enter a valid WhatsApp number.").refine(v => v.replace(/\D/g, "").length >= 7 && v.replace(/\D/g, "").length <= 15, "Include a valid WhatsApp number with country code.").optional(),
   budgetMin: z.coerce.number().nonnegative().optional(),
   budgetMax: z.coerce.number().positive("Enter a maximum budget."),
   currency: z.string().refine((c) => isCurrency(c), "Choose a currency."),
   metal: z.enum(MetalType).optional(),
   gemstone: z.enum(Gemstone).optional(),
   ringSize: z.coerce.number().min(3).max(13).optional(),
-  neededBy: z.string().optional(),
+  neededBy: z.string().refine(s => /^\d{4}-\d{2}-\d{2}$/.test(s) && Number.isFinite(Date.parse(s)) && s >= new Date().toISOString().slice(0,10), "Choose a future date.").optional(),
 });
 
 export type CustomRequestState = { ok?: boolean; message?: string; fieldErrors?: Record<string, string[] | undefined> };
@@ -94,33 +98,33 @@ export async function createCustomRequestAction(_: CustomRequestState, formData:
   const parsed = customSchema.safeParse(raw);
   if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   const d = parsed.data;
-  const seller = d.sellerSlug ? await db.sellerProfile.findUnique({ where: { slug: d.sellerSlug }, select: { id: true, userId: true, acceptsCustomOrders: true, verificationStatus: true } }) : null;
-  if (seller && (!seller.acceptsCustomOrders || seller.verificationStatus !== "APPROVED")) return { message: "That jeweler isn't taking commissions right now." };
+  const seller = d.sellerSlug ? await db.sellerProfile.findUnique({ where: { slug: d.sellerSlug }, select: { id: true, userId: true, storeName: true, acceptsCustomOrders: true, verificationStatus: true } }) : null;
+  if (!seller || !seller.acceptsCustomOrders || seller.verificationStatus !== "APPROVED" || (await getDirectorySettings(seller.id)).isPaused) return { message: "Choose a jeweler who is currently accepting custom requests." };
+  if (seller.userId === user.id) return { message: "You cannot send a request to your own business." };
+  if (d.categoryId && !await db.category.findFirst({ where: { id: d.categoryId, isActive: true }, select: { id: true } })) return { fieldErrors: { categoryId: ["Choose an available category."] } };
+  if (d.budgetMin !== undefined && d.budgetMin > d.budgetMax) return { fieldErrors: { budgetMax: ["Maximum budget must be at least the minimum."] } };
+  const files = formData.getAll("references").filter((f): f is File => f instanceof File && f.size > 0);
+  if (files.length > 3 || files.reduce((n, f) => n + f.size, 0) > 24 * 1024 * 1024) return { message: "Attach up to three reference images, totaling no more than 24 MB." };
+  try {
+    const urls: string[] = [];
+    for (const file of files) { const asset = await saveUpload(file, "CUSTOM_REQUEST_REFERENCE", user.id, user.id); urls.push(`/api/files/${asset.id}`); }
+    const request = await db.$transaction(async tx => {
+      const r = await tx.customRequest.create({ data: {
+        reference: `CR-${randomCode(6)}`, buyerId: user.id, sellerId: seller.id,
+        categoryId: d.categoryId || null, title: d.title, description: d.description,
+        budgetMinMinor: d.budgetMin !== undefined ? toMinor(d.budgetMin, d.currency) : null,
+        budgetMaxMinor: toMinor(d.budgetMax, d.currency), currency: d.currency,
+        metalPreference: d.metal, gemstonePreference: d.gemstone, ringSize: d.ringSize,
+        neededBy: d.neededBy ? new Date(d.neededBy) : null, referenceImageUrls: urls,
+      } });
+      await tx.$executeRaw`UPDATE "CustomRequest" SET "contactPhone" = ${d.contactPhone}, "contactWhatsapp" = ${(d.contactWhatsapp ?? "").replace(/\D/g, "")} WHERE "id" = ${r.id}`;
+      await notify(tx, seller.userId, "CUSTOM_REQUEST", "New custom request", r.title, "/seller/custom-requests");
+      return r;
+    });
+    revalidatePath("/account/custom-requests"); revalidatePath("/seller", "layout");
+    return { ok: true, message: `Request ${request.reference} sent to ${seller.storeName}. They will contact you separately. Track it in My Custom Requests.` };
+  } catch (error) { if (error instanceof UploadError) return { message: error.message }; throw error; }
 
-  const request = await db.customRequest.create({
-    data: {
-      reference: `CR-${randomCode(6)}`,
-      buyerId: user.id,
-      sellerId: seller?.id,
-      categoryId: d.categoryId || null,
-      title: d.title,
-      description: d.description,
-      budgetMinMinor: d.budgetMin !== undefined ? toMinor(d.budgetMin, d.currency) : null,
-      budgetMaxMinor: toMinor(d.budgetMax, d.currency),
-      currency: d.currency,
-      metalPreference: d.metal,
-      gemstonePreference: d.gemstone,
-      ringSize: d.ringSize,
-      neededBy: d.neededBy ? new Date(d.neededBy) : null,
-    },
-  });
-  // Directed requests notify one jeweler; open requests go to jewelers who take commissions.
-  const recipients = seller
-    ? [seller.userId]
-    : (await db.sellerProfile.findMany({ where: { verificationStatus: "APPROVED", acceptsCustomOrders: true }, select: { userId: true }, take: 25 })).map((s) => s.userId);
-  for (const id of recipients) await notify(db, id, "CUSTOM_REQUEST", "New commission request", request.title, "/seller/custom-requests");
-  revalidatePath("/account/custom-requests");
-  return { ok: true, message: `Request ${request.reference} sent. Quotes usually arrive within 48 hours.` };
 }
 
 export async function acceptQuoteAction(quoteId: string) {

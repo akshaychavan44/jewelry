@@ -15,9 +15,10 @@ import {
 import { CustomRequestForm } from "@/components/account/custom-request-form";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { CurrentUser } from "@/server/auth/session";
 
 interface Props {
-  user: any;
+  user: CurrentUser | null;
   currency: string;
   categories: { id: string; name: string }[];
   seller?: { storeName: string; slug: string } | null;
@@ -341,14 +342,14 @@ export function CustomOrdersView({
           <div className="rounded-[16px] border border-[#ede3d2] bg-white p-6 md:p-12 shadow-[0_10px_40px_-15px_rgba(47,44,40,0.08)]">
             <div className="mb-8 text-center">
               <span className="caps text-[11px] font-semibold tracking-[0.2em] text-[#8c6738]">
-                STEP 1 OF 3
+                YOUR DESIGN, YOUR JEWELER
               </span>
               <h2 className="mt-2 font-display text-[32px] text-ink md:text-[42px]">
                 Your Custom Brief
               </h2>
               <p className="mt-2 text-[14.5px] text-ink/75 max-w-lg mx-auto">
-                Tell us about the piece you envision. Verified jewelers will review
-                your brief and send personalized quotes and timelines.
+                Choose a jeweler and describe your idea. Only your selected jeweler receives
+                the brief and contacts you separately to discuss it.
               </p>
             </div>
 

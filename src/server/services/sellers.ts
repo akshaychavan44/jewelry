@@ -4,6 +4,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/server/db";
 import { cardSelect, publicProductWhere, toCard } from "./catalog";
 import type { PriceContext } from "./currency";
+import { getDirectorySettings, getPausedSellerIds } from "./jeweler-directory";
 
 export const DIRECTORY_SORTS = {
   rating: "Highest rated",
@@ -21,18 +22,19 @@ export async function listJewelers(opts: { q?: string; country?: string; sort?: 
       select: { id: true, children: { select: { id: true } } },
     });
     const products = category ? await db.product.findMany({
-      where: { status: "ACTIVE", deletedAt: null, categoryId: { in: [category.id, ...category.children.map((child) => child.id)] } },
+      where: { ...(await publicProductWhere()), categoryId: { in: [category.id, ...category.children.map((child) => child.id)] } },
       select: { sellerId: true },
     }) : [];
     categorySellerIds = [...new Set(products.map((product) => product.sellerId))];
   }
   const where: Prisma.SellerProfileWhereInput = {
     verificationStatus: "APPROVED",
+    id: { notIn: await getPausedSellerIds() },
     ...(opts.country ? { country: opts.country } : {}),
     ...(opts.category === "custom-orders"
       ? { acceptsCustomOrders: true }
       : categorySellerIds
-        ? { id: { in: categorySellerIds } }
+        ? { id: { in: categorySellerIds, notIn: await getPausedSellerIds() } }
         : {}),
     ...(opts.q
       ? {
@@ -78,14 +80,15 @@ export async function listJewelers(opts: { q?: string; country?: string; sort?: 
         locations: { select: { city: true, appointmentOnly: true } },
       },
     }),
-    db.sellerProfile.groupBy({ by: ["country"], where: { verificationStatus: "APPROVED" }, _count: { _all: true } }),
+    db.sellerProfile.groupBy({ by: ["country"], where: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } }, _count: { _all: true } }),
   ]);
   // The database adapter applies nested `take` across all parents. Fetch each
   // store's preview separately so every card receives its own four pieces.
   const directorySellers = await Promise.all(sellers.map(async (seller) => ({
     ...seller,
+    activeListingCount: await db.product.count({ where: { ...(await publicProductWhere()), sellerId: seller.id } }),
     products: await db.product.findMany({
-      where: { sellerId: seller.id, status: "ACTIVE", deletedAt: null },
+      where: { ...(await publicProductWhere()), sellerId: seller.id },
       orderBy: [{ isFeatured: "desc" }, { ratingCount: "desc" }],
       take: 4,
       select: { slug: true, title: true, images: { orderBy: { position: "asc" }, select: { url: true } } },
@@ -104,15 +107,16 @@ export async function getStorefront(slug: string, ctx: PriceContext, categorySlu
     },
   });
   if (!seller || seller.verificationStatus !== "APPROVED") return null;
+  if ((await getDirectorySettings(seller.id)).isPaused) return null;
 
   const categoryFilter = categorySlug ? { category: { OR: [{ slug: categorySlug }, { parent: { slug: categorySlug } }] } } : {};
   const [listings, sold, reviews, categories] = await Promise.all([
     db.product.findMany({
-      where: { ...publicProductWhere, sellerId: seller.id, ...categoryFilter },
+      where: { ...(await publicProductWhere("profile")), sellerId: seller.id, ...categoryFilter },
       orderBy: [{ isFeatured: "desc" }, { featuredRank: { sort: "asc", nulls: "last" } }, { publishedAt: "desc" }],
       select: cardSelect,
     }),
-    db.product.findMany({ where: { sellerId: seller.id, status: "SOLD", deletedAt: null }, orderBy: { updatedAt: "desc" }, take: 4, select: cardSelect }),
+    db.product.findMany({ where: { ...(await publicProductWhere("profile")), sellerId: seller.id, status: "SOLD" }, orderBy: { updatedAt: "desc" }, take: 4, select: cardSelect }),
     db.review.findMany({
       where: { sellerId: seller.id, status: "PUBLISHED" },
       orderBy: { createdAt: "desc" },
@@ -120,7 +124,7 @@ export async function getStorefront(slug: string, ctx: PriceContext, categorySlu
       include: { author: { select: { name: true, country: true } }, product: { select: { title: true, slug: true } } },
     }),
     db.category.findMany({
-      where: { products: { some: { ...publicProductWhere, sellerId: seller.id } } },
+      where: { products: { some: { ...(await publicProductWhere("profile")), sellerId: seller.id } } },
       select: { slug: true, name: true, parent: { select: { slug: true, name: true } } },
     }),
   ]);

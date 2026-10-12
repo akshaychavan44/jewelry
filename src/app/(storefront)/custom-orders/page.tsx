@@ -1,3 +1,4 @@
+import { getPausedSellerIds } from "@/server/services/jeweler-directory";
 import type { Metadata } from "next";
 import { CustomOrdersView } from "@/components/custom-orders/custom-orders-view";
 import { firstParam, type SearchParams } from "@/lib/utils";
@@ -17,6 +18,7 @@ export default async function CustomOrdersPage({
   searchParams: Promise<SearchParams>;
 }) {
   const sellerSlug = firstParam((await searchParams).jeweler);
+  const paused = await getPausedSellerIds();
   const [user, currency, categories, seller, jewelers] = await Promise.all([
     getCurrentUser(),
     getDisplayCurrency(),
@@ -32,7 +34,7 @@ export default async function CustomOrdersPage({
         })
       : null,
     db.sellerProfile.findMany({
-      where: { verificationStatus: "APPROVED", acceptsCustomOrders: true },
+      where: { verificationStatus: "APPROVED", acceptsCustomOrders: true, id: { notIn: paused } },
       orderBy: { storeName: "asc" },
       select: { id: true, storeName: true, slug: true, city: true },
     }),
@@ -43,8 +45,8 @@ export default async function CustomOrdersPage({
       user={user}
       currency={currency}
       categories={categories}
-      seller={seller}
-      sellerSlug={sellerSlug}
+      seller={jewelers.find(j => j.slug === seller?.slug) ?? null}
+      sellerSlug={jewelers.some(j => j.slug === sellerSlug) ? sellerSlug : undefined}
       jewelers={jewelers}
     />
   );

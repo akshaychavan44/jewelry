@@ -2241,3 +2241,27 @@ model BusinessNameChange {
   reviewedAt DateTime? @db.Timestamptz(6)
   seller SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 }
+
+// Accessed through parameterized SQL until the generated client is refreshed.
+// Foreign keys and rating/status constraints are maintained by the migration.
+model JewelryVisibility {
+  productId String @id
+  showOnProfile Boolean @default(true)
+  showOnWebsite Boolean @default(true)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model JewelerReview {
+  id String @id
+  sellerId String
+  authorId String
+  rating Int
+  body String
+  sellerReply String @default("")
+  reportedReason String @default("")
+  status String @default("PUBLISHED")
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @db.Timestamptz(6)
+  @@unique([sellerId, authorId])
+  @@index([sellerId, status])
+}

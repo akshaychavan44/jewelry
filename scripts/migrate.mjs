@@ -51,6 +51,8 @@ async function runMigrations() {
     await client.query(readFileSync(dashboardMigration, "utf8"));
     await client.query(readFileSync(path.resolve(process.cwd(), "prisma/migrations/202610100002_directory_features/migration.sql"), "utf8"));
 
+    await client.query(readFileSync(path.resolve(process.cwd(), "prisma/migrations/202610120001_discovery_experience/migration.sql"), "utf8"));
+
     console.log("Setting default timestamps on all updatedAt and createdAt columns...");
     await client.query(`
       DO $$

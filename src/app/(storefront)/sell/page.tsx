@@ -10,6 +10,7 @@ import {
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth/session";
 
 export const metadata: Metadata = {
@@ -53,6 +54,7 @@ const BENEFITS = [
 
 export default async function SellPage() {
   const user = await getCurrentUser();
+  if (user?.role === "SELLER") redirect("/seller");
 
   const primaryCta = (
     <Link

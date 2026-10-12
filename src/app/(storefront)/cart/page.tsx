@@ -1,5 +1,2 @@
 import { redirect } from "next/navigation";
-
-export default function CartPage() {
-  redirect("/shop");
-}
+export default function RetiredPage() { redirect("/jewelers"); }

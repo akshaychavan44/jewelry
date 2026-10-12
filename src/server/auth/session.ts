@@ -29,6 +29,8 @@ export const getCurrentUser = cache(async () => {
     },
   });
   if (!user || user.status !== "ACTIVE") return null;
+  const resets = await db.$queryRaw<{ expires: Date }[]>`SELECT "expires" FROM "VerificationToken" WHERE "token" = ${`password-version:${user.id}`}`;
+  if (resets[0] && (!session.signedInAt || session.signedInAt <= new Date(resets[0].expires).getTime())) return null;
   return user;
 });
 
@@ -62,7 +64,7 @@ export async function requireSeller({ verified = true }: { verified?: boolean } 
   const user = await requireUser("/seller");
   if (user.role !== "SELLER") redirect("/sell");
   const seller = await getSellerForUser(user.id);
-  if (!seller) redirect("/sell");
+  if (!seller) redirect("/seller/onboarding");
   if (verified && seller.verificationStatus !== "APPROVED") redirect("/seller/onboarding");
   return { user, seller };
 }

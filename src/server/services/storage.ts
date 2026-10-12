@@ -98,7 +98,7 @@ const RULES: Record<FilePurpose, { types: string[]; maxBytes: number; visibility
   CERTIFICATE: { types: ["application/pdf", "image/jpeg", "image/png"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
   KYC_DOCUMENT: { types: ["application/pdf", "image/jpeg", "image/png"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
   MESSAGE_ATTACHMENT: { types: ["application/pdf", "image/jpeg", "image/png", "image/webp"], maxBytes: 8 * 1024 * 1024, visibility: "PRIVATE" },
-  CUSTOM_REQUEST_REFERENCE: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 8 * 1024 * 1024, visibility: "PUBLIC" },
+  CUSTOM_REQUEST_REFERENCE: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 3 * 1024 * 1024, visibility: "PRIVATE" },
   GENERATED_DOCUMENT: { types: ["application/pdf"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
 };
 
@@ -111,6 +111,14 @@ export async function saveUpload(file: File, purpose: FilePurpose, ownerId: stri
   if (file.size === 0) throw new UploadError(`${file.name} is empty.`);
 
   const bytes = Buffer.from(await file.arrayBuffer());
+  if (purpose === "CUSTOM_REQUEST_REFERENCE" || purpose === "PRODUCT_MEDIA") {
+    const valid = file.type === "image/jpeg" ? bytes.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))
+      : file.type === "image/png" ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+      : file.type === "image/webp" ? bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP"
+      : file.type === "image/avif" ? bytes.toString("ascii", 4, 8) === "ftyp" && /avif|avis/.test(bytes.toString("ascii", 8, 32))
+      : false;
+    if (!valid) throw new UploadError(`${file.name}: the file content does not match the image type.`);
+  }
   const safeName = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-").slice(-80);
   const key = `${purpose.toLowerCase().replace(/_/g, "-")}/${ownerId}/${randomToken(9)}-${safeName}`;
   const { url } = await storage().put(key, bytes, file.type, rule.visibility);

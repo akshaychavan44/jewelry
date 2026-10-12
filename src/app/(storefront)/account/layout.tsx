@@ -1,16 +1,13 @@
 import { Gem } from "lucide-react";
 import { DashboardNav, type NavItem } from "@/components/layout/dashboard-nav";
 import { requireUser } from "@/server/auth/session";
-import { getAccountBadges } from "@/server/services/account";
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser("/account");
-  const badges = await getAccountBadges(user.id);
   const items: NavItem[] = [
     { href: "/account", label: "Overview", icon: "overview", exact: true },
-    { href: "/account/messages", label: "Messages & Inquiries", icon: "messages", badge: badges.unread },
     { href: "/account/custom-requests", label: "Custom requests", icon: "custom" },
-    { href: "/account/offers", label: "Price inquiries", icon: "offers", badge: badges.offers },
+    { href: "/account/reviews", label: "My Reviews", icon: "reviews" },
     { href: "/account/wishlist", label: "Saved pieces", icon: "wishlist" },
     { href: "/account/favorite-stores", label: "Saved jewelers", icon: "stores" },
     { href: "/account/settings", label: "Settings", icon: "settings" },

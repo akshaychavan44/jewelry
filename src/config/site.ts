@@ -14,12 +14,12 @@ export const siteConfig = {
   description:
     "Discover exceptional fine, high and vintage jewelry from verified independent jewelers — connect directly with master ateliers and artisans.",
   url: appUrl,
-  supportEmail: "concierge@loupe.example",
+  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "concierge@loupe.example",
   announcement: "Discover exceptional independent jewelers · Connect directly with master artisans",
   social: {
-    instagram: "https://www.instagram.com/",
-    pinterest: "https://www.pinterest.com/",
-    tiktok: "https://www.tiktok.com/",
+    instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "",
+    pinterest: process.env.NEXT_PUBLIC_PINTEREST_URL || "",
+    tiktok: process.env.NEXT_PUBLIC_TIKTOK_URL || "",
   },
   instagramHandle: "@wornwithloupe",
 } as const;

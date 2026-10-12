@@ -34,7 +34,7 @@ export default async function HomePage() {
     getMarketplaceStats(),
     getCategoryTree(),
     getWishlistProductIds(user?.id),
-    db.product.groupBy({ by: ["categoryId"], where: publicProductWhere, _count: { _all: true } }),
+    db.product.groupBy({ by: ["categoryId"], where: await publicProductWhere(), _count: { _all: true } }),
   ]);
   const trending = await getTrendingProducts(ctx, 8, featured.map((p) => p.id));
 

@@ -1,3 +1,4 @@
+import { getCurrentUser } from "@/server/auth/session";
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
@@ -7,7 +8,9 @@ import { NewsletterForm } from "./newsletter-form";
 import { FooterBackToTop } from "./footer-back-to-top";
 import styles from "./footer.module.css";
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const user = await getCurrentUser();
+  const isJeweler = user?.role === "SELLER";
   return (
     <footer id="site-footer" className={styles.footer}>
       <Image src="/media/footer-jewelry.webp" alt="" fill sizes="100vw" className={styles.background} />
@@ -22,7 +25,7 @@ export function SiteFooter() {
             <Logo className={styles.logo} />
             <p>Fine, high and vintage jewelry from verified independent jewelers.</p>
             <div className={styles.socials}>
-              {(["instagram", "pinterest", "tiktok"] as const).map((name) => (
+              {(["instagram", "pinterest", "tiktok"] as const).filter(name => /^https:\/\//.test(siteConfig.social[name])).map((name) => (
                 <a key={name} href={siteConfig.social[name]} aria-label={name} rel="noreferrer" target="_blank"><SocialIcon name={name} /></a>
               ))}
             </div>
@@ -30,7 +33,7 @@ export function SiteFooter() {
           {footerNav.map((group) => (
             <nav key={group.title} aria-label={`Footer ${group.title}`} className={styles.navigation}>
               <h3>{group.title}</h3>
-              <ul>{group.links.map((link) => <li key={link.href}><Link href={link.href}>{link.label}</Link></li>)}</ul>
+              <ul>{group.links.filter(link => !isJeweler || link.href !== "/jeweler/login").map((link) => <li key={link.href}><Link href={isJeweler && link.href === "/sell" ? "/seller" : link.href}>{isJeweler && link.href === "/sell" ? "My Dashboard" : link.label}</Link></li>)}</ul>
             </nav>
           ))}
         </div>
@@ -40,7 +43,7 @@ export function SiteFooter() {
           <div className={styles.legal}>
             <Link href="/help/terms">Terms</Link>
             <Link href="/help/privacy">Privacy</Link>
-            <Link href="/sell">List your business</Link>
+            <Link href={isJeweler ? "/seller" : "/sell"}>{isJeweler ? "My Dashboard" : "List your business"}</Link>
             <FooterBackToTop />
           </div>
         </div>

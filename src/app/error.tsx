@@ -14,7 +14,7 @@ export default function ErrorBoundary({ error, retry }: { error: Error & { diges
       <p className="eyebrow">Something went wrong</p>
       <h1 className="display-lg mt-4 text-ink">We couldn&rsquo;t load this page.</h1>
       <p className="mt-4 max-w-md text-[16px] leading-relaxed text-ink-soft">
-        Nothing you did caused this, and nothing in your cart or orders has changed. Try again — if it keeps happening, our team has already been alerted.
+        We couldn’t load the latest information. Try again in a moment, or return to the homepage.
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button onClick={() => retry()}>Try again</Button>

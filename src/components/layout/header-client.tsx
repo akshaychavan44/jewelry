@@ -138,12 +138,12 @@ export function HeaderClient({ categories, currency, user }: Props) {
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
           <AccountMenu user={user} />
-          <Link
-            href={user ? "/seller/onboarding" : "/register?intent=seller"}
+          {user?.role !== "BUYER" && <Link
+            href={user?.role === "SELLER" ? "/seller" : user ? "/seller/onboarding" : "/register?intent=seller"}
             className={cn(styles.listBusinessButton, "caps hidden md:inline-flex")}
           >
-            List Your Business
-          </Link>
+            {user?.role === "SELLER" ? "My Dashboard" : "List Your Business"}
+          </Link>}
         </div>
       </div>
 
@@ -221,7 +221,7 @@ export function HeaderClient({ categories, currency, user }: Props) {
                 ["/custom-orders", "Custom orders"],
                 ["/guides", "Guides"],
                 ["/styling", "Styling inspiration"],
-                ["/sell", "List your business"],
+                [user?.role === "SELLER" ? "/seller" : "/sell", user?.role === "SELLER" ? "My Dashboard" : "List your business"],
                 [user ? "/account" : "/login", user ? "My account" : "Customer login"],
                 ...(!user ? [["/jeweler/login", "Jeweler login"]] : []),
               ].map(([href, label]) => (
@@ -314,18 +314,18 @@ function AccountMenu({ user }: { user: Props["user"] }) {
           </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
-          <Link href="/account">
+          <Link href={user.role === "SELLER" ? "/seller/account" : "/account"}>
             <LayoutDashboard /> My account
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/account/messages">
-            <MessageSquare /> Messages & Inquiries
+          <Link href={user.role === "SELLER" ? "/seller/reviews" : "/account/reviews"}>
+            <MessageSquare /> Reviews
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/account/custom-requests">
-            <Sparkles /> Custom commissions
+          <Link href={user.role === "SELLER" ? "/seller/custom-requests" : "/account/custom-requests"}>
+            <Sparkles /> Custom requests
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

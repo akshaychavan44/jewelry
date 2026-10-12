@@ -8,6 +8,7 @@ declare module "next-auth" {
   }
 
   interface Session {
+    signedInAt?: number;
     user: {
       id: string;
       role: Role;
@@ -17,6 +18,7 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
+    signedInAt?: number;
     uid?: string;
     role?: Role;
   }
@@ -24,6 +26,7 @@ declare module "next-auth/jwt" {
 
 declare module "@auth/core/jwt" {
   interface JWT {
+    signedInAt?: number;
     uid?: string;
     role?: Role;
   }
@@ -35,6 +38,7 @@ declare module "@auth/core/types" {
     role?: Role;
   }
   interface Session {
+    signedInAt?: number;
     user: {
       id: string;
       role: Role;

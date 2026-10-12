@@ -73,6 +73,7 @@ export function LoginForm({ intent, callbackUrl, initialError }: { intent: Login
       <Field label="Password" htmlFor="password" error={state.fieldErrors?.password}>
         <Input id="password" name="password" type="password" autoComplete="current-password" required aria-invalid={!!state.fieldErrors?.password} />
       </Field>
+      <Link href="/forgot-password" className="block text-right text-sm text-ink-soft underline">Forgot password?</Link>
       <SubmitButton size="lg" className="w-full" pendingLabel="Signing in…">
         {intent === "seller" ? "Sign in as a jeweler" : intent === "admin" ? "Sign in to Admin Console" : "Sign in as a customer"}
       </SubmitButton>

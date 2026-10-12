@@ -1,4 +1,6 @@
 import "server-only";
+import { discoveryWhere } from "./discovery";
+import { getPausedSellerIds } from "./jeweler-directory";
 
 import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
@@ -89,11 +91,7 @@ export function toCard(p: CardRow, ctx: PriceContext): ProductCard {
 }
 
 /** Listings visible to shoppers: active, not deleted, from an approved store. */
-export const publicProductWhere = {
-  status: "ACTIVE",
-  deletedAt: null,
-  seller: { verificationStatus: "APPROVED" },
-} satisfies Prisma.ProductWhereInput;
+export const publicProductWhere = discoveryWhere;
 
 // ── Categories ────────────────────────────────────────────────────────────────
 
@@ -162,8 +160,8 @@ function orderFor(sort: SortKey = "featured"): Prisma.ProductOrderByWithRelation
   }
 }
 
-export function buildListingWhere(f: ListingFilters, ctx: PriceContext): Prisma.ProductWhereInput {
-  const and: Prisma.ProductWhereInput[] = [publicProductWhere];
+export async function buildListingWhere(f: ListingFilters, ctx: PriceContext): Promise<Prisma.ProductWhereInput> {
+  const and: Prisma.ProductWhereInput[] = [await publicProductWhere()];
   if (f.categoryIds?.length) and.push({ categoryId: { in: f.categoryIds } });
   if (f.sellerId) and.push({ sellerId: f.sellerId });
   if (f.q) {
@@ -208,7 +206,7 @@ export function buildListingWhere(f: ListingFilters, ctx: PriceContext): Prisma.
 export async function listProducts(f: ListingFilters, ctx: PriceContext) {
   const pageSize = f.pageSize ?? 24;
   const page = Math.max(1, f.page ?? 1);
-  const where = buildListingWhere(f, ctx);
+  const where = await buildListingWhere(f, ctx);
   const [rows, total] = await Promise.all([
     db.product.findMany({ where, orderBy: orderFor(f.sort), skip: (page - 1) * pageSize, take: pageSize, select: cardSelect }),
     db.product.count({ where }),
@@ -217,8 +215,8 @@ export async function listProducts(f: ListingFilters, ctx: PriceContext) {
 }
 
 /** Facet counts within a category (or the whole catalogue). */
-export async function getListingFacets(categoryIds?: string[]) {
-  const base: Prisma.ProductWhereInput = { AND: [publicProductWhere, ...(categoryIds?.length ? [{ categoryId: { in: categoryIds } }] : [])] };
+export async function getListingFacets(categoryIds?: string[], sellerId?: string) {
+  const base: Prisma.ProductWhereInput = { AND: [await publicProductWhere(), ...(categoryIds?.length ? [{ categoryId: { in: categoryIds } }] : []), ...(sellerId ? [{ sellerId }] : [])] };
   const [metals, gems, conditions, priceRange] = await Promise.all([
     db.productVariant.groupBy({ by: ["metalType"], where: { isActive: true, product: base }, _count: { productId: true } }),
     db.product.groupBy({ by: ["primaryGemstone"], where: base, _count: { _all: true } }),
@@ -237,7 +235,7 @@ export async function getListingFacets(categoryIds?: string[]) {
 
 export async function getFeaturedProducts(ctx: PriceContext, take = 6) {
   const rows = await db.product.findMany({
-    where: { ...publicProductWhere, isFeatured: true },
+    where: { ...(await publicProductWhere()), isFeatured: true },
     orderBy: [{ featuredRank: { sort: "asc", nulls: "last" } }],
     take,
     select: cardSelect,
@@ -256,7 +254,7 @@ export async function getTrendingProducts(ctx: PriceContext, take = 8, excludeId
     take: take * 3,
   });
   const ids = views.map((v) => v.productId!).filter(Boolean);
-  const rows = await db.product.findMany({ where: { ...publicProductWhere, id: { in: ids } }, select: { ...cardSelect, salesCount: true } });
+  const rows = await db.product.findMany({ where: { ...(await publicProductWhere()), id: { in: ids } }, select: { ...cardSelect, salesCount: true } });
   const score = new Map(views.map((v) => [v.productId, v._count.productId]));
   return rows
     .sort((a, b) => (score.get(b.id) ?? 0) + b.salesCount * 6 - ((score.get(a.id) ?? 0) + a.salesCount * 6))
@@ -266,7 +264,7 @@ export async function getTrendingProducts(ctx: PriceContext, take = 8, excludeId
 
 export async function getShowcaseSellers(take = 4) {
   const sellers = await db.sellerProfile.findMany({
-    where: { verificationStatus: "APPROVED", isFeatured: true },
+    where: { verificationStatus: "APPROVED", isFeatured: true, id: { notIn: await getPausedSellerIds() } },
     orderBy: [{ ratingAverage: "desc" }, { salesCount: "desc" }],
     take,
     select: {
@@ -285,7 +283,7 @@ export async function getShowcaseSellers(take = 4) {
       responseTimeMinutes: true,
       activeListingCount: true,
       products: {
-        where: publicProductWhere,
+        where: await publicProductWhere(),
         orderBy: [{ isFeatured: "desc" }, { ratingCount: "desc" }],
         take: 3,
         select: { slug: true, title: true, images: { orderBy: { position: "asc" }, take: 1, select: { url: true, alt: true } } },
@@ -297,10 +295,10 @@ export async function getShowcaseSellers(take = 4) {
 
 export async function getMarketplaceStats() {
   const [jewelers, listings, certified, countries] = await Promise.all([
-    db.sellerProfile.count({ where: { verificationStatus: "APPROVED" } }),
-    db.product.count({ where: publicProductWhere }),
-    db.product.count({ where: { ...publicProductWhere, certificationLabs: { isEmpty: false } } }),
-    db.sellerProfile.groupBy({ by: ["country"], where: { verificationStatus: "APPROVED" } }),
+    db.sellerProfile.count({ where: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } } }),
+    db.product.count({ where: await publicProductWhere() }),
+    db.product.count({ where: { ...(await publicProductWhere()), certificationLabs: { isEmpty: false } } }),
+    db.sellerProfile.groupBy({ by: ["country"], where: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } } }),
   ]);
   return { jewelers, listings, certified, countries: countries.length };
 }

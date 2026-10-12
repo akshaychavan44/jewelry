@@ -106,6 +106,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
       if (user?.id) {
         token.uid = user.id;
         token.role = user.role ?? "BUYER";
+        token.signedInAt = Date.now();
       }
       if (trigger === "update" && token.uid) {
         const fresh = await db.user.findUnique({ where: { id: token.uid as string }, select: { role: true, name: true, image: true } });

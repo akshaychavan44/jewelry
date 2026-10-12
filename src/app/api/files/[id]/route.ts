@@ -1,5 +1,6 @@
 import { getCurrentUser, getSellerForUser } from "@/server/auth/session";
 import { db } from "@/server/db";
+import { sellerCanReadReference } from "@/server/services/jeweler-directory";
 import { storage } from "@/server/services/storage";
 
 // Private files (KYC documents, certificate originals) are only streamed after
@@ -18,7 +19,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   let allowed = user.role === "ADMIN" || file.uploadedById === user.id;
   if (!allowed && user.role === "SELLER") {
     const seller = await getSellerForUser(user.id);
-    allowed = !!seller && (file.kycDocument?.sellerId === seller.id || file.certificate?.product.sellerId === seller.id);
+    allowed = !!seller && (file.kycDocument?.sellerId === seller.id || file.certificate?.product.sellerId === seller.id || (file.purpose === "CUSTOM_REQUEST_REFERENCE" && await sellerCanReadReference(seller.id, file.id)));
   }
   if (!allowed) return new Response("Not found", { status: 404 });
 

@@ -9,17 +9,18 @@ import { countryName } from "@/lib/regions";
 import { pluralize } from "@/lib/utils";
 import { requireUser } from "@/server/auth/session";
 import { db } from "@/server/db";
+import { getPausedSellerIds } from "@/server/services/jeweler-directory";
 
 export default async function FavoriteStoresPage() {
   const user = await requireUser("/account/favorite-stores");
   const favourites = await db.favoriteStore.findMany({
-    where: { userId: user.id },
+    where: { userId: user.id, seller: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } } },
     orderBy: { createdAt: "desc" },
     include: { seller: { select: { id: true, slug: true, storeName: true, tagline: true, city: true, country: true, logoUrl: true, bannerUrl: true, ratingAverage: true, ratingCount: true, activeListingCount: true } } },
   });
   return (
     <>
-      <PageHeader title="Favourite jewelers" description="Jewelers you follow. New pieces from them appear in your notifications." />
+      <PageHeader title="Saved Jewelers" description="Your favorite businesses, ready to revisit. Paused profiles are omitted." />
       {favourites.length === 0 ? (
         <EmptyState icon={<Store />} title="You're not following anyone yet" action={<Link href="/jewelers" className="link-quiet text-[14px] text-ink">Discover jewelers</Link>} />
       ) : (

@@ -3,6 +3,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { jewelerReviews } from "@/server/services/discovery";
+import { JewelerReviewForm } from "@/components/account/jeweler-review-form";
+import { JewelerSocialLinks } from "@/components/catalog/jeweler-social-links";
+import { getDirectorySettings } from "@/server/services/jeweler-directory";
 import { ProductGrid } from "@/components/catalog/product-card";
 import { FollowStoreButton } from "@/components/catalog/save-buttons";
 import { TopRated, VerifiedJeweler } from "@/components/brand/trust";
@@ -33,6 +37,8 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
   const data = await getStorefront(slug, ctx, category);
   if (!data) notFound();
   const { seller, listings, sold, reviews, categories } = data;
+  const feedback = await jewelerReviews(seller.id);
+  const settings = await getDirectorySettings(seller.id);
   const [saved, following] = await Promise.all([
     getWishlistProductIds(user?.id),
     user ? db.favoriteStore.findUnique({ where: { userId_sellerId: { userId: user.id, sellerId: seller.id } } }) : null,
@@ -119,7 +125,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
                 {l.phone && (
                   <div className="mt-3 space-y-3"><p className="flex items-center gap-2 text-[14px] text-ink-soft">
                     <Phone className="size-4 shrink-0" strokeWidth={1.5} /> {l.phone}
-                  </p><DirectContact phone={l.phone} title={`the collection at ${seller.storeName}`} /></div>
+                  </p><DirectContact whatsapp={settings.whatsapp} phone={l.phone} title={`the collection at ${seller.storeName}`} /></div>
                 )}
               </div>
             ))}
@@ -140,6 +146,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
           </div>
         </div>
 
+        <div className="mb-8"><JewelerSocialLinks settings={settings} website={seller.website} /></div>
         <section aria-labelledby="collection-heading" className="border-t border-line pt-12">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <h2 id="collection-heading" className="display-md text-ink">
@@ -171,6 +178,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
           </section>
         )}
 
+        <section className="mt-16 border-t border-line pt-10" aria-labelledby="customer-feedback"><h2 id="customer-feedback" className="mb-6 font-display text-3xl">Customer reviews</h2><div className="grid grid-cols-2 gap-5">{feedback.map(r => <article key={r.id} className="rounded border border-line bg-porcelain p-6"><Stars rating={r.rating} /><p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed">{r.body}</p><p className="mt-3 text-xs text-muted">{r.authorName?.split(" ")[0] ?? "Customer"} · Customer experience</p>{r.sellerReply && <div className="mt-4 border-t border-line pt-3 text-sm"><strong>Jeweler’s reply</strong><p className="mt-2 whitespace-pre-wrap">{r.sellerReply}</p></div>}</article>)}</div>{!feedback.length && <p className="mb-5 text-sm text-muted">No customer experience reviews yet.</p>}<div className="mt-6 max-w-xl">{user?.role === "BUYER" ? <JewelerReviewForm sellerId={seller.id} rating={feedback.find(r => r.authorId === user.id)?.rating} body={feedback.find(r => r.authorId === user.id)?.body} /> : !user ? <Link href={`/login?callbackUrl=${encodeURIComponent(`/jewelers/${slug}#customer-feedback`)}`} className="text-sm underline">Sign in to share your experience</Link> : null}</div></section>
         {reviews.length > 0 && (
           <section aria-labelledby="store-reviews" className="mt-20 border-t border-line pt-12">
             <h2 id="store-reviews" className="display-md mb-8 text-ink">

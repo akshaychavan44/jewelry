@@ -25,6 +25,7 @@ export async function ListingPage({
   category,
   subcategories = [],
   categoryIds,
+  sellerId,
   basePath,
   breadcrumbs = [],
   headingLevel = 1,
@@ -35,6 +36,7 @@ export async function ListingPage({
   category?: Category | null;
   subcategories?: { slug: string; name: string }[];
   categoryIds?: string[];
+  sellerId?: string;
   basePath: string;
   breadcrumbs?: { href: string; label: string }[];
   headingLevel?: 1 | 2;
@@ -44,8 +46,8 @@ export async function ListingPage({
   const Heading = headingLevel === 2 ? "h2" : "h1";
   const [ctx, user] = await Promise.all([getPriceContext(), getCurrentUser()]);
   const [result, facets, saved] = await Promise.all([
-    listProducts({ ...filters, categoryIds }, ctx),
-    getListingFacets(categoryIds),
+    listProducts({ ...filters, categoryIds, sellerId }, ctx),
+    getListingFacets(categoryIds, sellerId),
     getWishlistProductIds(user?.id),
   ]);
 

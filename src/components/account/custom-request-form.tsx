@@ -23,7 +23,7 @@ export function CustomRequestForm({
 }) {
   const [state, action] = useActionState<CustomRequestState, FormData>(createCustomRequestAction, {});
   if (state.ok) {
-    return <p className="rounded-[3px] border border-sage/30 bg-sage-mist px-5 py-4 text-[14.5px] text-sage-deep">{state.message}</p>;
+    return <div className="rounded-[3px] border border-sage/30 bg-sage-mist px-5 py-4 text-[14.5px] text-sage-deep">{state.message}<a href="/account/custom-requests" className="mt-3 block underline">View my requests</a></div>;
   }
   const err = (k: string) => state.fieldErrors?.[k];
   return (
@@ -87,9 +87,9 @@ export function CustomRequestForm({
       <Field label="Ring size (US)" htmlFor="ringSize" optional>
         <Input id="ringSize" name="ringSize" inputMode="decimal" placeholder="e.g. 6.5" />
       </Field>
-      <Field label="Choose jeweler" htmlFor="sellerSlug" optional>
-        <NativeSelect id="sellerSlug" name="sellerSlug" defaultValue={sellerSlug || ""}>
-          <option value="">Any verified jeweler (Open request)</option>
+      <Field label="Choose jeweler" htmlFor="sellerSlug" error={err("sellerSlug")}>
+        <NativeSelect id="sellerSlug" name="sellerSlug" defaultValue={sellerSlug || ""} required>
+          <option value="">Select a jeweler</option>
           {jewelers?.map((j) => (
             <option key={j.slug} value={j.slug}>
               {j.storeName} {j.city ? `(${j.city})` : ""}
@@ -97,6 +97,10 @@ export function CustomRequestForm({
           ))}
         </NativeSelect>
       </Field>
+      <Field label="Contact phone" htmlFor="contactPhone" error={err("contactPhone")} hint="Include country code. Shared only with your selected jeweler."><Input id="contactPhone" name="contactPhone" type="tel" required /></Field>
+      <Field label="WhatsApp number" htmlFor="contactWhatsapp" error={err("contactWhatsapp")} optional><Input id="contactWhatsapp" name="contactWhatsapp" type="tel" /></Field>
+      <Field label="Reference images" htmlFor="references" className="sm:col-span-2" hint="Up to three JPEG, PNG or WebP images, 3 MB each. Private to you and your chosen jeweler." optional><Input id="references" name="references" type="file" multiple accept="image/jpeg,image/png,image/webp" /></Field>
+      <p className="sm:col-span-2 text-sm text-muted">Your account email is shared with the selected jeweler. Discuss quotes, payment and delivery separately.</p>
       <div className="flex items-end sm:col-span-2">
         <SubmitButton size="lg" pendingLabel="Sending…">
           Send request

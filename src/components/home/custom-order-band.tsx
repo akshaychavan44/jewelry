@@ -8,7 +8,7 @@ import styles from "./custom-order-band.module.css";
 
 const STEPS = [
   { step: "01", title: "Your Idea", body: "Share your story, a sketch or inspiration. Our jewelers will guide you from concept to creation.", image: "/media/bespoke-step-sketch.jpg", alt: "Hand-drawn jewelry concept sketch" },
-  { step: "02", title: "Their Craft", body: "Get matched with independent jewelers who bring your idea to life with expert craftsmanship.", image: "/media/bespoke-step-craft-circle.jpg", alt: "Jeweler setting diamonds into a floral gold setting" },
+  { step: "02", title: "Their Craft", body: "Choose an independent jeweler and send your idea directly to their dashboard.", image: "/media/bespoke-step-craft-circle.jpg", alt: "Jeweler setting diamonds into a floral gold setting" },
   { step: "03", title: "One of One", body: "A piece that's uniquely yours, crafted with care, expertise and a story to tell.", image: "/media/bespoke-step-finished-circle.jpg", alt: "Finished gold and diamond teardrop pendant" },
 ];
 

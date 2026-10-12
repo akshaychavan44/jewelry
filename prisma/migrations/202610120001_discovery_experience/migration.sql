@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS "JewelryVisibility" (
+  "productId" TEXT PRIMARY KEY REFERENCES "Product"("id") ON DELETE CASCADE,
+  "showOnProfile" BOOLEAN NOT NULL DEFAULT TRUE,
+  "showOnWebsite" BOOLEAN NOT NULL DEFAULT TRUE,
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "JewelerReview" (
+  "id" TEXT PRIMARY KEY,
+  "sellerId" TEXT NOT NULL REFERENCES "SellerProfile"("id") ON DELETE CASCADE,
+  "authorId" TEXT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+  "rating" INTEGER NOT NULL CHECK ("rating" BETWEEN 1 AND 5),
+  "body" TEXT NOT NULL,
+  "sellerReply" TEXT NOT NULL DEFAULT '',
+  "reportedReason" TEXT NOT NULL DEFAULT '',
+  "status" TEXT NOT NULL DEFAULT 'PUBLISHED' CHECK ("status" IN ('PUBLISHED','HIDDEN')),
+  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE ("sellerId", "authorId")
+);
+CREATE INDEX IF NOT EXISTS "JewelerReview_seller_status" ON "JewelerReview" ("sellerId", "status");

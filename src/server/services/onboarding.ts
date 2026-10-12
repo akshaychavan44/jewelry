@@ -6,6 +6,8 @@ import { encrypt, lastFour } from "@/server/crypto";
 import { db } from "@/server/db";
 import { notify } from "./messaging";
 import { saveUpload } from "./storage";
+import type { z } from "zod";
+import { socialEnrollmentSchema } from "@/lib/jeweler-profile";
 
 export class OnboardingError extends Error {}
 
@@ -23,6 +25,7 @@ async function uniqueSlug(name: string, excludeSellerId?: string) {
 
 export type StoreProfileInput = {
   storeName: string;
+  socials?: z.infer<typeof socialEnrollmentSchema>;
   tagline?: string;
   bio?: string;
   country: string;
@@ -41,6 +44,7 @@ export async function saveStoreProfile(userId: string, input: StoreProfileInput)
   if (existing && !EDITABLE.includes(existing.verificationStatus as (typeof EDITABLE)[number]) && existing.verificationStatus !== "APPROVED") {
     throw new OnboardingError("Your application is under review — changes are locked until a decision is made.");
   }
+  if (existing?.verificationStatus === "APPROVED" && existing.storeName !== input.storeName) throw new OnboardingError("Request a business name change from My Business for admin review.");
   const logo = input.logo?.size ? await saveUpload(input.logo, "STORE_BRANDING", userId, userId) : null;
   const banner = input.banner?.size ? await saveUpload(input.banner, "STORE_BRANDING", userId, userId) : null;
 
@@ -62,10 +66,18 @@ export async function saveStoreProfile(userId: string, input: StoreProfileInput)
       ...(logo?.url ? { logoUrl: logo.url } : {}),
       ...(banner?.url ? { bannerUrl: banner.url } : {}),
     };
-    if (existing) {
-      return tx.sellerProfile.update({ where: { id: existing.id }, data: { ...data, onboardingStep: Math.max(existing.onboardingStep, 2) } });
+    const saved = existing
+      ? await tx.sellerProfile.update({ where: { id: existing.id }, data: { ...data, onboardingStep: Math.max(existing.onboardingStep, 2) } })
+      : await tx.sellerProfile.create({ data: { ...data, userId, slug: await uniqueSlug(input.storeName), onboardingStep: 2 } });
+    if (input.socials) {
+      const d = input.socials;
+      await tx.$executeRaw`INSERT INTO "JewelerDirectorySettings" ("sellerId", "instagram", "facebook", "youtube", "whatsapp", "publicEmail", "maps") VALUES (${saved.id}, ${d.instagram}, ${d.facebook}, ${d.youtube}, ${d.whatsapp.replace(/\D/g, "")}, ${d.publicEmail}, ${d.maps}) ON CONFLICT ("sellerId") DO UPDATE SET "instagram" = EXCLUDED."instagram", "facebook" = EXCLUDED."facebook", "youtube" = EXCLUDED."youtube", "whatsapp" = EXCLUDED."whatsapp", "publicEmail" = EXCLUDED."publicEmail", "maps" = EXCLUDED."maps", "updatedAt" = CURRENT_TIMESTAMP`;
     }
-    return tx.sellerProfile.create({ data: { ...data, userId, slug: await uniqueSlug(input.storeName), onboardingStep: 2 } });
+    const location = await tx.storeLocation.findFirst({ where: { sellerId: saved.id }, orderBy: { id: "asc" } });
+    const locationData = { name: saved.storeName, line1: input.returnAddress.line1, city: input.returnAddress.city, country: input.country, postalCode: input.returnAddress.postalCode, phone: input.returnAddress.phone || null };
+    if (location) await tx.storeLocation.update({ where: { id: location.id }, data: locationData });
+    else await tx.storeLocation.create({ data: { ...locationData, sellerId: saved.id } });
+    return saved;
   });
 }
 

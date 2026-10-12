@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS "JewelerDirectorySettings" (
+  "sellerId" TEXT PRIMARY KEY REFERENCES "SellerProfile"("id") ON DELETE CASCADE,
+  "instagram" TEXT NOT NULL DEFAULT '',
+  "facebook" TEXT NOT NULL DEFAULT '',
+  "youtube" TEXT NOT NULL DEFAULT '',
+  "whatsapp" TEXT NOT NULL DEFAULT '',
+  "publicEmail" TEXT NOT NULL DEFAULT '',
+  "maps" TEXT NOT NULL DEFAULT '',
+  "isPaused" BOOLEAN NOT NULL DEFAULT FALSE,
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE "CustomRequest" ADD COLUMN IF NOT EXISTS "inquiryStatus" TEXT NOT NULL DEFAULT 'NEW'
+  CHECK ("inquiryStatus" IN ('NEW', 'CONTACTED', 'CLOSED'));

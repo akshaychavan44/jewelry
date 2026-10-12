@@ -11,6 +11,7 @@ import { db } from "@/server/db";
 import { markStripeConnected, OnboardingError, saveBankPayouts, saveBusinessVerification, saveStoreProfile, submitApplication } from "@/server/services/onboarding";
 import { createConnectOnboardingLink } from "@/server/services/payments";
 import { UploadError } from "@/server/services/storage";
+import { socialEnrollmentSchema } from "@/lib/jeweler-profile";
 
 export type StepState = { ok?: boolean; message?: string; fieldErrors?: Record<string, string[] | undefined> };
 
@@ -42,7 +43,7 @@ const storeSchema = z.object({
   ra_region: z.string().trim().optional(),
   ra_postalCode: z.string().trim().min(2, "Enter the return postal code."),
   ra_phone: z.string().trim().optional(),
-});
+}).extend({ instagram: socialEnrollmentSchema.shape.instagram.default(""), facebook: socialEnrollmentSchema.shape.facebook.default(""), youtube: socialEnrollmentSchema.shape.youtube.default(""), whatsapp: socialEnrollmentSchema.shape.whatsapp.default(""), publicEmail: socialEnrollmentSchema.shape.publicEmail.default(""), maps: socialEnrollmentSchema.shape.maps.default("") });
 
 export async function saveStoreProfileAction(_: StepState, formData: FormData): Promise<StepState> {
   try {
@@ -53,6 +54,7 @@ export async function saveStoreProfileAction(_: StepState, formData: FormData): 
     const d = parsed.data;
     await saveStoreProfile(user.id, {
       storeName: d.storeName,
+      socials: socialEnrollmentSchema.parse(d),
       tagline: d.tagline,
       bio: d.bio,
       country: d.country,
@@ -81,6 +83,7 @@ export async function updateStoreProfileAction(_: StepState, formData: FormData)
     const d = parsed.data;
     await saveStoreProfile(user.id, {
       storeName: d.storeName,
+      socials: socialEnrollmentSchema.parse(d),
       tagline: d.tagline,
       bio: d.bio,
       country: d.country,

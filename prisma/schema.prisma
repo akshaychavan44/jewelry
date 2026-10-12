@@ -808,6 +808,8 @@ model SellerProfile {
   user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   returnAddress   Address?               @relation("SellerReturnAddress", fields: [returnAddressId], references: [id], onDelete: SetNull)
   locations       StoreLocation[]
+  nameChanges BusinessNameChange[]
+  directorySettings JewelerDirectorySettings?
   products        Product[]
   sellerOrders    SellerOrder[]
   kycSubmissions  KycSubmission[]
@@ -832,6 +834,20 @@ model SellerProfile {
   @@index([verificationStatus, submittedAt])
   @@index([country])
   @@index([isFeatured, ratingAverage])
+}
+
+/// Public contact links and directory visibility, separate from commerce settings.
+model JewelerDirectorySettings {
+  sellerId    String @id
+  instagram   String @default("")
+  facebook    String @default("")
+  youtube     String @default("")
+  whatsapp    String @default("")
+  publicEmail String @default("")
+  maps        String @default("")
+  isPaused    Boolean @default(false)
+  updatedAt   DateTime @default(now()) @updatedAt
+  seller      SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 }
 
 /// Physical boutiques / ateliers shown in the seller directory.
@@ -1841,6 +1857,9 @@ model CustomRequest {
   neededBy           DateTime?
   referenceImageUrls String[]
   status             CustomRequestStatus @default(OPEN)
+  inquiryStatus      String              @default("NEW")
+  contactPhone       String              @default("")
+  contactWhatsapp    String              @default("")
   acceptedQuoteId    String?             @unique
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
@@ -2208,4 +2227,17 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([actorId, createdAt])
   @@index([createdAt])
+}
+
+model BusinessNameChange {
+  id String @id
+  sellerId String
+  previousName String
+  requestedName String
+  reason String
+  status String @default("PENDING")
+  reviewNotes String @default("")
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  reviewedAt DateTime? @db.Timestamptz(6)
+  seller SellerProfile @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 }

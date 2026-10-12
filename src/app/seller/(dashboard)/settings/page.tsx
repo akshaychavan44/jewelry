@@ -1,96 +1,28 @@
+import { BusinessNameForm } from "@/components/seller/business-name-form";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/account/page-header";
-import { StoreProfileForm } from "@/components/seller/onboarding-forms";
-import { PlanPicker, PoliciesForm, RateCardEditor } from "@/components/seller/settings-forms";
-import { PublicContactForm } from "@/components/seller/public-contact-form";
-import { Card, CardHeader } from "@/components/ui/display";
-import { bpsToPercent, formatMoney, toMajor } from "@/lib/money";
-import { num } from "@/lib/utils";
-import { updateStoreProfileAction } from "@/server/actions/onboarding";
+import { BusinessProfileForm, ListingVisibility } from "@/components/seller/business-profile-form";
+import { JewelerSocialLinks } from "@/components/catalog/jeweler-social-links";
+import { buttonVariants } from "@/components/ui/button";
+import { Monogram } from "@/components/ui/display";
 import { requireSeller } from "@/server/auth/session";
 import { db } from "@/server/db";
+import { getDirectorySettings, nameChanges } from "@/server/services/jeweler-directory";
 
-export default async function SellerSettings() {
+export default async function MyBusiness() {
   const { seller } = await requireSeller();
-  const [full, rates, plans, settings] = await Promise.all([
-    db.sellerProfile.findUniqueOrThrow({ where: { id: seller.id }, include: { locations: { orderBy: { id: "asc" } }, returnAddress: true, subscription: { include: { plan: true } } } }),
-    db.shippingRate.findMany({ where: { sellerId: seller.id }, orderBy: [{ zone: "asc" }, { method: "asc" }] }),
-    db.subscriptionPlan.findMany({ where: { isActive: true }, orderBy: { position: "asc" } }),
-    db.platformSettings.findUniqueOrThrow({ where: { id: "platform" } }),
-  ]);
-
-  return (
-    <>
-      <PageHeader title="Store settings" description="How your atelier profile, showcase policies and listing subscription appear." />
-      <div className="space-y-6">
-        <Card>
-          <CardHeader title="Store profile" description="Shown on your atelier profile, product showcases and the jeweler directory." />
-          <div className="p-5">
-            <StoreProfileForm store={{ ...full, returnAddress: full.returnAddress }} action={updateStoreProfileAction} submitLabel="Save profile" />
-          </div>
-        </Card>
-        <Card>
-          <CardHeader title="Public contact & showroom" description="Help customers call, WhatsApp or visit your business directly." />
-          <div className="p-5">
-            <PublicContactForm key={full.locations[0]?.id ?? "new"} initial={{
-              id: full.locations[0]?.id,
-              name: full.locations[0]?.name ?? full.storeName,
-              line1: full.locations[0]?.line1 ?? "",
-              city: full.locations[0]?.city ?? full.city ?? "",
-              phone: full.locations[0]?.phone ?? "",
-              hours: full.locations[0]?.hours ?? "",
-              appointmentOnly: full.locations[0]?.appointmentOnly ?? false,
-            }} />
-          </div>
-        </Card>
-        <Card>
-          <CardHeader title="Policies" description="Direct communication, commission lead handling and workshop policies." />
-          <div className="p-5">
-            <PoliciesForm initial={{ returnWindowDays: full.returnWindowDays, handlingDays: full.handlingDays, acceptsOffers: full.acceptsOffers, acceptsCustomOrders: full.acceptsCustomOrders }} />
-          </div>
-        </Card>
-        <Card>
-          <CardHeader title="Fulfillment & Dispatch Information" description={`Displayed on your piece showcases. Domestic means within ${seller.country}.`} />
-          <div className="p-5">
-            <RateCardEditor
-              currency={seller.defaultCurrency}
-              initial={rates.map((r) => ({
-                zone: r.zone,
-                method: r.method,
-                carrier: r.carrier,
-                price: String(toMajor(num(r.priceMinor), r.currency)),
-                freeOver: r.freeOverMinor === null ? "" : String(toMajor(num(r.freeOverMinor), r.currency)),
-                minDays: String(r.minDays),
-                maxDays: String(r.maxDays),
-                insuranceRateBps: String(r.insuranceRateBps),
-                isActive: r.isActive,
-              }))}
-            />
-          </div>
-        </Card>
-        <Card>
-          <CardHeader title="Listing Subscription Plan" description="Choose your directory listing subscription plan. 0% sales commission across all plans." />
-          <div className="p-5">
-            <PlanPicker
-              current={full.subscription?.status === "ACTIVE" ? full.subscription.plan.code : "atelier"}
-              plans={plans.map((p) => ({
-                code: p.code,
-                name: p.name,
-                price: num(p.priceMinor) === 0 ? "Free" : `${formatMoney(num(p.priceMinor), p.currency)}/mo`,
-                commission: "0%",
-                features: p.features,
-              }))}
-            />
-          </div>
-        </Card>
-        <Card>
-          <CardHeader title="Listing & Membership Status" />
-          <p className="px-5 py-4 text-[14px] text-ink-soft">
-            Verification status: <span className="font-medium text-ink">{full.verificationStatus}</span> · Listing plan: <span className="font-medium text-ink">{full.subscription?.plan.name ?? "Atelier"}</span>
-            <span className="mt-1 block text-[12.5px] text-muted">All customer inquiries, consultations, sales, payments, and fulfillment are handled directly and independently by your atelier.</span>
-          </p>
-        </Card>
-      </div>
-    </>
-  );
+  const [settings, locations] = await Promise.all([getDirectorySettings(seller.id), db.storeLocation.findMany({ where: { sellerId: seller.id }, orderBy: { id: "asc" }, take: 1 })]);
+  const changes = await nameChanges(seller.id);
+  const location = locations[0];
+  return <>
+    <PageHeader title="My Business" description="Keep your business details and social links up to date." />
+    <section className="mb-7 flex flex-wrap items-center justify-between gap-5 rounded-[3px] border border-line bg-parchment/50 p-5">
+      <div><p className="caps text-[11px] text-muted">Listing status</p><p className="mt-1 font-display text-2xl text-ink">{settings.isPaused ? "Paused" : "Live on Loupe"}</p><p className="mt-1 max-w-lg text-sm text-ink-soft">{settings.isPaused ? "Your profile is hidden and customers cannot send new requests. Existing requests remain available." : "Customers can discover your business and open your social and contact links."}</p></div>
+      <div className="flex flex-wrap gap-3"><Link href="/seller/preview" className={buttonVariants({ variant: "subtle", size: "sm" })}>Preview profile</Link>{!settings.isPaused && <Link href={`/jewelers/${seller.slug}`} className={buttonVariants({ variant: "subtle", size: "sm" })}><ExternalLink size={15} />View public profile</Link>}<ListingVisibility paused={settings.isPaused} /></div>
+    </section>
+    <BusinessProfileForm initial={{ storeName: seller.storeName, tagline: seller.tagline ?? "", bio: seller.bio ?? "", city: seller.city ?? "", specialties: seller.specialties.join(", "), address: location?.line1 ?? "", hours: location?.hours ?? "", phone: location?.phone ?? "", whatsapp: settings.whatsapp, publicEmail: settings.publicEmail, maps: settings.maps, instagram: settings.instagram, facebook: settings.facebook, youtube: settings.youtube, website: seller.website ?? "", acceptsCustomOrders: seller.acceptsCustomOrders }} />
+    <details className="mt-8 rounded border border-line bg-porcelain p-5"><summary className="cursor-pointer font-display text-xl">Change business name</summary><p className="my-4 text-sm text-muted">Admin approval is required. Your profile address stays the same after a name change.</p><BusinessNameForm pending={changes.some((r) => r.status === "PENDING")} /><ul className="mt-5 space-y-3">{changes.map((r) => <li key={r.id} className="border-t border-line pt-3 text-sm"><strong>{r.requestedName}</strong> · {r.status.toLowerCase()}{r.reviewNotes && <p className="mt-1 text-muted">{r.reviewNotes}</p>}</li>)}</ul></details>
+    <section className="mt-8 rounded-[3px] border border-line bg-porcelain p-5"><p className="caps mb-4 text-xs text-muted">Saved profile preview</p><div className="mb-4 flex items-center gap-4"><Monogram name={seller.storeName} src={seller.logoUrl} size={48} /><div><p className="font-display text-xl">{seller.storeName}</p><p className="text-sm text-muted">{seller.city}</p></div></div><JewelerSocialLinks settings={settings} website={seller.website} /><p className="mt-4 text-xs text-muted">Save your changes to update this preview and your public profile.</p></section>
+  </>;
 }
-

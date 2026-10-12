@@ -18,6 +18,7 @@ import {
 } from "@/server/actions/onboarding";
 
 type Store = {
+  socials?: Record<string, string>;
   storeName?: string;
   tagline?: string | null;
   bio?: string | null;
@@ -73,7 +74,7 @@ export function StoreProfileForm({
       <Field label="City" htmlFor="city" error={err("city")}>
         <Input id="city" name="city" defaultValue={store.city ?? ""} aria-invalid={!!err("city")} required />
       </Field>
-      <Field label="Default currency" htmlFor="defaultCurrency" hint="Your listings are priced in this currency; buyers see conversions.">
+      <Field label="Default currency" htmlFor="defaultCurrency" hint="Used for custom request budgets.">
         <NativeSelect id="defaultCurrency" name="defaultCurrency" defaultValue={store.defaultCurrency ?? "USD"}>
           {SUPPORTED_CURRENCIES.map((c) => (
             <option key={c} value={c}>
@@ -107,10 +108,13 @@ export function StoreProfileForm({
         <Field label="Postal code" htmlFor="ra_postalCode" error={err("ra_postalCode")}>
           <Input id="ra_postalCode" name="ra_postalCode" defaultValue={ra?.postalCode} required />
         </Field>
-        <Field label="Phone for couriers" htmlFor="ra_phone" optional>
+        <Field label="Business phone" htmlFor="ra_phone" optional>
           <Input id="ra_phone" name="ra_phone" type="tel" defaultValue={ra?.phone ?? ""} />
         </Field>
       </fieldset>
+      <fieldset className="grid gap-5 border-t border-line pt-6 sm:col-span-2 sm:grid-cols-2"><legend className="caps text-ink">Social & contact links</legend><p className="text-sm text-muted sm:col-span-2">Optional. These links appear on your business profile after approval and can be edited in My Business.</p>{[
+        ["instagram", "Instagram", "url", "https://instagram.com/yourbusiness"], ["facebook", "Facebook", "url", "https://facebook.com/yourbusiness"], ["youtube", "YouTube", "url", "https://youtube.com/@yourbusiness"], ["whatsapp", "WhatsApp", "tel", "+91 9876543210"], ["publicEmail", "Public contact email", "email", "hello@yourbusiness.com"], ["maps", "Google Maps", "url", "https://maps.app.goo.gl/…"]
+      ].map(([key, label, type, placeholder]) => <Field key={key} label={label} htmlFor={key} optional error={err(key)}><Input id={key} name={key} type={type} placeholder={placeholder} defaultValue={store.socials?.[key] ?? ""} aria-invalid={!!err(key)} /></Field>)}</fieldset>
       <div className="sm:col-span-2">
         <SubmitButton size="lg" pendingLabel="Saving…">
           {submitLabel}
@@ -213,7 +217,7 @@ export function SubmitApplicationForm() {
       <label className="flex items-start gap-3 rounded-[3px] border border-line bg-ivory p-4 text-[14px] leading-relaxed text-ink-soft">
         <input type="checkbox" name="agree" className="mt-1 size-4 accent-[#7b8069]" required />
         <span>
-          I confirm that our business details and all listed jewelry showcase pieces are described accurately — metal purity, gemstones, certifications, and craft origins. I understand that all customer inquiries, consultations, bespoke commissions, transactions, fulfillment, returns, and dispute handling are conducted directly and independently between our atelier and the customer.
+          I confirm that our business details and contact links are accurate. I understand that all customer inquiries, consultations, bespoke commissions, transactions, fulfillment, returns, and dispute handling are conducted directly and independently between our atelier and the customer.
         </span>
       </label>
       <div className="flex flex-wrap items-center gap-3">

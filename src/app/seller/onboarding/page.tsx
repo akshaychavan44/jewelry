@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/format";
 import { countryName } from "@/lib/regions";
 import { cn, firstParam, humanize, type SearchParams } from "@/lib/utils";
 import { requireUser } from "@/server/auth/session";
+import { getDirectorySettings } from "@/server/services/jeweler-directory";
 import { db } from "@/server/db";
 import type { KycDocumentType } from "@/generated/prisma/enums";
 
@@ -64,6 +65,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
     );
   }
 
+  const socials = seller ? await getDirectorySettings(seller.id) : undefined;
   const requested = Number(firstParam((await searchParams).step));
   const maxStep = seller?.onboardingStep ?? 1;
   const step = Number.isFinite(requested) && requested >= 1 && requested <= Math.min(3, maxStep) ? requested : Math.min(3, maxStep);
@@ -113,7 +115,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
           <StoreProfileForm
             store={
               seller
-                ? { ...seller, returnAddress: seller.returnAddress }
+                ? { ...seller, returnAddress: seller.returnAddress, socials: socials ? { instagram: socials.instagram, facebook: socials.facebook, youtube: socials.youtube, whatsapp: socials.whatsapp, publicEmail: socials.publicEmail, maps: socials.maps } : undefined }
                 : { storeName: "", country: user.country ?? "US", defaultCurrency: user.preferredCurrency ?? "USD" }
             }
           />
@@ -129,7 +131,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
                 ["Registration", seller.registrationNumber ?? "—"],
                 ["Tax ID", seller.taxIdLast4 ? `••••${seller.taxIdLast4}` : "—"],
                 ["Documents", Object.keys(uploaded).map((t) => humanize(t)).join(", ") || "None uploaded"],
-                ["Return address", seller.returnAddress ? `${seller.returnAddress.line1}, ${seller.returnAddress.city}` : "—"],
+                ["Business address", seller.returnAddress ? `${seller.returnAddress.line1}, ${seller.returnAddress.city}` : "—"],
               ].map(([label, value]) => (
                 <div key={label}>
                   <dt className="text-[11.5px] tracking-[0.1em] text-muted uppercase">{label}</dt>

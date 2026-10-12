@@ -1,98 +1,27 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Mail, Phone } from "lucide-react";
 import { PageHeader } from "@/components/account/page-header";
-import { CommissionStatus, QuoteForm } from "@/components/seller/quote-form";
-import { EmptyState, StatusBadge } from "@/components/ui/display";
-import { formatDate, timeAgo } from "@/lib/format";
-import { GEMSTONES, METALS } from "@/lib/jewelry";
+import { EmptyState } from "@/components/ui/display";
+import { InquiryStatusSelect } from "@/components/seller/inquiry-status";
+import { formatDate } from "@/lib/format";
 import { formatMoney } from "@/lib/money";
-import { CUSTOM_REQUEST_STATUS } from "@/lib/status";
 import { num } from "@/lib/utils";
 import { requireSeller } from "@/server/auth/session";
 import { db } from "@/server/db";
+import { inquiryContacts, inquiryStatusesForSeller } from "@/server/services/jeweler-directory";
 
-export default async function SellerCommissions() {
+export default async function CustomRequests() {
   const { seller } = await requireSeller();
-  const [open, mine] = await Promise.all([
-    db.customRequest.findMany({
-      where: { status: { in: ["OPEN", "QUOTED"] }, OR: [{ sellerId: null }, { sellerId: seller.id }], buyer: { id: { not: seller.userId } } },
-      orderBy: { createdAt: "desc" },
-      include: { buyer: { select: { name: true, country: true } }, category: { select: { name: true } }, quotes: { where: { sellerId: seller.id } } },
-    }),
-    db.customRequest.findMany({
-      where: { acceptedQuote: { sellerId: seller.id } },
-      orderBy: { updatedAt: "desc" },
-      include: { buyer: { select: { name: true } }, acceptedQuote: true },
-    }),
+  const [requests, statuses, contacts] = await Promise.all([
+    db.customRequest.findMany({ where: { sellerId: seller.id }, orderBy: { createdAt: "desc" }, include: { buyer: { select: { name: true, email: true, phone: true } }, category: { select: { name: true } } } }),
+    inquiryStatusesForSeller(seller.id),
+    inquiryContacts(seller.id),
   ]);
-
-  return (
-    <>
-      <PageHeader title="Commissions" description={seller.acceptsCustomOrders ? "Requests sent to you, and open briefs any verified jeweler can quote on." : "You're not taking commissions — turn them on in store settings to quote."} />
-
-      {mine.length > 0 && (
-        <section className="mb-10">
-          <h2 className="caps mb-3 text-ink">Your commissions</h2>
-          <ul className="divide-y divide-line rounded-[3px] border border-line bg-porcelain">
-            {mine.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                <div>
-                  <p className="text-[14.5px] text-ink">{r.title}</p>
-                  <p className="text-[12.5px] text-muted">
-                    {r.buyer.name} · {r.acceptedQuote && `${formatMoney(num(r.acceptedQuote.amountMinor), r.acceptedQuote.currency)} · ${r.acceptedQuote.leadTimeDays} days`}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <StatusBadge status={r.status} map={CUSTOM_REQUEST_STATUS} />
-                  <CommissionStatus requestId={r.id} status={r.status} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <h2 className="caps mb-3 text-ink">Open requests</h2>
-      {open.length === 0 ? (
-        <EmptyState icon={<Sparkles />} title="No open requests right now" />
-      ) : (
-        <ul className="space-y-4">
-          {open.map((r) => {
-            const quoted = r.quotes[0];
-            return (
-              <li key={r.id} className="rounded-[3px] border border-line bg-porcelain">
-                <div className="px-5 py-4">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="font-display text-[20px] text-ink">{r.title}</p>
-                      <p className="text-[12.5px] text-muted">
-                        {r.buyer.name} · {timeAgo(r.createdAt)} · {r.sellerId ? "sent to you directly" : "open brief"}
-                        {r.category && ` · ${r.category.name}`}
-                      </p>
-                    </div>
-                    <p className="text-[13.5px] text-ink-soft">
-                      Budget {r.budgetMinMinor ? `${formatMoney(num(r.budgetMinMinor), r.currency)} – ` : "up to "}
-                      <span className="text-ink">{formatMoney(num(r.budgetMaxMinor), r.currency)}</span>
-                    </p>
-                  </div>
-                  <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">{r.description}</p>
-                  <p className="mt-2 text-[12.5px] text-muted">
-                    {[r.metalPreference && METALS[r.metalPreference].label, r.gemstonePreference && GEMSTONES[r.gemstonePreference], r.ringSize && `size US ${r.ringSize}`, r.neededBy && `needed by ${formatDate(r.neededBy)}`].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                <div className="border-t border-line px-5 py-4">
-                  {quoted ? (
-                    <p className="text-[13.5px] text-sage-deep">
-                      You quoted {formatMoney(num(quoted.amountMinor), quoted.currency)} · {quoted.leadTimeDays} days · {quoted.status.toLowerCase()}
-                    </p>
-                  ) : seller.acceptsCustomOrders ? (
-                    <QuoteForm requestId={r.id} currency={seller.defaultCurrency} />
-                  ) : null}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </>
-  );
+  const contactMap = new Map(contacts.map((r) => [r.id, r]));
+  const statusMap = new Map(statuses.map((r) => [r.id, r.inquiryStatus]));
+  return <><PageHeader title="Custom Requests" description="Private requests from customers who selected your business." /><p className="mb-6 text-sm text-muted">Contact the customer to discuss their idea. Closing a request finishes the inquiry; it does not record a sale.</p>{!requests.length ? <EmptyState icon={<Sparkles />} title="No custom requests yet">When a customer chooses your business and submits a request, it will appear here.</EmptyState> : <ul className="space-y-5">{requests.map((r) => <li key={r.id} className="rounded-[3px] border border-line bg-porcelain p-5 sm:p-7">
+    <div className="flex flex-wrap items-start justify-between gap-5"><div><p className="text-xs text-muted">{r.reference} · {formatDate(r.createdAt)}</p><h2 className="mt-2 font-display text-2xl text-ink">{r.title}</h2><p className="mt-1 text-sm text-muted">{r.buyer.name}{r.category && ` · ${r.category.name}`}</p></div>{r.status === "CANCELLED" ? <span className="rounded-full bg-parchment px-3 py-1 text-sm">Cancelled by customer</span> : <InquiryStatusSelect id={r.id} status={statusMap.get(r.id) ?? "NEW"} />}</div>
+    <p className="mt-5 whitespace-pre-wrap break-words text-sm leading-relaxed text-ink-soft">{r.description}</p><div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">{r.budgetMaxMinor !== null && <p>Budget: {r.budgetMinMinor !== null && `${formatMoney(num(r.budgetMinMinor), r.currency)} – `}{formatMoney(num(r.budgetMaxMinor), r.currency)}</p>}{r.neededBy && <p>Preferred date: {formatDate(r.neededBy)}</p>}{r.ringSize && <p>Ring size: US {r.ringSize}</p>}{r.metalPreference && <p>Metal: {r.metalPreference.replaceAll("_", " ").toLowerCase()}</p>}{r.gemstonePreference && <p>Stone: {r.gemstonePreference.toLowerCase()}</p>}</div>
+    {r.referenceImageUrls?.length > 0 && <div className="mt-4 flex flex-wrap gap-3">{r.referenceImageUrls.filter((url) => /^(https?:\/\/|\/api\/files\/|\/uploads\/)/.test(url)).map((url, i) => <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="text-sm underline">Reference image {i + 1}</a>)}</div>}
+    <div className="mt-5 flex flex-wrap gap-4 border-t border-line pt-4 text-sm"><a href={`mailto:${r.buyer.email}`} className="inline-flex items-center gap-2 text-ink underline"><Mail size={16} />Email customer</a>{contactMap.get(r.id)?.contactPhone && <a href={`tel:${(contactMap.get(r.id)?.contactPhone || "").replace(/[^+\d]/g, "")}`} className="inline-flex items-center gap-2 text-ink underline"><Phone size={16} />Call customer</a>}{contactMap.get(r.id)?.contactWhatsapp && <a href={`https://wa.me/${contactMap.get(r.id)!.contactWhatsapp}`} target="_blank" rel="noopener noreferrer" className="underline">WhatsApp customer</a>}</div>
+  </li>)}</ul>}</>;
 }

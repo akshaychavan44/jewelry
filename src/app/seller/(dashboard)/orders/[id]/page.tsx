@@ -1,6 +1,2 @@
 import { redirect } from "next/navigation";
-
-export default function SellerOrderDetail() {
-  redirect("/seller/messages");
-}
-
+export default function LegacySellerPage() { redirect("/seller/settings"); }

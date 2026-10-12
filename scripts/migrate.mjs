@@ -3,6 +3,9 @@ import path from "node:path";
 import { Pool } from "@neondatabase/serverless";
 
 try {
+  process.loadEnvFile(".env.local");
+} catch {}
+try {
   process.loadEnvFile(".env");
 } catch {}
 
@@ -43,6 +46,11 @@ async function runMigrations() {
       console.log("Database tables already present. Checking timestamp defaults...");
     }
 
+    // Additive dashboard migration is safe to re-run for existing databases.
+    const dashboardMigration = path.resolve(process.cwd(), "prisma/migrations/202610100001_jeweler_dashboard/migration.sql");
+    await client.query(readFileSync(dashboardMigration, "utf8"));
+    await client.query(readFileSync(path.resolve(process.cwd(), "prisma/migrations/202610100002_directory_features/migration.sql"), "utf8"));
+
     console.log("Setting default timestamps on all updatedAt and createdAt columns...");
     await client.query(`
       DO $$
@@ -60,6 +68,7 @@ async function runMigrations() {
     console.log("All default timestamp constraints applied to Neon successfully!");
   } catch (err) {
     console.error("Migration error:", err.message);
+    process.exitCode = 1;
   } finally {
     client.release();
     await pool.end();

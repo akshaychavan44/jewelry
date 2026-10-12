@@ -43,7 +43,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
     getWishlistProductIds(user?.id),
     user ? db.favoriteStore.findUnique({ where: { userId_sellerId: { userId: user.id, sellerId: seller.id } } }) : null,
   ]);
-  await track("STORE_VIEW", { userId: user?.id, sellerId: seller.id, path: `/jewelers/${slug}` });
+  if (user?.id !== seller.userId) await track("STORE_VIEW", { userId: user?.id, sellerId: seller.id, path: `/jewelers/${slug}` });
 
   return (
     <div className="pb-20">
@@ -125,7 +125,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
                 {l.phone && (
                   <div className="mt-3 space-y-3"><p className="flex items-center gap-2 text-[14px] text-ink-soft">
                     <Phone className="size-4 shrink-0" strokeWidth={1.5} /> {l.phone}
-                  </p><DirectContact whatsapp={settings.whatsapp} phone={l.phone} title={`the collection at ${seller.storeName}`} /></div>
+                  </p><DirectContact sellerId={seller.id} whatsapp={settings.whatsapp} phone={l.phone} title={`the collection at ${seller.storeName}`} /></div>
                 )}
               </div>
             ))}
@@ -146,7 +146,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        <div className="mb-8"><JewelerSocialLinks settings={settings} website={seller.website} /></div>
+        <div className="mb-8"><JewelerSocialLinks sellerId={seller.id} settings={settings} website={seller.website} /></div>
         <section aria-labelledby="collection-heading" className="border-t border-line pt-12">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <h2 id="collection-heading" className="display-md text-ink">

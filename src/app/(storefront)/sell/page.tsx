@@ -8,7 +8,6 @@ import {
   MessageSquare,
 } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth/session";
@@ -59,9 +58,9 @@ export default async function SellPage() {
   const primaryCta = (
     <Link
       href={user ? "/seller/onboarding" : "/register?intent=seller"}
-      className="inline-flex h-[46px] items-center justify-center gap-2 rounded-[2px] bg-[#9a672f] px-6 text-[12px] font-semibold tracking-[0.08em] text-white uppercase shadow-sm transition-all hover:bg-[#835523] hover:shadow-md"
+      className="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-[3px] border border-[#896435] btn-gold px-8 py-3.5 text-[16px] font-medium tracking-[0.03em] shadow-sm transition-all duration-300 hover:shadow-md active:scale-[0.98]"
     >
-      List Your Business <ArrowRight className="size-3.5" />
+      List Your Business <ArrowRight className="size-5" />
     </Link>
   );
 
@@ -69,17 +68,21 @@ export default async function SellPage() {
     <>
       {/* ── 1. Hero Section ── */}
       <section className="relative flex min-h-[85vh] items-start overflow-hidden bg-[#faf6f0] lg:min-h-[calc(100vh-5rem)]">
-        {/* Right side workbench photography with soft blur & gradient mask */}
+        {/* Right side workbench video with soft blur & gradient mask */}
         <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[56%] lg:block" aria-hidden="true">
           <div className="relative h-full w-full">
-            <Image
-              src="/media/for-jewelers-hero.jpg"
-              alt=""
-              fill
-              priority
-              sizes="60vw"
-              className="object-cover object-[65%_center]"
-            />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              poster="/media/for-jewelers-hero.jpg"
+              className="h-full w-full object-cover object-[65%_center]"
+            >
+              <source src="/media/gemini_generated_video_932f8c86.mp4" type="video/mp4" />
+              <source src="/media/for-jewelers-hero.mp4" type="video/mp4" />
+            </video>
             {/* Soft blended gradient wash matching luxury background */}
             <div
               className="absolute inset-0"

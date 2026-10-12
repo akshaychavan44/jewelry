@@ -43,8 +43,8 @@
 .imageArrow { position: absolute; right: 24px; bottom: 24px; display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid var(--color-gold-deep); border-radius: 50%; color: var(--color-gold-deep); background: var(--color-ivory); box-shadow: 0 2px 8px rgb(47 44 40 / 8%); transition: background .25s, color .25s; }
 .invitationImage:hover .imageArrow { background: var(--color-gold-deep); color: var(--color-ivory); }
 .collectionAction { margin-top: 26px; }
-.collectionButton { min-width: 350px; min-height: 58px; padding-inline: 48px; font-size: 13px; letter-spacing: .18em; background: #96774d; }
-.collectionButton:hover { background: #7c5f37; }
+.collectionButton { min-width: 350px; min-height: 58px; padding-inline: 48px; font-size: 13px; letter-spacing: .18em; background: var(--gradient-gold); color: var(--color-ink); border: 1px solid var(--color-gold); }
+.collectionButton:hover { background: var(--color-gold); }
 .journal { border-top: 1px solid var(--color-line); background: var(--color-parchment); }
 @media (48rem <= width < 64rem) { .invitation { grid-template-columns: 42% 58%; } }
 @media (width < 48rem) {

@@ -7,8 +7,8 @@
 .eyebrow span { width: 34px; height: 1px; background: #a88449; }
 .copy h2 { font-family: var(--font-display); font-size: clamp(52px, 5.2vw, 86px); font-weight: 400; line-height: 1.04; letter-spacing: -.028em; margin-top: 25px; }
 .description { font-family: var(--font-sans); font-size: clamp(18px, 1.45vw, 23px); line-height: 1.55; color: #3b3227; margin-top: 20px; }
-.cta { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 54px; margin-top: 26px; padding: 16px 34px; background: linear-gradient(120deg, #9c7947, #a4824d); color: #fffaf1; font-family: var(--font-sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .18em; box-shadow: 0 8px 28px #69502715; transition: background .25s, transform .25s, box-shadow .25s; }
-.cta:hover { background: #846130; transform: translateY(-2px); box-shadow: 0 10px 25px #69502726; }
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 54px; margin-top: 26px; padding: 16px 34px; background: var(--gradient-gold); color: var(--color-ink); border: 1px solid var(--color-gold); font-family: var(--font-sans); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .18em; box-shadow: 0 8px 28px #69502715; transition: background .25s, transform .25s, box-shadow .25s; }
+.cta:hover { background: var(--color-gold); transform: translateY(-2px); box-shadow: 0 10px 25px #69502726; }
 .cta:focus-visible { outline: 2px solid #65431f; outline-offset: 5px; }
 .annotations { position: absolute; inset: 0; pointer-events: none; }
 .annotations > div { position: absolute; }

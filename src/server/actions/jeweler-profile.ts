@@ -1,4 +1,6 @@
 "use server";
+import { after } from "next/server";
+import { sendInquiryEmail } from "@/server/services/inquiry-notifications";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -24,6 +26,7 @@ export async function saveDirectoryProfileAction(_: StepState, form: FormData): 
     const parsed = directoryProfileSchema.safeParse({ ...Object.fromEntries(form), acceptsCustomOrders: form.get("acceptsCustomOrders") === "on" });
     if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors, message: "Check the highlighted fields." };
     const d = parsed.data;
+    if (!!d.latitude !== !!d.longitude) return { fieldErrors: { latitude: ["Add both coordinates, or leave both empty."], longitude: ["Add both coordinates, or leave both empty."] } };
     // Business identity is approved by the admin; do not silently replace it.
     if (d.storeName !== seller.storeName) return { fieldErrors: { storeName: ["Use Change business name to request admin approval."] } };
     const file = form.get("logo");
@@ -36,7 +39,7 @@ export async function saveDirectoryProfileAction(_: StepState, form: FormData): 
         ...(logo?.url ? { logoUrl: logo.url } : {}),
       } });
       const location = await tx.storeLocation.findFirst({ where: { sellerId: seller.id }, orderBy: { id: "asc" } });
-      const locationData = { name: seller.storeName, line1: d.address, city: d.city, country: seller.country, phone: d.phone || null, hours: d.hours || null };
+      const locationData = { name: seller.storeName, line1: d.address, city: d.city, country: seller.country, phone: d.phone || null, hours: d.hours || null, latitude: d.latitude ? Number(d.latitude) : null, longitude: d.longitude ? Number(d.longitude) : null };
       if (location) await tx.storeLocation.update({ where: { id: location.id }, data: locationData });
       else await tx.storeLocation.create({ data: { ...locationData, sellerId: seller.id } });
       await tx.$executeRaw`INSERT INTO "JewelerDirectorySettings" ("sellerId", "instagram", "facebook", "youtube", "whatsapp", "publicEmail", "maps")
@@ -69,14 +72,19 @@ export async function updateInquiryStatusAction(requestId: string, status: strin
   try {
     const { seller } = await assertSeller();
     const value = z.enum(["NEW", "CONTACTED", "CLOSED"]).parse(status);
-    const request = await db.customRequest.findFirst({ where: { id: requestId, sellerId: seller.id }, select: { buyerId: true, title: true } });
+    const request = await db.customRequest.findFirst({ where: { id: requestId, sellerId: seller.id }, select: { buyerId: true, title: true, buyer: { select: { email: true } } } });
     if (!request) return { ok: false, message: "Request not found." };
     const updated = await db.$transaction(async tx => {
-      if (!await setInquiryStatus(seller.id, requestId, value, tx)) return false;
-      await notify(tx, request.buyerId, "CUSTOM_REQUEST", `Custom request: ${INQUIRY_LABELS[value]}`, request.title, "/account/custom-requests");
-      return true;
+      const current = await tx.$queryRaw<{ inquiryStatus: string; status: string }[]>`SELECT "inquiryStatus", "status" FROM "CustomRequest" WHERE "id" = ${requestId} AND "sellerId" = ${seller.id} FOR UPDATE`;
+      if (!current[0] || current[0].status === "CANCELLED") return null;
+      if (current[0].inquiryStatus === value) return "unchanged";
+      if (!await setInquiryStatus(seller.id, requestId, value, tx)) return null;
+      const notification = await notify(tx, request.buyerId, "CUSTOM_REQUEST", `Custom request: ${INQUIRY_LABELS[value]}`, request.title, "/account/custom-requests");
+      return notification.id;
     });
     if (!updated) return { ok: false, message: "Request not found." };
+    if (updated === "unchanged") return { ok: true, message: "Request status is already up to date." };
+    after(async () => { await sendInquiryEmail({ to: request.buyer.email, subject: `Your Loupe enquiry: ${INQUIRY_LABELS[value]}`, text: `${seller.storeName} updated “${request.title}” to ${INQUIRY_LABELS[value]}.`, href: "/account/custom-requests", key: `inquiry-update/${updated}` }); });
     revalidatePath("/seller", "layout");
     revalidatePath("/account/custom-requests");
     return { ok: true, message: "Request status updated." };

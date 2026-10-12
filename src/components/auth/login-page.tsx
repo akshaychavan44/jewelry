@@ -48,11 +48,17 @@ export async function LoginPageContent({ intent, searchParams }: { intent: Login
       </Link>
       {process.env.NODE_ENV !== "production" && (
         <div className="mt-6 rounded-[3px] border border-dashed border-line-strong bg-porcelain px-3.5 py-2.5 text-[11.5px] text-ink-soft">
-          <p className="caps mb-1 text-[9.5px] text-muted">Demo accounts · development only</p>
-          <ul className="space-y-0.5 font-mono text-[11px]">
-            {seller ? <><li>seller@loupe.example — approved jeweler</li><li>pending@loupe.example — awaiting KYC</li></> : <><li>buyer@loupe.example — customer</li><li>admin@loupe.example — super-admin</li></>}
-          </ul>
-          <p className="mt-1">Shared password: see <span className="font-mono">prisma/seed/data/people.ts</span></p>
+          <p className="caps mb-1.5 text-[9.5px] font-semibold tracking-wider text-muted uppercase">Demo accounts · development only</p>
+          <div className="space-y-1 font-mono text-[11px] text-ink">
+            <div>
+              <span className="font-sans font-medium text-ink-soft">Customer: </span>
+              <span className="select-all">buyer@loupe.example</span> · Pass: <span className="select-all font-semibold">LoupeDemo!2026</span>
+            </div>
+            <div>
+              <span className="font-sans font-medium text-ink-soft">Jeweler: </span>
+              <span className="select-all">seller@loupe.example</span> · Pass: <span className="select-all font-semibold">LoupeDemo!2026</span>
+            </div>
+          </div>
         </div>
       )}
     </>

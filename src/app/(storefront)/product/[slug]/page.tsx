@@ -55,7 +55,7 @@ export default async function ProductPage({ params }: Props) {
     getWishlistProductIds(user?.id),
     user ? db.favoriteStore.findUnique({ where: { userId_sellerId: { userId: user.id, sellerId: product.sellerId } } }) : null,
   ]);
-  await track("PRODUCT_VIEW", { userId: user?.id, productId: product.id, sellerId: product.sellerId, path: `/product/${slug}` });
+  if (user?.id !== product.seller.user.id) await track("PRODUCT_VIEW", { userId: user?.id, productId: product.id, sellerId: product.sellerId, path: `/product/${slug}` });
 
   const contacts = await getDirectorySettings(product.sellerId);
   const category = product.category;
@@ -128,6 +128,7 @@ export default async function ProductPage({ params }: Props) {
                   id: product.id,
                   title: product.title,
                   sellerName: product.seller.storeName,
+                    sellerId: product.sellerId,
                 sellerSlug: product.seller.slug, publicWhatsapp: contacts.whatsapp, publicEmail: contacts.publicEmail,
                   publicPhone: product.seller.locations.find((location) => location.phone?.trim())?.phone ?? null,
                   sizingMode: product.sizingMode,

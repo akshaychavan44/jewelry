@@ -5,6 +5,7 @@ import { db } from "@/server/db";
 import { cardSelect, publicProductWhere, toCard } from "./catalog";
 import type { PriceContext } from "./currency";
 import { getDirectorySettings, getPausedSellerIds } from "./jeweler-directory";
+import { nearestDistance, type Coordinates } from "@/lib/jeweler-location";
 
 export const DIRECTORY_SORTS = {
   rating: "Highest rated",
@@ -14,7 +15,7 @@ export const DIRECTORY_SORTS = {
 } as const;
 export type DirectorySort = keyof typeof DIRECTORY_SORTS;
 
-export async function listJewelers(opts: { q?: string; country?: string; sort?: DirectorySort; category?: string }) {
+export async function listJewelers(opts: { q?: string; country?: string; city?: string; specialty?: string; near?: Coordinates; radiusKm?: number; sort?: DirectorySort; category?: string }) {
   let categorySellerIds: string[] | undefined;
   if (opts.category && opts.category !== "custom-orders") {
     const category = await db.category.findUnique({
@@ -31,6 +32,8 @@ export async function listJewelers(opts: { q?: string; country?: string; sort?: 
     verificationStatus: "APPROVED",
     id: { notIn: await getPausedSellerIds() },
     ...(opts.country ? { country: opts.country } : {}),
+    ...(opts.city ? { city: { equals: opts.city, mode: "insensitive" } } : {}),
+    ...(opts.specialty ? { specialties: { has: opts.specialty } } : {}),
     ...(opts.category === "custom-orders"
       ? { acceptsCustomOrders: true }
       : categorySellerIds
@@ -56,7 +59,7 @@ export async function listJewelers(opts: { q?: string; country?: string; sort?: 
           ? [{ storeName: "asc" }]
           : [{ isTopRated: "desc" }, { ratingAverage: "desc" }, { ratingCount: "desc" }];
 
-  const [sellers, countries] = await Promise.all([
+  const [sellers, countries, filterOptions] = await Promise.all([
     db.sellerProfile.findMany({
       where,
       orderBy,
@@ -77,14 +80,18 @@ export async function listJewelers(opts: { q?: string; country?: string; sort?: 
         salesCount: true,
         responseTimeMinutes: true,
         activeListingCount: true,
-        locations: { select: { city: true, appointmentOnly: true } },
+        locations: { select: { city: true, appointmentOnly: true, latitude: true, longitude: true } },
       },
     }),
     db.sellerProfile.groupBy({ by: ["country"], where: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } }, _count: { _all: true } }),
+    db.sellerProfile.findMany({ where: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() }, ...(opts.country ? { country: opts.country } : {}) }, select: { city: true, specialties: true } }),
   ]);
+  const located = sellers.map(seller => ({ ...seller, distanceKm: opts.near ? nearestDistance(opts.near, seller.locations) : null }))
+    .filter(seller => !opts.near || (seller.distanceKm !== null && seller.distanceKm <= (opts.radiusKm ?? 50)));
+  if (opts.near) located.sort((a, b) => a.distanceKm! - b.distanceKm!);
   // The database adapter applies nested `take` across all parents. Fetch each
   // store's preview separately so every card receives its own four pieces.
-  const directorySellers = await Promise.all(sellers.map(async (seller) => ({
+  const directorySellers = await Promise.all(located.map(async (seller) => ({
     ...seller,
     activeListingCount: await db.product.count({ where: { ...(await publicProductWhere()), sellerId: seller.id } }),
     products: await db.product.findMany({
@@ -94,7 +101,7 @@ export async function listJewelers(opts: { q?: string; country?: string; sort?: 
       select: { slug: true, title: true, images: { orderBy: { position: "asc" }, select: { url: true } } },
     }),
   })));
-  return { sellers: directorySellers, countries: countries.map((c) => ({ code: c.country, count: c._count._all })) };
+  return { sellers: directorySellers, countries: countries.map((c) => ({ code: c.country, count: c._count._all })), cities: [...new Set(filterOptions.map(s => s.city).filter((city): city is string => !!city))].sort(), specialties: [...new Set(filterOptions.flatMap(s => s.specialties))].sort() };
 }
 
 export async function getStorefront(slug: string, ctx: PriceContext, categorySlug?: string) {

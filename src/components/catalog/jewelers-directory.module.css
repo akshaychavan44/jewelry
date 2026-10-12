@@ -124,3 +124,11 @@
   .collectionLink { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .page *, .page *::before, .page *::after { transition: none !important; } }
+.toolbar { flex-wrap: wrap; gap: 14px; }
+.filters { flex-wrap: wrap; gap: 12px; max-width: 100%; min-width: 0; }
+@media (max-width: 539px) {
+  .filters { justify-content: flex-start; }
+  .selectControl { flex: 1 1 140px; min-width: 0; }
+  .selectControl + .selectControl { padding-left: 0; border-left: 0; }
+  .selectControl select { width: 100%; min-height: 40px; }
+}

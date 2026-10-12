@@ -287,60 +287,62 @@ function AccountMenu({ user }: { user: Props["user"] }) {
       </DropdownMenu>
     );
   }
+  const displayName = user.name?.trim() || user.email.split("@")[0];
+  const firstName = displayName.split(" ")[0];
+  const initial = (firstName.charAt(0) || "U").toUpperCase();
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn(navLink, "inline-flex h-11 items-center gap-2 outline-none")} aria-label="Account menu">
-        <span className="hidden lg:inline">Account</span>
-        <User className="size-[18px] md:size-4" strokeWidth={1.6} />
+      <DropdownMenuTrigger
+        className="group inline-flex items-center gap-2 rounded-full outline-none transition-all focus-visible:ring-2 focus-visible:ring-gold/60"
+        aria-label={`Account menu for ${displayName}`}
+      >
+        <span
+          className="grid size-9 place-items-center rounded-full border border-[#c18d2d]/50 bg-[#faf6ee] font-display text-[15px] font-semibold text-[#865d1b] shadow-2xs transition-all duration-200 group-hover:border-[#93691f] group-hover:bg-white group-hover:shadow-xs group-hover:scale-105"
+          title={displayName}
+        >
+          {initial}
+        </span>
+        <span className="hidden text-[12.5px] font-medium tracking-[0.02em] text-ink group-hover:text-[#865d1b] xl:inline">
+          {firstName}
+        </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-60">
-        <DropdownMenuLabel>
-          <p className="text-[14px] font-medium text-ink">{user.name ?? "Your account"}</p>
-          <p className="truncate text-[12.5px] text-muted">{user.email}</p>
+      <DropdownMenuContent align="end" className="min-w-64 p-1.5 shadow-lift">
+        <DropdownMenuLabel className="px-3 py-2.5 bg-[#faf6ee]/70 rounded-[3px] border border-[#ede3d1]/80 mb-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-[13.5px] font-semibold text-ink">{displayName}</p>
+            <span className="shrink-0 text-[10px] font-semibold tracking-wider uppercase text-[#9e743e] px-1.5 py-0.5 rounded-full bg-white border border-[#e2d5c2]">
+              {user.role === "ADMIN" ? "Admin" : user.role === "SELLER" ? "Jeweler" : "Customer"}
+            </span>
+          </div>
+          <p className="truncate text-[12px] font-normal text-muted mt-0.5" title={user.email}>{user.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {user.role === "ADMIN" && (
           <DropdownMenuItem asChild>
-            <Link href="/admin">
-              <Shield /> Admin console
+            <Link href="/admin" className="cursor-pointer">
+              <Shield className="size-4" /> Admin console
             </Link>
           </DropdownMenuItem>
         )}
         {user.role === "SELLER" && (
           <DropdownMenuItem asChild>
-            <Link href="/seller">
-              <Store /> Jeweler dashboard
+            <Link href="/seller" className="cursor-pointer">
+              <Store className="size-4" /> Jeweler dashboard
             </Link>
           </DropdownMenuItem>
         )}
         <DropdownMenuItem asChild>
-          <Link href={user.role === "SELLER" ? "/seller/account" : "/account"}>
-            <LayoutDashboard /> My account
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={user.role === "SELLER" ? "/seller/reviews" : "/account/reviews"}>
-            <MessageSquare /> Reviews
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={user.role === "SELLER" ? "/seller/custom-requests" : "/account/custom-requests"}>
-            <Sparkles /> Custom requests
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/account/wishlist">
-            <Heart /> Saved pieces
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/account/favorite-stores">
-            <Store /> Saved jewelers
+          <Link href={user.role === "SELLER" ? "/seller/account" : "/account"} className="cursor-pointer">
+            <LayoutDashboard className="size-4" /> My account
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => signOutAction()}>
-          <LogOut /> Sign out
+        <DropdownMenuItem
+          onSelect={() => signOutAction()}
+          className="text-rosewood cursor-pointer focus:bg-rosewood-mist focus:text-rosewood"
+        >
+          <LogOut className="size-4" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

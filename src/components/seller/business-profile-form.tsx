@@ -29,7 +29,7 @@ export function BusinessProfileForm({ initial }: { initial: DirectoryProfileInpu
   const [state, action, pending] = useActionState<StepState, FormData>(saveDirectoryProfileAction, {});
   const err = (key: string) => state.fieldErrors?.[key];
   const fields = (items: { key: keyof DirectoryProfileInput; label: string; optional?: boolean; placeholder?: string; type?: string }[]) => items.map(({ key, label, optional, placeholder, type }) => <Field key={key} label={label} htmlFor={key} optional={optional} error={err(key)}>
-    <Input id={key} name={key} type={type} defaultValue={String(initial[key])} placeholder={placeholder} aria-invalid={!!err(key)} aria-describedby={err(key) ? `${key}-error` : undefined} readOnly={key === "storeName"} />
+    <Input id={key} name={key} type={type} defaultValue={String(initial[key] ?? "")} placeholder={placeholder} aria-invalid={!!err(key)} aria-describedby={err(key) ? `${key}-error` : undefined} readOnly={key === "storeName"} />
   </Field>);
   return <form action={action} className="space-y-6">
     {state.message && <p role={state.ok ? "status" : "alert"} className={`rounded border px-4 py-3 text-sm ${state.ok ? "border-sage/30 bg-sage-mist text-sage-deep" : "border-rosewood/30 text-rosewood"}`}>{state.message}</p>}
@@ -43,6 +43,8 @@ export function BusinessProfileForm({ initial }: { initial: DirectoryProfileInpu
         <Field label="Short introduction" htmlFor="tagline" optional error={err("tagline")} className="sm:col-span-2"><Input id="tagline" name="tagline" defaultValue={initial.tagline} maxLength={120} placeholder="A sentence about your business" /></Field>
         <Field label="About your business" htmlFor="bio" optional error={err("bio")} className="sm:col-span-2"><Textarea id="bio" name="bio" defaultValue={initial.bio} maxLength={1500} /></Field>
         {fields([{ key: "address", label: "Business address" }, { key: "hours", label: "Opening hours", optional: true, placeholder: "Mon–Sat, 10am–7pm" }])}
+        <p className="text-xs leading-relaxed text-muted sm:col-span-2">Help nearby customers find your boutique. In Google Maps, right-click your boutique’s pin to copy its latitude and longitude. Add both below, or leave both empty.</p>
+        {fields([{ key: "latitude", label: "Boutique latitude", optional: true, placeholder: "19.0760" }, { key: "longitude", label: "Boutique longitude", optional: true, placeholder: "72.8777" }])}
       </div>
     </fieldset>
     <fieldset disabled={pending} className="rounded-[3px] border border-line bg-porcelain p-5 sm:p-7">

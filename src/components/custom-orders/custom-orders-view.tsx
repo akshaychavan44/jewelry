@@ -9,12 +9,14 @@ import {
   Diamond,
   FileText,
   Lock,
+  Scale,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { CustomRequestForm } from "@/components/account/custom-request-form";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import styles from "./custom-orders.module.css";
 import type { CurrentUser } from "@/server/auth/session";
 
 interface Props {
@@ -65,6 +67,21 @@ const RECENT_PIECES = [
   },
 ];
 
+const HERO_SLIDES = [
+  {
+    image: "/media/bespoke-hero-necklace.jpg",
+    alt: "Handcrafted 18k gold diamond necklace on travertine stone with baby's breath flowers and flowing silk",
+  },
+  {
+    image: "/media/bespoke-step-craft.jpg",
+    alt: "Master jeweler at workbench setting diamonds into handcrafted gold piece",
+  },
+  {
+    image: "/media/bespoke-step-finished.jpg",
+    alt: "Completed one-of-a-kind fine jewelry piece ready for presentation",
+  },
+];
+
 export function CustomOrdersView({
   user,
   currency,
@@ -73,8 +90,12 @@ export function CustomOrdersView({
   sellerSlug,
   jewelers,
 }: Props) {
+  const [heroSlide, setHeroSlide] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
+
+  const nextHeroSlide = () => setHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  const prevHeroSlide = () => setHeroSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
 
   const scrollCarousel = (direction: "left" | "right") => {
     if (!carouselRef.current) return;
@@ -94,99 +115,54 @@ export function CustomOrdersView({
       {/* ============================================================ */}
       {/* 1. HERO SECTION (1st Image) */}
       {/* ============================================================ */}
-      <section className="relative overflow-hidden border-b border-[#e6dcce] pt-4 pb-8 sm:pt-6 sm:pb-10 md:pt-8 md:pb-12 lg:pt-9">
-        {/* Soft studio ambient glow */}
-        <div
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(ellipse at 75% 35%, rgba(255, 252, 246, 0.95) 0%, rgba(250, 244, 235, 0.6) 45%, rgba(246, 238, 226, 0.3) 100%)",
-          }}
-        />
-
-        <div className="mx-auto w-full max-w-[1720px] px-4 sm:px-6 md:px-10 lg:px-14">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1.35fr] lg:gap-14 xl:grid-cols-[1fr_1.3fr]">
-            {/* Left Column: Heading, Copy, CTA & Trust Assurances */}
-            <div className="max-w-xl">
-              <div className="flex items-center gap-3">
-                <span className="caps text-[11px] font-semibold tracking-[0.24em] text-ink">
-                  CUSTOM COMMISSIONS
-                </span>
-                <span className="h-[1px] w-9 bg-[#bfa88c]" />
-              </div>
-
-              <h1 className="mt-5 font-display text-[42px] leading-[1.05] text-ink sm:text-[52px] md:text-[62px] lg:text-[70px]">
-                A piece that<br />
-                begins with you.
-              </h1>
-
-              <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-ink/75 sm:text-[16px]">
-                Bring your ideas, inspirations or heirloom stories to life with
-                the help of trusted independent jewelers. From a simple sketch to
-                a one-of-a-kind creation — made just for you.
-              </p>
-
-              <button
-                type="button"
-                onClick={scrollToForm}
-                className="mt-8 inline-flex items-center gap-2 rounded-[3px] bg-[#876038] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-white shadow-sm transition-all duration-300 hover:bg-[#724e29] hover:shadow-md active:scale-[0.98]"
-              >
-                Start a custom request →
-              </button>
-
-              {/* 4 Trust Assurances */}
-              <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-3 border-t border-[#e8ded0] pt-8">
-                <div className="flex items-center gap-2 text-ink/85">
-                  <Diamond className="size-4 shrink-0 text-[#a8824f]" strokeWidth={1.7} />
-                  <span className="text-[12.5px] font-medium leading-tight">Verified jewelers</span>
-                </div>
-                <div className="flex items-center gap-2 text-ink/85">
-                  <Lock className="size-4 shrink-0 text-[#a8824f]" strokeWidth={1.7} />
-                  <span className="text-[12.5px] font-medium leading-tight">Private requests</span>
-                </div>
-                <div className="flex items-center gap-2 text-ink/85">
-                  <FileText className="size-4 shrink-0 text-[#a8824f]" strokeWidth={1.7} />
-                  <span className="text-[12.5px] font-medium leading-tight">Compare proposals</span>
-                </div>
-                <div className="flex items-center gap-2 text-ink/85">
-                  <ShieldCheck className="size-4.5 shrink-0 text-[#a8824f]" strokeWidth={1.7} />
-                  <span className="text-[12.5px] font-medium leading-tight">Secure communication</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Hero Blueprint & Finished Jewelry Artwork */}
-            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[16px] bg-[#f8f3ea] shadow-[0_8px_32px_-10px_rgba(168,134,79,0.18)] border border-[#ede3d2]">
-              <Image
-                src="/media/bespoke-hero-necklace.jpg"
-                alt="Artisan jeweler technical blueprint sketch and finished 18k gold diamond necklace"
-                fill
-                priority
-                sizes="(min-width: 1280px) 58vw, 100vw"
-                className="object-cover object-center"
-              />
-
-              {/* Callout Hand-Drawn Annotation Overlays */}
-              <div className="pointer-events-none absolute right-[28%] top-[12%] hidden sm:block">
-                <p className="font-script text-[22px] md:text-[26px] text-[#8c6738] leading-none -rotate-[10deg] drop-shadow-sm">
-                  ~ 18K Gold
-                </p>
-              </div>
-              <div className="pointer-events-none absolute left-[18%] top-[48%] hidden sm:block">
-                <p className="font-script text-[22px] md:text-[26px] text-[#8c6738] leading-none rotate-[6deg] drop-shadow-sm">
-                  Diamond
-                </p>
-              </div>
-              <div className="pointer-events-none absolute right-[8%] bottom-[12%] hidden sm:block">
-                <p className="font-script text-[22px] md:text-[26px] text-[#8c6738] leading-none -rotate-[6deg] drop-shadow-sm">
-                  Custom Design
-                </p>
-              </div>
-            </div>
+      <section className={styles.hero} aria-label="Custom jewelry commissions">
+        <div className={styles.copy}>
+          <div className={styles.eyebrow}>CUSTOM COMMISSIONS</div>
+          <h1 className={cn("font-display", styles.title)}>
+            A piece that<br />begins with <em>you.</em>
+          </h1>
+          <p className={styles.description}>
+            Bring your ideas, inspirations or heirloom stories to life with the
+            help of trusted independent jewelers. From a simple sketch to
+            a one-of-a-kind creation — made just for you.
+          </p>
+          <div className={styles.actions}>
+            <button type="button" onClick={scrollToForm} className={cn(styles.action, styles.primary)}>
+              Start a custom request →
+            </button>
+            <Link href="/jewelers" className={styles.action}>Explore jewelers</Link>
+          </div>
+          <div className={styles.assurances}>
+            <div className={styles.assurance}><Diamond aria-hidden="true" /><span>Verified<br />jewelers</span></div>
+            <div className={styles.assurance}><FileText aria-hidden="true" /><span>Private<br />requests</span></div>
+            <div className={styles.assurance}><Sparkles aria-hidden="true" /><span>Personal<br />designs</span></div>
+            <div className={styles.assurance}><ShieldCheck aria-hidden="true" /><span>Direct<br />contact</span></div>
+          </div>
+        </div>
+        <div className={styles.showcase}>
+          <svg className={styles.arc} viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+            <ellipse cx="1000" cy="330" rx="1000" ry="880" fill="none" stroke="#b38b55" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          </svg>
+          <span className={styles.star} aria-hidden="true">✦</span>
+          <div className={styles.photo}>
+            <Image
+              src={HERO_SLIDES[heroSlide].image}
+              alt={HERO_SLIDES[heroSlide].alt}
+              fill
+              preload={heroSlide === 0}
+              sizes="(min-width: 1024px) 54vw, 100vw"
+            />
+          </div>
+          <div className={styles.seal} aria-hidden="true"><span>MADE<br />JUST<br />FOR<br />YOU</span></div>
+          <div className={styles.counter} aria-label={`Image ${heroSlide + 1} of ${HERO_SLIDES.length}`}>
+            <span>0{heroSlide + 1}</span><i aria-hidden="true" /><span>0{HERO_SLIDES.length}</span>
+          </div>
+          <div className={styles.controls}>
+            <button type="button" onClick={prevHeroSlide} aria-label="Previous slide"><ChevronLeft size={16} /></button>
+            <button type="button" onClick={nextHeroSlide} aria-label="Next slide"><ChevronRight size={16} /></button>
           </div>
         </div>
       </section>
-
       {/* ============================================================ */}
       {/* 2. RECENT CUSTOM PIECES (2nd Image Top) */}
       {/* ============================================================ */}
@@ -314,7 +290,7 @@ export function CustomOrdersView({
               <button
                 type="button"
                 onClick={scrollToForm}
-                className="mt-8 inline-flex items-center gap-2 rounded-[3px] bg-[#876038] px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-white shadow-sm transition-all duration-300 hover:bg-[#a07444] active:scale-[0.98]"
+                className="mt-8 inline-flex items-center gap-2 rounded-[3px] btn-gold px-8 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] shadow-sm transition-all duration-300 active:scale-[0.98]"
               >
                 Start a custom request →
               </button>
@@ -337,7 +313,7 @@ export function CustomOrdersView({
       {/* ============================================================ */}
       {/* 4. INTERACTIVE CUSTOM REQUEST FORM BRIEF */}
       {/* ============================================================ */}
-      <section ref={formRef} id="request-brief" className="py-16 md:py-24 bg-[#FAF7F2]">
+      <section ref={formRef} id="request-brief" className="scroll-mt-28 py-16 md:py-24 bg-[#FAF7F2]">
         <div className="mx-auto w-full max-w-[1080px] px-4 sm:px-6 md:px-10">
           <div className="rounded-[16px] border border-[#ede3d2] bg-white p-6 md:p-12 shadow-[0_10px_40px_-15px_rgba(47,44,40,0.08)]">
             <div className="mb-8 text-center">
@@ -370,7 +346,7 @@ export function CustomOrdersView({
                   href={`/login?callbackUrl=${encodeURIComponent(
                     `/custom-orders${sellerSlug ? `?jeweler=${sellerSlug}` : ""}`
                   )}`}
-                  className={cn(buttonVariants({ size: "lg" }), "bg-[#876038] hover:bg-[#724e29] text-white px-8")}
+                  className={cn(buttonVariants({ size: "lg", variant: "primary" }), "px-8")}
                 >
                   Sign in to start your request
                 </Link>

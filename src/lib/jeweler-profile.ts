@@ -17,6 +17,8 @@ export const directoryProfileSchema = z.object({
   specialties: z.string().trim().max(300),
   address: z.string().trim().min(3, "Enter your business address.").max(200),
   hours: z.string().trim().max(200),
+  latitude: z.string().trim().refine(v => !v || (Number.isFinite(Number(v)) && Math.abs(Number(v)) <= 90), "Enter a latitude between -90 and 90.").optional(),
+  longitude: z.string().trim().refine(v => !v || (Number.isFinite(Number(v)) && Math.abs(Number(v)) <= 180), "Enter a longitude between -180 and 180.").optional(),
   phone: z.string().trim().max(30).refine((v) => !v || /^\+?[\d\s()-]{7,30}$/.test(v), "Enter a valid phone number."),
   whatsapp: z.string().trim().max(30).refine((v) => !v || /^\+?\d{8,15}$/.test(v.replace(/[\s()-]/g, "")), "Include the country code, e.g. +91 9876543210."),
   publicEmail: z.union([z.email(), z.literal("")]),

@@ -3,7 +3,7 @@
 .footer::before { position: absolute; inset: 0; content: ''; background: linear-gradient(180deg, transparent 0%, rgb(17 11 6 / 12%) 30%, #170f09 94%); z-index: -1; }
 .content { max-width: 1760px; margin-inline: auto; padding: 44px clamp(24px, 4.8vw, 84px) 18px; }
 .newsletter { max-width: 670px; }
-.newsletter h2 { font-family: var(--font-display); font-size: clamp(42px, 4.15vw, 70px); line-height: 1.1; letter-spacing: .085em; text-transform: uppercase; font-weight: 400; }
+.newsletter h2 { font-family: var(--font-display); font-size: clamp(42px, 4.15vw, 70px); line-height: 1.1; letter-spacing: .085em; text-transform: uppercase; font-weight: 400; color: #ffffff; }
 .newsletter > p { font-family: var(--font-sans); font-size: clamp(15px, 1.2vw, 17px); letter-spacing: .02em; line-height: 1.6; margin: 10px 0 20px; color: #d4c8b6; }
 .columns { display: grid; grid-template-columns: 1.55fr repeat(3, minmax(0, 1fr)); max-width: 1130px; margin-top: 48px; }
 .brand { padding-right: 36px; }

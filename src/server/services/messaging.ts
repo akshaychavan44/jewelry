@@ -14,7 +14,7 @@ export async function notify(
   body?: string,
   href?: string,
 ) {
-  await client.notification.create({ data: { userId, type, title, body, href } });
+  return client.notification.create({ data: { userId, type, title, body, href } });
 }
 
 /** Finds (or opens) the buyer ↔ store thread for a given subject. */

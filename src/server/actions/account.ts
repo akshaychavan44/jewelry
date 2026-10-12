@@ -1,4 +1,6 @@
 "use server";
+import { after } from "next/server";
+import { sendInquiryEmail } from "@/server/services/inquiry-notifications";
 
 import { getDirectorySettings } from "@/server/services/jeweler-directory";
 import { saveUpload, UploadError } from "@/server/services/storage";
@@ -98,7 +100,7 @@ export async function createCustomRequestAction(_: CustomRequestState, formData:
   const parsed = customSchema.safeParse(raw);
   if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   const d = parsed.data;
-  const seller = d.sellerSlug ? await db.sellerProfile.findUnique({ where: { slug: d.sellerSlug }, select: { id: true, userId: true, storeName: true, acceptsCustomOrders: true, verificationStatus: true } }) : null;
+  const seller = d.sellerSlug ? await db.sellerProfile.findUnique({ where: { slug: d.sellerSlug }, select: { id: true, userId: true, storeName: true, acceptsCustomOrders: true, verificationStatus: true, user: { select: { email: true } } } }) : null;
   if (!seller || !seller.acceptsCustomOrders || seller.verificationStatus !== "APPROVED" || (await getDirectorySettings(seller.id)).isPaused) return { message: "Choose a jeweler who is currently accepting custom requests." };
   if (seller.userId === user.id) return { message: "You cannot send a request to your own business." };
   if (d.categoryId && !await db.category.findFirst({ where: { id: d.categoryId, isActive: true }, select: { id: true } })) return { fieldErrors: { categoryId: ["Choose an available category."] } };
@@ -122,6 +124,7 @@ export async function createCustomRequestAction(_: CustomRequestState, formData:
       return r;
     });
     revalidatePath("/account/custom-requests"); revalidatePath("/seller", "layout");
+    after(async () => { await sendInquiryEmail({ to: seller.user.email, subject: "New custom enquiry on Loupe", text: `${seller.storeName}, you have a new custom enquiry: ${request.title}\nReference: ${request.reference}`, href: "/seller/custom-requests", key: `inquiry-new/${request.id}` }); });
     return { ok: true, message: `Request ${request.reference} sent to ${seller.storeName}. They will contact you separately. Track it in My Custom Requests.` };
   } catch (error) { if (error instanceof UploadError) return { message: error.message }; throw error; }
 

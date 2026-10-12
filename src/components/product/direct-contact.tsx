@@ -1,12 +1,13 @@
 "use client";
 
+import { recordContactClick } from "@/lib/contact-analytics";
 import { MessageCircle, Phone } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { contactLinks, whatsappInquiry } from "@/lib/jeweler-contact";
 
-export function DirectContact({ phone, whatsapp, title }: { whatsapp?: string | null; phone?: string | null; title: string }) {
+export function DirectContact({ phone, whatsapp, title, sellerId, productId }: { sellerId?: string; productId?: string; whatsapp?: string | null; phone?: string | null; title: string }) {
   const pathname = usePathname();
   const [url, setUrl] = useState(pathname);
   useEffect(() => { setUrl(new URL(pathname, window.location.origin).href); }, [pathname]);
@@ -16,12 +17,12 @@ export function DirectContact({ phone, whatsapp, title }: { whatsapp?: string | 
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {whatsappLink && (
-        <a href={whatsappInquiry(whatsappLink, title, url)} target="_blank" rel="noopener noreferrer"
+        <a href={whatsappInquiry(whatsappLink, title, url)} onClick={() => sellerId && recordContactClick(sellerId, "whatsapp", productId)} target="_blank" rel="noopener noreferrer"
           className={buttonVariants({ variant: "dark", size: "lg", className: "normal-case tracking-normal text-[14px]" })}>
           <MessageCircle aria-hidden /> WhatsApp jeweler
         </a>
       )}
-      {links && <a href={links.call} className={buttonVariants({ variant: "outline", size: "lg", className: `normal-case tracking-normal text-[14px] ${whatsappLink ? "" : "sm:col-span-2"}` })}>
+      {links && <a href={links.call} onClick={() => sellerId && recordContactClick(sellerId, "phone", productId)} className={buttonVariants({ variant: "outline", size: "lg", className: `normal-case tracking-normal text-[14px] ${whatsappLink ? "" : "sm:col-span-2"}` })}>
         <Phone aria-hidden /> Call jeweler
       </a>}
     </div>

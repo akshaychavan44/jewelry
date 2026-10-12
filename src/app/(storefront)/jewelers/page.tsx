@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { DirectorySelect } from "@/components/catalog/directory-select";
+import { NearbyJewelers } from "@/components/catalog/nearby-jewelers";
+import { coordinates } from "@/lib/jeweler-location";
 import { FollowStoreButton } from "@/components/catalog/save-buttons";
 import styles from "@/components/catalog/jewelers-directory.module.css";
 import { EmptyState, Monogram } from "@/components/ui/display";
@@ -21,9 +23,14 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const q = firstParam(sp.q)?.trim() || undefined;
   const country = firstParam(sp.country) || undefined;
+  const city = firstParam(sp.city)?.trim() || undefined;
+  const specialty = firstParam(sp.specialty)?.trim() || undefined;
+  const near = coordinates(firstParam(sp.lat), firstParam(sp.lng)) ?? undefined;
+  const radiusParam = Number(firstParam(sp.radius));
+  const radiusKm = [10, 25, 50, 100, 250].includes(radiusParam) ? radiusParam : 50;
   const sortParam = firstParam(sp.sort) as DirectorySort | undefined;
   const sort = sortParam && sortParam in DIRECTORY_SORTS ? sortParam : "rating";
-  const [{ sellers, countries }, user] = await Promise.all([listJewelers({ q, country, sort }), getCurrentUser()]);
+  const [{ sellers, countries, cities, specialties }, user] = await Promise.all([listJewelers({ q, country, city, specialty, near, radiusKm, sort }), getCurrentUser()]);
   const favorites = user ? await db.favoriteStore.findMany({ where: { userId: user.id }, select: { sellerId: true } }) : [];
   const savedSellerIds = new Set(favorites.map((favorite) => favorite.sellerId));
 
@@ -39,6 +46,7 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
           <h1>Independent Jewelers &amp; Ateliers</h1>
           <p className={styles.intro}>Discover master jewelers, bespoke goldsmiths, and heritage houses.<br className={styles.desktopBreak} /> Browse their showcases and connect directly.</p>
           <form id="jewelers-search" action="/jewelers" className={styles.search} role="search">
+            {near && <><input type="hidden" name="lat" value={near.latitude} /><input type="hidden" name="lng" value={near.longitude} /></>}
             <Search size={20} strokeWidth={1.5} aria-hidden />
             <label className="sr-only" htmlFor="jeweler-query">Search jewelers</label>
             <input id="jeweler-query" name="q" defaultValue={q} placeholder="Search jewelers, locations or styles…" />
@@ -57,18 +65,23 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
         <div className={styles.toolbar}>
           <div className={styles.results}>
             <p>{pluralize(sellers.length, "verified jeweler")}{q && <> for &ldquo;{q}&rdquo;</>}</p>
-            {(q || country) && <Link href="/jewelers">Clear filters <span aria-hidden="true">×</span></Link>}
+            {(q || country || city || specialty || near) && <Link href="/jewelers">Clear filters <span aria-hidden="true">×</span></Link>}
           </div>
           <div className={styles.filters}>
+            <NearbyJewelers active={!!near} />
             <DirectorySelect name="country" value={country ?? ""}>
               <option value="">All locations</option>
               {countries.map((item) => <option key={item.code} value={item.code}>{countryName(item.code)} ({item.count})</option>)}
             </DirectorySelect>
-            <DirectorySelect name="sort" value={sort}>
+            <DirectorySelect name="city" value={city ?? ""}><option value="">All cities</option>{city && !cities.includes(city) && <option value={city}>{city}</option>}{cities.map(item => <option key={item} value={item}>{item}</option>)}</DirectorySelect>
+            <DirectorySelect name="specialty" value={specialty ?? ""}><option value="">All specialties</option>{specialty && !specialties.includes(specialty) && <option value={specialty}>{specialty}</option>}{specialties.map(item => <option key={item} value={item}>{item}</option>)}</DirectorySelect>
+            {near && <DirectorySelect name="radius" value={String(radiusKm)}>{[10, 25, 50, 100, 250].map(km => <option key={km} value={km}>Within {km} km</option>)}</DirectorySelect>}
+            {!near && <DirectorySelect name="sort" value={sort}>
               {Object.entries(DIRECTORY_SORTS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-            </DirectorySelect>
+            </DirectorySelect>}
           </div>
         </div>
+        {near && <p className="mb-5 text-xs text-muted">Within {radiusKm} km, nearest first. Distances are approximate; only boutiques with a map location are included. You can also browse by city.</p>}
         {sellers.length === 0 ? <EmptyState title="No jewelers match that search">Try another location or <Link href="/jewelers" className="underline underline-offset-4">browse all jewelers</Link>.</EmptyState> : (
           <div className={styles.grid}>
             {sellers.map((seller) => {
@@ -86,6 +99,7 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
                     <Monogram name={seller.storeName} src={seller.logoUrl} size={52} className={styles.monogram} />
                     <h2><Link href={href}>{seller.storeName}</Link><BadgeCheck size={18} className={styles.verified} aria-label="Verified jeweler" /></h2>
                     <p className={styles.location}>{seller.city}, {countryName(seller.country)}{seller.foundedYear && <> <span>·</span> Est. {seller.foundedYear}</>}</p>
+                    {seller.distanceKm !== null && <p className="mt-1 text-xs text-sage-deep">{seller.distanceKm < 1 ? "Less than 1" : seller.distanceKm.toFixed(1)} km away</p>}
                     <div className={styles.details}>
                       <span className={styles.rating}><Star size={14} fill="currentColor" strokeWidth={1.5} />{seller.ratingCount ? <><strong>{seller.ratingAverage.toFixed(1)}</strong> <span>({seller.ratingCount})</span></> : <span>New atelier</span>}</span>
                       {seller.specialties[0] && <span className={styles.specialty} title={seller.specialties.join(" · ")}><Tag size={13} />{seller.specialties[0]}</span>}

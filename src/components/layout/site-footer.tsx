@@ -37,7 +37,7 @@ export async function SiteFooter() {
             </nav>
           ))}
         </div>
-        <div className={styles.wordmark} aria-hidden="true"><span>{siteConfig.name}</span><p>{siteConfig.descriptor}</p></div>
+        <div className={styles.wordmark} aria-hidden="true"><span>{siteConfig.name}</span></div>
         <div className={styles.bottom}>
           <p>© {new Date().getFullYear()} {siteConfig.name}. An independent jewelry directory & showcase. All purchases and arrangements are made directly with each jeweler.</p>
           <div className={styles.legal}>

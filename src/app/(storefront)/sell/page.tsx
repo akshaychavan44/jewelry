@@ -68,9 +68,9 @@ export default async function SellPage() {
     <>
       {/* ── 1. Hero Section ── */}
       <section className="relative flex min-h-[85vh] items-start overflow-hidden bg-[#faf6f0] lg:min-h-[calc(100vh-5rem)]">
-        {/* Right side workbench video with soft blur & gradient mask */}
+        {/* Ring video with a softly curved ivory blend */}
         <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[56%] lg:block" aria-hidden="true">
-          <div className="relative h-full w-full">
+          <div className="relative h-full w-full overflow-hidden">
             <video
               autoPlay
               loop
@@ -78,7 +78,7 @@ export default async function SellPage() {
               playsInline
               preload="auto"
               poster="/media/for-jewelers-hero.jpg"
-              className="h-full w-full object-cover object-[65%_center]"
+              className="h-full w-full translate-x-[4%] scale-[1.1] object-cover object-[65%_center]"
             >
               <source src="/media/gemini_generated_video_932f8c86.mp4" type="video/mp4" />
               <source src="/media/for-jewelers-hero.mp4" type="video/mp4" />
@@ -88,28 +88,28 @@ export default async function SellPage() {
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(90deg, #faf6f0 0%, #faf6f0f2 15%, #faf6f0c0 32%, #faf6f030 55%, transparent 75%)",
+                  "radial-gradient(ellipse 90% 150% at -45% 50%, #faf6f0 65%, #faf6f0f2 70%, #faf6f08c 80%, #faf6f01f 92%, transparent 100%)",
               }}
             />
           </div>
         </div>
 
-        <div className="shell relative z-10 w-full pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24">
+        <div className="relative z-10 mx-auto w-full max-w-[1720px] px-4 sm:px-6 md:px-10 lg:px-14 pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24">
           <div className="max-w-2xl lg:max-w-[56%]">
-            <p className="text-[11.5px] font-semibold tracking-[0.22em] text-[#9e6932] uppercase">
+            <p className="font-sans text-[13px] font-medium tracking-[0.24em] text-[#514a42] uppercase">
               For Independent Jewelers
             </p>
 
-            <h1 className="mt-5 font-display text-5xl leading-[1.04] tracking-[-0.03em] text-[#1e1913] sm:text-6xl md:text-7xl lg:text-[76px] xl:text-[84px]">
+            <h1 className="mt-4 font-display text-[clamp(54px,6.8vw,96px)] font-normal leading-[1.05] tracking-[-0.028em] text-[#211e17] text-balance">
               Your Craft Deserves<br />
-              to Be <span className="font-serif italic font-normal text-[#9c692e]">Discovered.</span>
+              to Be <span className="text-[#9a6d32]">Discovered.</span>
             </h1>
 
-            <p className="mt-7 max-w-xl text-[16px] leading-relaxed text-[#685e52]">
+            <p className="mt-[18px] max-w-[520px] font-sans text-[clamp(17px,1.45vw,20px)] leading-[1.6] text-ink-soft text-pretty">
               List your jewelry atelier for free on Loupe and connect directly with genuine buyers, collectors and jewelry enthusiasts. Grow your brand with no sales commission.
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-3.5">
+            <div className="mt-8 flex flex-wrap items-center gap-3.5">
               {primaryCta}
             </div>
           </div>

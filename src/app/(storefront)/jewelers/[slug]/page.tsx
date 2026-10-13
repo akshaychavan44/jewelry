@@ -106,6 +106,9 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
                 </span>
               ))}
             </div>
+            <div className="mt-8">
+              <JewelerSocialLinks sellerId={seller.id} settings={settings} website={seller.website} />
+            </div>
           </div>
           <div className="space-y-5">
             {seller.locations.map((l) => (
@@ -146,7 +149,6 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        <div className="mb-8"><JewelerSocialLinks sellerId={seller.id} settings={settings} website={seller.website} /></div>
         <section aria-labelledby="collection-heading" className="border-t border-line pt-12">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <h2 id="collection-heading" className="display-md text-ink">
@@ -191,7 +193,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
                   {r.title && <p className="mt-2 text-[14.5px] font-medium text-ink">{r.title}</p>}
                   <blockquote className="mt-1.5 line-clamp-4 text-[14px] leading-relaxed text-ink-soft">{r.body}</blockquote>
                   <figcaption className="mt-3 text-[12.5px] text-muted">
-                    {r.author.name?.split(" ")[0]} · on{" "}
+                    {(r.author?.name?.split(" ")[0] ?? "Verified Buyer")} · on{" "}
                     <Link href={`/product/${r.product.slug}`} className="underline underline-offset-2 hover:text-ink">
                       {r.product.title}
                     </Link>

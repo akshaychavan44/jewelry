@@ -4,15 +4,17 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Stars } from "@/components/ui/display";
 import { testimonials } from "@/config/site";
+import type { TestimonialStory } from "@/server/services/testimonials";
 import styles from "./testimonials.module.css";
 
-export function TestimonialsCarousel() {
+export function TestimonialsCarousel({ stories }: { stories?: TestimonialStory[] }) {
   const [active, setActive] = useState(0);
   const [entered, setEntered] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef(0);
-  const count = testimonials.length;
+  const list = stories && stories.length >= 3 ? stories : testimonials;
+  const count = list.length;
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -73,10 +75,10 @@ export function TestimonialsCarousel() {
         const next = Math.round(track.scrollLeft / step) % count;
         if (activeRef.current !== next) { activeRef.current = next; setActive(next); }
       }}>
-        {testimonials.map((story, index) => {
+        {list.map((story, index) => {
           return (
             <figure
-              key={story.name}
+              key={`${story.name}-${index}`}
               onClick={() => selectCard(index)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -102,9 +104,9 @@ export function TestimonialsCarousel() {
         })}
       </div>
       <div className={styles.dots} aria-label="Choose a story">
-        {testimonials.map((story, index) => <button key={story.name} type="button" aria-label={`Show ${story.name}'s story`} aria-pressed={active === index} aria-controls="stories-track" onClick={() => selectCard(index)}><span aria-hidden /></button>)}
+        {list.map((story, index) => <button key={`${story.name}-${index}`} type="button" aria-label={`Show ${story.name}'s story`} aria-pressed={active === index} aria-controls="stories-track" onClick={() => selectCard(index)}><span aria-hidden /></button>)}
       </div>
-      <p className="sr-only" aria-live="polite" aria-atomic="true">Story {active + 1} of {count}: {testimonials[active].name}</p>
+      <p className="sr-only" aria-live="polite" aria-atomic="true">Story {active + 1} of {count}: {list[active]?.name}</p>
     </section>
   );
 }

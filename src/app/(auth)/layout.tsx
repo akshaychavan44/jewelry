@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { AuthScrollReset } from "@/components/auth/scroll-reset";
-import { Logo } from "@/components/brand/logo";
 import { imagery } from "@/config/site";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -14,11 +13,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           &ldquo;Every piece passes under a loupe before it reaches you.&rdquo;
         </p>
       </div>
-      <div className="flex h-full flex-col overflow-y-auto px-5 py-6 md:px-12">
-        <div className="flex shrink-0 justify-center">
-          <Logo />
-        </div>
-        <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-6 sm:py-8">{children}</main>
+      <div className="flex h-full flex-col overflow-y-auto px-5 py-4 md:px-12">
+        <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-2 sm:py-4">{children}</main>
       </div>
     </div>
   );

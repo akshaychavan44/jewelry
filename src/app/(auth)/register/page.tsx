@@ -17,15 +17,14 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
 
   return (
     <>
-      <p className="eyebrow mb-2">{intent === "seller" ? "For jewelers" : "Join Loupe"}</p>
       <h1 className="font-display text-[32px] leading-tight text-ink sm:text-[38px]">{intent === "seller" ? "Open your store" : "Create your account"}</h1>
-      <p className="mt-1.5 mb-6 text-[14.5px] text-ink-soft">
+      <p className="mt-1.5 mb-4 text-[14.5px] text-ink-soft">
         {intent === "seller"
           ? "Start with your personal account. Next, you'll set up your store and verify your business — it takes about ten minutes."
           : "Shop jewelry, send inquiries, save pieces and track your orders."}
       </p>
       <RegisterForm intent={intent} callbackUrl={callbackUrl} />
-      <p className="mt-6 text-center text-[14px] text-ink-soft">
+      <p className="mt-4 text-center text-[14px] text-ink-soft">
         Already have an account?{" "}
         <Link href={loginHref(intent, callbackUrl)} className="text-ink underline underline-offset-4">
           {intent === "seller" ? "Jeweler login" : "Customer login"}

@@ -3,6 +3,7 @@ import { db } from "@/server/db";
 import { releaseExpiredReservations } from "@/server/services/checkout";
 import { releaseDuePayouts } from "@/server/services/fulfillment";
 import { repriceSpotListings } from "@/server/services/listings";
+import { syncMetalRatesFromMetalsDev } from "@/server/services/metal-rates";
 
 // Scheduled jobs (Vercel Cron / any scheduler). Authorise with
 // `Authorization: Bearer $CRON_SECRET`.
@@ -10,6 +11,7 @@ import { repriceSpotListings } from "@/server/services/listings";
 //   expire-reservations  every 10 min   unpaid checkouts return stock
 //   expire-offers        every hour     lapsed negotiations close
 //   reprice-metals       every 15 min   METAL_SPOT listings follow the spot rate
+//   refresh-metal-rates  every 12 hours fetch live INR spot rates from Metals.Dev
 const JOBS: Record<string, () => Promise<unknown>> = {
   "release-payouts": () => releaseDuePayouts(),
   "expire-reservations": () => releaseExpiredReservations(),
@@ -18,6 +20,7 @@ const JOBS: Record<string, () => Promise<unknown>> = {
     return res.count;
   },
   "reprice-metals": () => repriceSpotListings(),
+  "refresh-metal-rates": () => syncMetalRatesFromMetalsDev(),
 };
 
 export async function GET(req: Request, { params }: { params: Promise<{ job: string }> }) {

@@ -57,6 +57,7 @@ export function CategoryRow({ categories }: { categories: { slug: string; name: 
 }
 
 export { ValueStrip } from "./value-strip";
+export { MetalPricingStrip } from "./metal-pricing-strip";
 
 export function SellerShowcase({ sellers }: { sellers: Awaited<ReturnType<typeof getShowcaseSellers>> }) {
   return (
@@ -136,6 +137,8 @@ export function StyledGallery() {
 
 export { CustomOrderBand } from "./custom-order-band";
 
-export function KindWords() {
-  return <TestimonialsCarousel />;
+import type { TestimonialStory } from "@/server/services/testimonials";
+
+export function KindWords({ stories }: { stories?: TestimonialStory[] }) {
+  return <TestimonialsCarousel stories={stories} />;
 }

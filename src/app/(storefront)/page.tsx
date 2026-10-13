@@ -10,8 +10,8 @@ import {
   CategoryRow,
   CustomOrderBand,
   KindWords,
+  MetalPricingStrip,
   StorySection,
-  ValueStrip,
 } from "@/components/home/sections";
 import { buttonVariants } from "@/components/ui/button";
 import { mainCategories } from "@/config/site";
@@ -26,9 +26,16 @@ import {
   publicProductWhere,
 } from "@/server/services/catalog";
 import { getPriceContext } from "@/server/services/currency";
+import { getPreciousMetalRates } from "@/server/services/metal-rates";
+import { getFeaturedStories } from "@/server/services/testimonials";
 
 export default async function HomePage() {
-  const [ctx, user] = await Promise.all([getPriceContext(), getCurrentUser()]);
+  const [ctx, user, metalRates, stories] = await Promise.all([
+    getPriceContext(),
+    getCurrentUser(),
+    getPreciousMetalRates(),
+    getFeaturedStories(),
+  ]);
   const [featured, stats, tree, saved, counts] = await Promise.all([
     getFeaturedProducts(ctx, 6),
     getMarketplaceStats(),
@@ -65,9 +72,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <ValueStrip />
+      <MetalPricingStrip data={metalRates} />
 
-      {trending.length > 0 && <section className="border-t border-line bg-porcelain/50 py-20 md:py-24" aria-labelledby="trending-heading">
+      {trending.length > 0 && <section className="border-t border-line bg-porcelain/50 pt-8 pb-20 md:pb-24" aria-labelledby="trending-heading">
         <div className="shell">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -85,7 +92,7 @@ export default async function HomePage() {
       </section>}
 
       <CustomOrderBand />
-      <KindWords />
+      <KindWords stories={stories} />
     </LandingExperience>
   );
 }

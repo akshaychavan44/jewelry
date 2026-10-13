@@ -84,7 +84,7 @@ export function LoginForm({ intent, callbackUrl, initialError }: { intent: Login
 export function RegisterForm({ intent, callbackUrl }: { intent: "buyer" | "seller"; callbackUrl?: string }) {
   const [state, action] = useActionState<AuthFormState, FormData>(registerAction, {});
   return (
-    <form action={action} className="space-y-5" noValidate>
+    <form action={action} className="space-y-4" noValidate>
       <input type="hidden" name="intent" value={intent} />
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
       <FormError message={state.error} />

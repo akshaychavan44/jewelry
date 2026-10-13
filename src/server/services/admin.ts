@@ -10,6 +10,7 @@ import { publicProductWhere } from "./catalog";
 import { refreshProductFacets } from "./listings";
 import { getFxRates } from "./market";
 import { notify, postMessage } from "./messaging";
+import { sendKycDecisionEmail } from "./kyc-email";
 
 export class AdminError extends Error {}
 
@@ -280,7 +281,13 @@ export const kycDecisionSchema = z.object({
 });
 
 export async function reviewKyc(adminId: string, input: z.infer<typeof kycDecisionSchema>) {
-  const seller = await db.sellerProfile.findUnique({ where: { id: input.sellerId }, include: { kycSubmissions: { orderBy: { submittedAt: "desc" }, take: 1, include: { documents: true } } } });
+  const seller = await db.sellerProfile.findUnique({
+    where: { id: input.sellerId },
+    include: {
+      user: { select: { id: true, email: true, name: true } },
+      kycSubmissions: { orderBy: { submittedAt: "desc" }, take: 1, include: { documents: true } },
+    },
+  });
   if (!seller) throw new AdminError("Jeweler not found.");
   if (seller.verificationStatus !== "PENDING") throw new AdminError("Only applications awaiting review can be decided.");
   const submission = seller.kycSubmissions[0];
@@ -318,6 +325,16 @@ export async function reviewKyc(adminId: string, input: z.infer<typeof kycDecisi
       approve ? "/seller" : "/seller/onboarding",
     );
   });
+
+  if (seller.user?.email) {
+    await sendKycDecisionEmail({
+      toEmail: seller.user.email,
+      jewelerName: seller.user.name || seller.storeName,
+      storeName: seller.storeName,
+      decision: input.decision,
+      feedback: input.feedback,
+    }).catch((err) => console.error("Failed to send KYC decision email:", err));
+  }
 }
 
 export async function suspendSeller(adminId: string, sellerId: string, reason: string) {

@@ -2,6 +2,7 @@
 
 import {
   ChevronDown,
+  ChevronRight,
   Heart,
   LayoutDashboard,
   LogOut,
@@ -10,6 +11,7 @@ import {
   Search,
   Shield,
   Sparkles,
+  Star,
   Store,
   User,
 } from "lucide-react";
@@ -41,11 +43,12 @@ type Props = {
   categories: Category[];
   currency: CurrencyCode;
   user: { name: string | null; email: string; role: Role } | null;
+  isApprovedJeweler?: boolean;
 };
 
 const navLink = "caps text-[12px] md:text-[12.5px] font-semibold tracking-[0.14em] text-ink transition-colors hover:text-[#86683a] " + styles.navItem;
 
-export function HeaderClient({ categories, currency, user }: Props) {
+export function HeaderClient({ categories, currency, user, isApprovedJeweler }: Props) {
   const pathname = usePathname();
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -119,9 +122,11 @@ export function HeaderClient({ categories, currency, user }: Props) {
             <Link href="/guides" className={cn(navLink, "hidden xl:inline", isGuidesActive && styles.activeNavItem)} data-active={isGuidesActive ? "true" : undefined}>
               Guides
             </Link>
-            <Link href="/sell" className={cn(navLink, "hidden xl:inline", isSellActive && styles.activeNavItem)} data-active={isSellActive ? "true" : undefined}>
-              For jewelers
-            </Link>
+            {!isApprovedJeweler && (
+              <Link href="/sell" className={cn(navLink, "hidden xl:inline", isSellActive && styles.activeNavItem)} data-active={isSellActive ? "true" : undefined}>
+                For jewelers
+              </Link>
+            )}
           </nav>
         </div>
 
@@ -137,13 +142,13 @@ export function HeaderClient({ categories, currency, user }: Props) {
             <span className="hidden xl:inline">Search jewelry</span>
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
-          <AccountMenu user={user} />
           {user?.role !== "BUYER" && <Link
             href={user?.role === "SELLER" ? "/seller" : user ? "/seller/onboarding" : "/register?intent=seller"}
             className={cn(styles.listBusinessButton, "caps hidden md:inline-flex")}
           >
             {user?.role === "SELLER" ? "My Dashboard" : "List Your Business"}
           </Link>}
+          <AccountMenu user={user} />
         </div>
       </div>
 
@@ -273,6 +278,7 @@ function CurrencyMenu({ currency, className }: { currency: CurrencyCode; classNa
 }
 
 function AccountMenu({ user }: { user: Props["user"] }) {
+  const pathname = usePathname();
   if (!user) {
     return (
       <DropdownMenu>
@@ -306,41 +312,78 @@ function AccountMenu({ user }: { user: Props["user"] }) {
         <span className="hidden text-[12.5px] font-medium tracking-[0.02em] text-ink group-hover:text-[#865d1b] xl:inline">
           {firstName}
         </span>
+        <ChevronDown aria-hidden className="size-3.5 text-ink-soft" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-64 p-1.5 shadow-lift">
-        <DropdownMenuLabel className="px-3 py-2.5 bg-[#faf6ee]/70 rounded-[3px] border border-[#ede3d1]/80 mb-1">
-          <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-[13.5px] font-semibold text-ink">{displayName}</p>
-            <span className="shrink-0 text-[10px] font-semibold tracking-wider uppercase text-[#9e743e] px-1.5 py-0.5 rounded-full bg-white border border-[#e2d5c2]">
-              {user.role === "ADMIN" ? "Admin" : user.role === "SELLER" ? "Jeweler" : "Customer"}
+      <DropdownMenuContent
+        align="end"
+        sideOffset={16}
+        className="relative w-[360px] rounded-2xl border-[#e5d8c3] bg-ivory p-4 shadow-[0_16px_40px_rgba(50,37,20,0.14)] before:absolute before:-top-[9px] before:right-7 before:size-4 before:rotate-45 before:border-l before:border-t before:border-[#e5d8c3] before:bg-ivory"
+      >
+        <DropdownMenuLabel className="border-0 bg-transparent px-2 py-1">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="grid size-9 shrink-0 place-items-center rounded-full border border-[#c18d2d]/50 bg-[#faf6ee] font-display text-[15px] font-semibold text-[#865d1b] shadow-2xs"
+            >
+              {initial}
             </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate font-display text-[22px] font-normal text-ink">{displayName}</p>
+                {user.role !== "BUYER" && (
+                  <span className="shrink-0 text-[10px] font-semibold tracking-wider uppercase text-[#9e743e] px-1.5 py-0.5 rounded-full bg-white border border-[#e2d5c2]">
+                    {user.role === "ADMIN" ? "Admin" : "Jeweler"}
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 truncate text-[12px] font-normal text-muted" title={user.email}>
+                {user.email}
+              </p>
+            </div>
           </div>
-          <p className="truncate text-[12px] font-normal text-muted mt-0.5" title={user.email}>{user.email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {user.role === "ADMIN" && (
-          <DropdownMenuItem asChild>
-            <Link href="/admin" className="cursor-pointer">
-              <Shield className="size-4" /> Admin console
-            </Link>
-          </DropdownMenuItem>
-        )}
-        {user.role === "SELLER" && (
-          <DropdownMenuItem asChild>
-            <Link href="/seller" className="cursor-pointer">
-              <Store className="size-4" /> Jeweler dashboard
-            </Link>
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuItem asChild>
-          <Link href={user.role === "SELLER" ? "/seller/account" : "/account"} className="cursor-pointer">
-            <LayoutDashboard className="size-4" /> My account
-          </Link>
-        </DropdownMenuItem>
+        <div className="space-y-0.5 py-1">
+          {(user.role === "BUYER"
+            ? [
+                { href: "/account/settings", label: "My Profile", icon: User },
+                { href: "/account/custom-requests", label: "Custom Requests", icon: Sparkles },
+                { href: "/account/wishlist", label: "Saved Jewellery", icon: Heart },
+                { href: "/account/favorite-stores", label: "Saved Jewellers", icon: Store },
+                { href: "/account/reviews", label: "My Reviews", icon: Star },
+              ]
+            : user.role === "ADMIN"
+            ? [
+                { href: "/admin", label: "Admin console", icon: Shield },
+                { href: "/account", label: "My account", icon: LayoutDashboard },
+              ]
+            : [
+                { href: "/seller", label: "Jeweler dashboard", icon: Store },
+                { href: "/seller/account", label: "My account", icon: LayoutDashboard },
+              ]
+          ).map(({ href, label, icon: Icon }) => (
+            <DropdownMenuItem
+              key={href}
+              asChild
+              className={cn(
+                "min-h-10 gap-3 rounded-lg px-2 py-1 font-display text-[18px] font-normal data-[highlighted]:bg-parchment/70",
+                pathname === href && "bg-parchment/50"
+              )}
+            >
+              <Link href={href} aria-current={pathname === href ? "page" : undefined}>
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-parchment/80">
+                  <Icon aria-hidden className="!size-[18px]" strokeWidth={1.5} />
+                </span>
+                <span className="flex-1">{label}</span>
+                <ChevronRight aria-hidden className="!size-[18px]" strokeWidth={1.5} />
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={() => signOutAction()}
-          className="text-rosewood cursor-pointer focus:bg-rosewood-mist focus:text-rosewood"
+          className="cursor-pointer gap-3 rounded-lg px-2 py-2 font-display text-[18px] text-rosewood focus:bg-rosewood-mist focus:text-rosewood [&_svg]:!size-5 [&_svg]:!text-rosewood"
         >
           <LogOut className="size-4" /> Sign out
         </DropdownMenuItem>

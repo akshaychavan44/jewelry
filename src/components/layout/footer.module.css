@@ -43,6 +43,6 @@
 @media (prefers-reduced-motion: reduce) { .footer a, .formRow button { transition: none; } }
 /* Keep navigation readable over silk and balance the oversized signature. */
 .footer::before { background: linear-gradient(90deg, rgb(23 15 9 / 15%) 0%, rgb(23 15 9 / 65%) 60%, transparent 84%), linear-gradient(180deg, transparent, rgb(23 15 9 / 25%) 40%, #170f09 94%); }
-.wordmark > span { font-family: var(--font-display); font-size: clamp(150px, 24vw, 410px); line-height: .78; letter-spacing: 0; }
+.wordmark > span { font-family: var(--font-display); font-size: clamp(150px, 24vw, 410px); line-height: 1; letter-spacing: 0; padding-bottom: .1em; }
 @media (width < 64rem) { .wordmark > span { font-size: 29vw; } }
 @media (width < 40rem) { .background { width: 100% !important; right: 0 !important; } .footer::before { background: linear-gradient(180deg, transparent 0, rgb(23 15 9 / 65%) 170px, #170f09 320px); } }

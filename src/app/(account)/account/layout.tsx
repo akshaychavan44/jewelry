@@ -4,6 +4,9 @@ import { Logo } from "@/components/brand/logo";
 import { DashboardNav, type NavItem } from "@/components/layout/dashboard-nav";
 import { DashboardAccountMenu } from "@/components/layout/dashboard-account-menu";
 import { requireUser } from "@/server/auth/session";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { TrustBar } from "@/components/layout/bars";
 
 export const metadata: Metadata = {
   title: { default: "My Account", template: "%s · Loupe" },
@@ -12,6 +15,19 @@ export const metadata: Metadata = {
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser("/account");
+  if (user.role === "BUYER") {
+    return (
+      <div className="storefront min-h-dvh">
+        <a href="#account-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-ivory">
+          Skip to account content
+        </a>
+        <SiteHeader />
+        <main id="account-content" className="mx-auto min-h-[60vh] max-w-7xl px-8 py-10 lg:px-12">{children}</main>
+        <TrustBar />
+        <SiteFooter />
+      </div>
+    );
+  }
   const items: NavItem[] = [
     { href: "/account", label: "Overview", icon: "overview", exact: true },
     { href: "/account/custom-requests", label: "Custom requests", icon: "custom" },

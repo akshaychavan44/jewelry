@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { METALS } from "@/lib/jewelry";
 import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -36,22 +35,34 @@ export function ProductCard({
       : null;
 
   return (
-    <article className={cn("relative flex h-full flex-col overflow-hidden rounded-lg bg-porcelain", className)}>
-      <Link href={`/product/${p.slug}`} className="flex h-full flex-col outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/50">
+    <article className={cn("relative min-w-0", className)}>
+      <Link href={`/product/${p.slug}`} className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-4 focus-visible:ring-offset-ivory">
         {/* ── Product Media Frame ── */}
-        <div className="relative aspect-[3/2] overflow-hidden bg-sand">
+        <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-sand">
           {p.image.url?.trim() ? (
-            <Image
-              src={p.image.url}
-              alt={p.image.alt}
-              fill
-              priority={priority}
-              sizes={sizes}
-              className={cn(
-                "object-contain",
-                p.sold && "grayscale-[35%]",
-              )}
-            />
+            <>
+              {/* Extend the photograph's tones behind images with different proportions. */}
+              <Image
+                src={p.image.url}
+                alt=""
+                aria-hidden
+                fill
+                loading={priority ? "eager" : "lazy"}
+                sizes={sizes}
+                className={cn("scale-110 object-cover opacity-70 blur-xl", p.sold && "grayscale-[35%]")}
+              />
+              <Image
+                src={p.image.url}
+                alt={p.image.alt}
+                fill
+                loading={priority ? "eager" : "lazy"}
+                sizes={sizes}
+                className={cn(
+                  "object-contain motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.025]",
+                  p.sold && "grayscale-[35%]",
+                )}
+              />
+            </>
           ) : (
             <span className="absolute inset-0 flex items-center justify-center p-4 text-center text-[13px] text-muted">
               Photograph coming soon
@@ -62,7 +73,7 @@ export function ProductCard({
           {flag && (
             <span
               className={cn(
-                "absolute bottom-2.5 left-2.5 rounded-[2px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.12em] uppercase backdrop-blur-md shadow-xs",
+                "absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-full px-2.5 py-1 text-[9px] font-medium tracking-[0.08em] uppercase backdrop-blur-md sm:text-[10px]",
                 p.sold
                   ? "bg-ink/80 text-white"
                   : "bg-white/90 text-[#865d2a] border border-[#e8dfcf]",
@@ -74,25 +85,26 @@ export function ProductCard({
         </div>
 
         {/* ── Product Information ── */}
-        <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <div className="pt-3 sm:pt-3.5">
           {/* Product Title */}
-          <h3 className="line-clamp-2 min-h-[2.6em] font-display text-[18px] leading-snug text-ink sm:text-[21px]">
+          <h3 className="line-clamp-2 font-sans text-[13px] leading-snug font-medium tracking-normal text-ink group-hover:text-gold-deep sm:text-[14px]">
             {p.title}
           </h3>
+          <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-muted sm:text-[12px]">{METALS[p.metal].label} · {p.seller.name}</p>
 
           {/* Price & Discount Bar */}
-          <div className="mt-2 flex flex-wrap items-baseline gap-2">
+          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
             {p.sold ? (
-              <span className="text-[14px] font-medium text-muted">Sold Out</span>
+              <span className="text-[12px] text-muted sm:text-[13px]">Sold Out</span>
             ) : (
               <>
-                <p className="text-[18px] font-semibold tracking-tight text-ink tabular-nums sm:text-[20px]">
-                  {p.livePrice && <span className="text-[12px] font-normal text-muted">from </span>}
+                <p className="text-[12px] leading-relaxed text-ink-soft tabular-nums sm:text-[13px]">
+                  {p.livePrice && <span className="text-muted">from </span>}
                   {formatMoney(p.price.amountMinor, p.price.currency)}
                 </p>
 
                 {p.compareAt && p.compareAt.amountMinor > p.price.amountMinor && (
-                  <s className="text-[13px] text-muted/80 tabular-nums">
+                  <s className="text-[11px] text-muted/80 tabular-nums sm:text-[12px]">
                     {formatMoney(p.compareAt.amountMinor, p.compareAt.currency)}
                   </s>
                 )}
@@ -105,10 +117,6 @@ export function ProductCard({
               </>
             )}
           </div>
-          <p className="mt-1.5 truncate text-[12px] text-muted sm:text-[14px]">{METALS[p.metal].label} · {p.seller.name}</p>
-          <span className="mt-4 flex min-h-11 items-center justify-center gap-3 rounded-lg border border-gold/65 px-3 py-2 text-[11px] font-medium tracking-[0.07em] text-gold-deep sm:text-[12px]">
-            VIEW DETAILS <ArrowRight className="size-4" aria-hidden />
-          </span>
         </div>
       </Link>
 
@@ -117,7 +125,7 @@ export function ProductCard({
         <WishlistButton
           productId={p.id}
           saved={saved}
-          className="absolute top-3 right-3 z-10 flex size-10 items-center justify-center rounded-full bg-porcelain/95 p-2"
+          className="absolute top-2 right-2 z-10 size-11 bg-ink/55 text-white hover:bg-ink/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-60 sm:top-3 sm:right-3"
         />
       )}
     </article>
@@ -138,15 +146,25 @@ export function ProductGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-4 sm:gap-6",
+        "grid grid-cols-2 items-start gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10",
         columns === "six" && "sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6",
         columns === "default" && "sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4",
-        columns === "three" && "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+        columns === "three" && "lg:grid-cols-3",
         className,
       )}
     >
       {products.map((p, i) => (
-        <ProductCard key={p.id} product={p} saved={savedIds?.has(p.id)} priority={i < 4} />
+        <ProductCard
+          key={p.id}
+          product={p}
+          saved={savedIds?.has(p.id)}
+          priority={i < 4}
+          sizes={columns === "six"
+            ? "(min-width: 1280px) 16vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            : columns === "three"
+              ? "(min-width: 1024px) 33vw, 50vw"
+              : "(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 50vw"}
+        />
       ))}
     </div>
   );

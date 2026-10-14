@@ -18,3 +18,4 @@ CREATE TABLE IF NOT EXISTS "JewelerReview" (
   UNIQUE ("sellerId", "authorId")
 );
 CREATE INDEX IF NOT EXISTS "JewelerReview_seller_status" ON "JewelerReview" ("sellerId", "status");
+ALTER TABLE "JewelerReview" DROP CONSTRAINT IF EXISTS "JewelerReview_sellerId_authorId_key";

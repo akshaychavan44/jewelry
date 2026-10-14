@@ -16,12 +16,12 @@ export async function saveJewelerReview(_: ReviewState, form: FormData): Promise
   try {
     const user = await assertUser();
     if (user.role !== "BUYER") return { message: "Use your customer account to review a jeweler." };
-    const d = z.object({ sellerId: z.string().min(1), rating: z.coerce.number().int().min(1).max(5), body: z.string().trim().min(20, "Please describe your experience in at least 20 characters.").max(2000) }).parse(Object.fromEntries(form));
+    const d = z.object({ sellerId: z.string().min(1), rating: z.coerce.number().int().min(1).max(5), body: z.string().trim().min(1, "Please write a review.").max(2000) }).parse(Object.fromEntries(form));
     if (form.get("experienced") !== "on") return { message: "Confirm this review reflects your own experience." };
     const seller = await db.sellerProfile.findFirst({ where: { id: d.sellerId, verificationStatus: "APPROVED" } });
     if (!seller || (await getDirectorySettings(seller.id)).isPaused) return { message: "This jeweler is unavailable." };
     await db.$transaction(async tx => {
-      await tx.$executeRaw`INSERT INTO "JewelerReview" ("id", "sellerId", "authorId", "rating", "body") VALUES (${randomUUID()}, ${seller.id}, ${user.id}, ${d.rating}, ${d.body}) ON CONFLICT ("sellerId", "authorId") DO UPDATE SET "rating" = EXCLUDED."rating", "body" = EXCLUDED."body", "updatedAt" = CURRENT_TIMESTAMP`;
+      await tx.$executeRaw`INSERT INTO "JewelerReview" ("id", "sellerId", "authorId", "rating", "body") VALUES (${randomUUID()}, ${seller.id}, ${user.id}, ${d.rating}, ${d.body})`;
       await refreshJewelerRating(tx, seller.id);
       await notify(tx, seller.userId, "SYSTEM", "Customer review received", "A customer shared their experience with your business.", "/seller/reviews");
     });

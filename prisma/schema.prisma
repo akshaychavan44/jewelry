@@ -2262,6 +2262,5 @@ model JewelerReview {
   status String @default("PUBLISHED")
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @db.Timestamptz(6)
-  @@unique([sellerId, authorId])
   @@index([sellerId, status])
 }

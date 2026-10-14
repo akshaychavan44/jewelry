@@ -6,7 +6,30 @@ import { NativeSelect, Textarea } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 export function JewelerReviewForm({ sellerId, rating = 5, body = "" }: { sellerId: string; rating?: number; body?: string }) {
   const [state, action] = useActionState<ReviewState, FormData>(saveJewelerReview, {});
-  return <form action={action} className="space-y-4 rounded border border-line bg-porcelain p-6"><h3 className="font-display text-xl">{body ? "Edit your review" : "Share your experience"}</h3><p className="text-sm text-muted">Review your own interaction with this jeweler. Purchases take place separately.</p><input type="hidden" name="sellerId" value={sellerId} /><FormError message={!state.ok ? state.message : undefined} />{state.ok && <p role="status" className="text-sm text-sage-deep">{state.message}</p>}<Field label="Rating" htmlFor={`rating-${sellerId}`}><NativeSelect name="rating" id={`rating-${sellerId}`} defaultValue={rating}>{[5,4,3,2,1].map(n => <option key={n} value={n}>{n} {n === 1 ? "star" : "stars"}</option>)}</NativeSelect></Field><Field label="Your review" htmlFor={`review-${sellerId}`}><Textarea id={`review-${sellerId}`} name="body" defaultValue={body} required minLength={20} maxLength={2000} /></Field><label className="flex gap-3 text-sm"><input name="experienced" type="checkbox" required />This reflects my own experience with this jeweler.</label><SubmitButton pendingLabel="Saving…">{body ? "Update review" : "Post review"}</SubmitButton></form>;
+  return (
+    <form action={action} className="space-y-4 rounded border border-line bg-porcelain p-6">
+      <h3 className="font-display text-xl">Share your experience</h3>
+      <p className="text-sm text-muted">Review your own interaction with this jeweler. Purchases take place separately.</p>
+      <input type="hidden" name="sellerId" value={sellerId} />
+      <FormError message={!state.ok ? state.message : undefined} />
+      {state.ok && <p role="status" className="text-sm text-sage-deep">{state.message}</p>}
+      <Field label="Rating" htmlFor={`rating-${sellerId}`}>
+        <NativeSelect name="rating" id={`rating-${sellerId}`} defaultValue={rating}>
+          {[5, 4, 3, 2, 1].map((n) => (
+            <option key={n} value={n}>{n} {n === 1 ? "star" : "stars"}</option>
+          ))}
+        </NativeSelect>
+      </Field>
+      <Field label="Your review" htmlFor={`review-${sellerId}`}>
+        <Textarea id={`review-${sellerId}`} name="body" defaultValue={body} required maxLength={2000} />
+      </Field>
+      <label className="flex gap-3 text-sm">
+        <input name="experienced" type="checkbox" required />
+        This reflects my own experience with this jeweler.
+      </label>
+      <SubmitButton pendingLabel="Saving…">Post review</SubmitButton>
+    </form>
+  );
 }
 export function DeleteJewelerReview({ id }: { id: string }) {
   const [state, action] = useActionState<ReviewState, FormData>(deleteJewelerReview, {});

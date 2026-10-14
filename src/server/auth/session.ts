@@ -15,21 +15,23 @@ export const getSession = cache(async () => auth());
 export const getCurrentUser = cache(async () => {
   const session = await getSession();
   if (!session?.user?.id) return null;
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      image: true,
-      role: true,
-      status: true,
-      country: true,
-      preferredCurrency: true,
-    },
-  });
+  const [user, resets] = await Promise.all([
+    db.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+        role: true,
+        status: true,
+        country: true,
+        preferredCurrency: true,
+      },
+    }),
+    db.$queryRaw<{ expires: Date }[]>`SELECT "expires" FROM "VerificationToken" WHERE "token" = ${`password-version:${session.user.id}`}`,
+  ]);
   if (!user || user.status !== "ACTIVE") return null;
-  const resets = await db.$queryRaw<{ expires: Date }[]>`SELECT "expires" FROM "VerificationToken" WHERE "token" = ${`password-version:${user.id}`}`;
   if (resets[0] && (!session.signedInAt || session.signedInAt <= new Date(resets[0].expires).getTime())) return null;
   return user;
 });

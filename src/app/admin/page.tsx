@@ -1,4 +1,4 @@
-import { ArrowRight, FileCheck2, ShieldCheck, Users, CreditCard } from "lucide-react";
+import { ArrowRight, FileCheck2, ShieldCheck, Users, Settings } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/account/page-header";
@@ -6,7 +6,6 @@ import { ColumnChart, StatTile, TimeSeriesChart } from "@/components/charts/char
 import { parseRange, RangeFilter } from "@/components/seller/range-filter";
 import { Card, CardHeader, Monogram, Table, Td, Th } from "@/components/ui/display";
 import { SERIES } from "@/lib/chart-palette";
-import { formatMoney } from "@/lib/money";
 import { countryName } from "@/lib/regions";
 import { cn, firstParam, pluralize, type SearchParams } from "@/lib/utils";
 import { requireAdmin } from "@/server/auth/session";
@@ -18,25 +17,24 @@ export const metadata: Metadata = { title: "Platform Overview" };
 export default async function AdminOverview({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requireAdmin();
   const range = parseRange(firstParam((await searchParams).range));
-  const [d, activeSubscribers, topJewelers] = await Promise.all([
+  const [d, topJewelers] = await Promise.all([
     getPlatformAnalytics(range),
-    db.sellerSubscription.count({ where: { status: "ACTIVE" } }),
     db.sellerProfile.findMany({
       where: { verificationStatus: "APPROVED" },
       take: 10,
       orderBy: { products: { _count: "desc" } },
-      include: {
-        _count: { select: { products: true, offers: true, customRequests: true } },
+      select: {
+        id: true, storeName: true, logoUrl: true, country: true,
+        _count: { select: { products: { where: { status: "ACTIVE", deletedAt: null } }, offers: true, customRequests: true } },
       },
     }),
   ]);
-  const usd = (m: number) => formatMoney(m, "USD", { compact: m >= 1_000_000_00 });
   const vs = `vs previous ${range} days`;
 
   const queues = [
     { href: "/admin/kyc", icon: FileCheck2, count: d.queues.kyc, label: pluralize(d.queues.kyc, "application") + " awaiting review" },
     { href: "/admin/certificates", icon: ShieldCheck, count: d.queues.certificates, label: pluralize(d.queues.certificates, "certificate") + " to verify" },
-    { href: "/admin/monetization", icon: CreditCard, count: activeSubscribers, label: `${activeSubscribers} active jeweler subscriptions` },
+    { href: "/admin/verification-settings", icon: Settings, count: 0, label: "Manage verification settings" },
     { href: "/admin/users", icon: Users, count: 0, label: "Manage platform users" },
   ];
 
@@ -45,7 +43,7 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
       <PageHeader
         eyebrow="Admin console"
         title="Directory & Platform Overview"
-        description="Software platform operations, jeweler verification queues, and listing subscriptions."
+        description="Directory operations, jeweler verification queues, and customer enquiries."
       />
 
       <section aria-label="Work queues" className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -60,13 +58,13 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <RangeFilter basePath="/admin" value={range} />
-        <p className="text-[12.5px] text-muted">Direct atelier transactions · 0% marketplace commission</p>
+        <p className="text-[12.5px] text-muted">Free jeweler directory</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <StatTile label="Active showcase listings" value={d.listings.toLocaleString("en-US")} hint={`${d.units.toLocaleString("en-US")} total pieces listed`} />
+        <StatTile label="Active showcase listings" value={d.listings.toLocaleString("en-US")} hint="Published jewelry showcase pieces" />
         <StatTile label="Verified ateliers" value={d.stores.active.toLocaleString("en-US")} hint={`${d.stores.newInRange} approved in range · ${d.stores.pending} pending`} />
-        <StatTile label="Active subscriptions" value={activeSubscribers.toLocaleString("en-US")} hint="Monthly paying ateliers" />
+        <StatTile label="Custom enquiries" value={d.enquiries.toLocaleString("en-US")} hint={`Received in the last ${range} days`} />
         <StatTile label="Customer directory sessions" value={d.sessions.toLocaleString("en-US")} delta={d.sessionsDelta} deltaLabel={vs} trend={d.trafficSeries.slice(-14).map((p) => p.value)} />
       </div>
 
@@ -94,7 +92,7 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
                 <Th>Jeweler</Th>
                 <Th className="text-right">Active Showcase Pieces</Th>
                 <Th className="text-right">Price Inquiries</Th>
-                <Th className="text-right">Custom Commissions</Th>
+                <Th className="text-right">Custom Enquiries</Th>
               </tr>
             </thead>
             <tbody>

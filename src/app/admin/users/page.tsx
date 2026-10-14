@@ -55,7 +55,6 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
               <Th>Country</Th>
               <Th>Joined</Th>
               <Th>Last seen</Th>
-              <Th className="text-right">Orders</Th>
               <Th>Status</Th>
               <Th />
             </tr>
@@ -63,7 +62,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <Td colSpan={8} className="py-10 text-center text-muted">
+                <Td colSpan={7} className="py-10 text-center text-muted">
                   No accounts match {q ? `“${q}”` : "this filter"}.
                 </Td>
               </tr>
@@ -89,7 +88,6 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                 <Td className="text-[13px] text-ink-soft">{u.country ? countryName(u.country) : "—"}</Td>
                 <Td className="text-[13px] whitespace-nowrap text-ink-soft">{formatDate(u.createdAt)}</Td>
                 <Td className="text-[13px] whitespace-nowrap text-ink-soft">{u.lastLoginAt ? timeAgo(u.lastLoginAt) : "—"}</Td>
-                <Td className="text-right tabular text-ink-soft">{u._count.orders}</Td>
                 <Td>
                   <StatusBadge status={u.status} map={USER_STATUS} />
                 </Td>

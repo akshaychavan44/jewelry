@@ -50,7 +50,9 @@ const providers: Provider[] = [
       } else if (user.role !== "ADMIN" && (user.role === "SELLER") !== (parsed.data.intent === "seller")) {
         throw new WrongLoginPortal();
       }
-      await db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+      // Updating the login timestamp does not need the delegate's extra read of
+      // an account we have already loaded and validated.
+      await db.$executeRaw`UPDATE "User" SET "lastLoginAt" = CURRENT_TIMESTAMP, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = ${user.id}`;
       return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role };
     },
   }),

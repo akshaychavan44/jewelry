@@ -251,25 +251,17 @@ export async function saveListing(sellerId: string, input: ListingInput) {
   });
 }
 
-/** Moves a draft live after quality gates; charges the listing fee if due. */
+/** Moves a draft live after quality gates. Showcase publication is free. */
 export async function publishListing(sellerId: string, productId: string) {
-  const product = await db.product.findFirst({ where: { id: productId, sellerId, deletedAt: null }, include: { images: true, variants: { where: { isActive: true } }, seller: { include: { subscription: { include: { plan: true } } } } } });
+  const product = await db.product.findFirst({ where: { id: productId, sellerId, deletedAt: null }, include: { images: true, variants: { where: { isActive: true } }, seller: true } });
   if (!product) throw new ListingError("Listing not found.");
   if (product.seller.verificationStatus !== "APPROVED") throw new ListingError("Your store must be approved before listings can go live.");
   if (!product.images.length) throw new ListingError("Add at least one photograph before publishing.");
   if (!product.variants.some((v) => num(v.priceMinor) > 0)) throw new ListingError("Add a priced SKU before publishing.");
   if (product.status === "ACTIVE") return product;
 
-  const settings = await db.platformSettings.findUniqueOrThrow({ where: { id: "platform" } });
-  const waived = product.seller.subscription?.status === "ACTIVE" && product.seller.subscription.plan.listingFeeWaived;
-  const firstPublish = !product.publishedAt;
   return db.$transaction(async (tx) => {
     const updated = await tx.product.update({ where: { id: product.id }, data: { status: "ACTIVE", publishedAt: product.publishedAt ?? new Date() } });
-    if (firstPublish && !waived && num(settings.listingFeeMinor) > 0) {
-      await tx.ledgerEntry.create({
-        data: { type: "LISTING_FEE", amountMinor: settings.listingFeeMinor, currency: settings.listingFeeCurrency, amountUsdMinor: settings.listingFeeMinor, sellerId, reference: product.id, description: `Listing fee · ${product.title}` },
-      });
-    }
     await tx.sellerProfile.update({ where: { id: sellerId }, data: { activeListingCount: { increment: 1 } } });
     return updated;
   });

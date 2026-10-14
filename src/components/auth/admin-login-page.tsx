@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/forms";
 import { homeFor, safeCallback } from "@/lib/auth-routing";
+import { DATABASE_UNAVAILABLE_MESSAGE, isDatabaseUnavailable } from "@/lib/database-errors";
 import { firstParam, type SearchParams } from "@/lib/utils";
 import { getCurrentUser } from "@/server/auth/session";
 
@@ -14,7 +15,14 @@ const ERRORS: Record<string, string> = {
 export async function AdminLoginPageContent({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const callbackUrl = safeCallback(firstParam(sp.callbackUrl)) ?? "/admin";
-  const user = await getCurrentUser();
+  let user: Awaited<ReturnType<typeof getCurrentUser>> = null;
+  let connectionError: string | undefined;
+  try {
+    user = await getCurrentUser();
+  } catch (error) {
+    if (!isDatabaseUnavailable(error)) throw error;
+    connectionError = DATABASE_UNAVAILABLE_MESSAGE;
+  }
   if (user) {
     if (user.role === "ADMIN") redirect(callbackUrl);
     redirect(homeFor(user.role));
@@ -32,7 +40,7 @@ export async function AdminLoginPageContent({ searchParams }: { searchParams: Pr
       <LoginForm
         intent="admin"
         callbackUrl={callbackUrl}
-        initialError={error ? (ERRORS[error] ?? "Admin sign-in failed. Please verify credentials.") : undefined}
+        initialError={connectionError ?? (error ? (ERRORS[error] ?? "Admin sign-in failed. Please verify credentials.") : undefined)}
       />
       <div className="mt-6 flex flex-col items-center gap-2 text-center text-[13px] text-ink-soft">
         <Link href="/" className="text-ink underline underline-offset-4">

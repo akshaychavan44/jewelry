@@ -10,7 +10,6 @@ import { AfterSalesError, approveReturn, receiveReturn, rejectReturn, setCustomR
 import { advanceSellerOrder, FulfillmentError } from "@/server/services/fulfillment";
 import { createCustomApiIntegration, createWebhookIntegration } from "@/server/services/inventory-sync";
 import { addCertificate, certificateSchema, ListingError, listingSchema, publishListing, removeCertificate, repriceSpotListings, saveListing, setListingStatus } from "@/server/services/listings";
-import { notify } from "@/server/services/messaging";
 import { saveUpload, UploadError } from "@/server/services/storage";
 import type { ActionResult } from "./cart";
 
@@ -258,26 +257,5 @@ export async function saveShippingRatesAction(rates: z.input<typeof rateSchema>[
       }),
     ]);
     return { ok: true, message: "Rate card saved." };
-  }, ["/seller/settings"]);
-}
-
-export async function changePlanAction(planCode: string) {
-  return guard(async () => {
-    const { seller, user } = await assertSeller();
-    const plan = await db.subscriptionPlan.findUnique({ where: { code: planCode } });
-    if (!plan?.isActive) return { ok: false, message: "Plan not found." };
-    const now = new Date();
-    const end = new Date(now);
-    end.setMonth(end.getMonth() + (plan.interval === "YEAR" ? 12 : 1));
-    await db.sellerSubscription.upsert({
-      where: { sellerId: seller.id },
-      update: { planId: plan.id, status: "ACTIVE", currentPeriodStart: now, currentPeriodEnd: end, cancelAtPeriodEnd: false },
-      create: { sellerId: seller.id, planId: plan.id, status: "ACTIVE", currentPeriodStart: now, currentPeriodEnd: end },
-    });
-    if (Number(plan.priceMinor) > 0) {
-      await db.ledgerEntry.create({ data: { type: "SUBSCRIPTION_FEE", amountMinor: plan.priceMinor, currency: plan.currency, amountUsdMinor: plan.priceMinor, sellerId: seller.id, description: `${plan.name} plan` } });
-    }
-    await notify(db, user.id, "SYSTEM", `You're on the ${plan.name} plan`, plan.description ?? undefined, "/seller/settings");
-    return { ok: true, message: `Switched to ${plan.name}.` };
   }, ["/seller/settings"]);
 }

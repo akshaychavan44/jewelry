@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/controls";
 import { Field } from "@/components/ui/field";
 import { Input, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { reinstateSellerAction, reviewKycAction, suspendSellerAction, updateSellerTermsAction } from "@/server/actions/admin";
+import { reinstateSellerAction, reviewKycAction, suspendSellerAction, updateSellerControlsAction } from "@/server/actions/admin";
 
 export type ReviewDocument = { id: string; fileId: string; label: string; fileName: string; size: string };
 type DocDecision = { status: "ACCEPTED" | "REJECTED"; reason: string };
@@ -109,8 +109,8 @@ export function KycDecisionPanel({ sellerId, storeName, documents }: { sellerId:
   );
 }
 
-/** Commercial terms and enforcement for a live (or suspended) store. */
-export function StoreControls({ sellerId, status, initial, defaultCommission }: { sellerId: string; status: "APPROVED" | "SUSPENDED"; initial: { commissionPercent: string; isFeatured: boolean; isTopRated: boolean }; defaultCommission: string }) {
+/** Directory badges and enforcement for a live (or suspended) store. */
+export function StoreControls({ sellerId, status, initial }: { sellerId: string; status: "APPROVED" | "SUSPENDED"; initial: { isFeatured: boolean; isTopRated: boolean } }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [form, setForm] = useState(initial);
@@ -128,13 +128,10 @@ export function StoreControls({ sellerId, status, initial, defaultCommission }: 
         onSubmit={(e) => {
           e.preventDefault();
           start(async () =>
-            done(await updateSellerTermsAction(sellerId, { commissionPercent: form.commissionPercent.trim() === "" ? null : Number(form.commissionPercent), isFeatured: form.isFeatured, isTopRated: form.isTopRated })),
+            done(await updateSellerControlsAction(sellerId, { isFeatured: form.isFeatured, isTopRated: form.isTopRated })),
           );
         }}
       >
-        <Field label="Commission override (%)" htmlFor="commission" hint={`Leave empty to use rules and the ${defaultCommission} platform default.`}>
-          <Input id="commission" inputMode="decimal" value={form.commissionPercent} onChange={(e) => setForm({ ...form, commissionPercent: e.target.value.replace(/[^\d.]/g, "") })} placeholder="Default" />
-        </Field>
         <label className="flex items-center justify-between gap-3 text-[14px] text-ink-soft">
           Featured on the homepage <Switch checked={form.isFeatured} onCheckedChange={(v) => setForm({ ...form, isFeatured: v })} />
         </label>
@@ -142,14 +139,14 @@ export function StoreControls({ sellerId, status, initial, defaultCommission }: 
           &ldquo;Top Rated&rdquo; badge <Switch checked={form.isTopRated} onCheckedChange={(v) => setForm({ ...form, isTopRated: v })} />
         </label>
         <Button type="submit" size="sm" variant="outline" pending={pending}>
-          Save terms
+          Save controls
         </Button>
       </form>
 
       <div className="border-t border-line pt-5">
         {status === "APPROVED" ? (
           <>
-            <Field label="Suspend store" htmlFor="suspend" hint="Hides every listing, holds undisbursed payouts and blocks the seller studio.">
+            <Field label="Suspend store" htmlFor="suspend" hint="Hides every listing and blocks the seller studio.">
               <Textarea id="suspend" rows={3} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason — shown to the jeweler" />
             </Field>
             <Button className="mt-3" size="sm" variant="danger" disabled={pending || reason.trim().length < 10} onClick={() => start(async () => done(await suspendSellerAction(sellerId, reason)))}>
@@ -158,7 +155,7 @@ export function StoreControls({ sellerId, status, initial, defaultCommission }: 
           </>
         ) : (
           <>
-            <p className="text-[13.5px] text-ink-soft">Reinstating makes listings visible again and returns held payouts to the normal release schedule.</p>
+            <p className="text-[13.5px] text-ink-soft">Reinstating makes listings visible again and restores the seller studio.</p>
             <Button className="mt-3" size="sm" pending={pending} onClick={() => start(async () => done(await reinstateSellerAction(sellerId)))}>
               Reinstate store
             </Button>

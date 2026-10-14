@@ -1,0 +1,1767 @@
+{
+  "date": "2026-10-13T12:16:15.239Z",
+  "origin": "http://localhost:3002",
+  "staticPageCount": 64,
+  "checkedRouteCount": 122,
+  "results": [
+    {
+      "route": "/account/favorite-stores",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/addresses",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/custom-requests",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/orders",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/messages",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/offers",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/reviews",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/payment-methods",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/wishlist",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/warranty",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/account/settings",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/login",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/jeweler/login",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/forgot-password",
+      "status": 200,
+      "destination": "/forgot-password",
+      "title": "Loupe — Independent Jeweler Directory & Showcase",
+      "error": false
+    },
+    {
+      "route": "/reset-password",
+      "status": 200,
+      "destination": "/reset-password",
+      "title": "Loupe — Independent Jeweler Directory & Showcase",
+      "error": false
+    },
+    {
+      "route": "/register",
+      "status": 200,
+      "destination": "/register",
+      "title": "Create an account · Loupe",
+      "error": false
+    },
+    {
+      "route": "/login",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/checkout",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/checkout/complete",
+      "status": 200,
+      "destination": "/login",
+      "title": "Customer login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/cart",
+      "status": 200,
+      "destination": "/jewelers",
+      "title": "Independent Jewelers Directory | Loupe · Loupe",
+      "error": false
+    },
+    {
+      "route": "/guides/certificates",
+      "status": 200,
+      "destination": "/guides/certificates",
+      "title": "Certificates & hallmarks | Loupe Buying Guides · Loupe",
+      "error": false
+    },
+    {
+      "route": "/custom-orders",
+      "status": 200,
+      "destination": "/custom-orders",
+      "title": "Custom Orders & Commissions | Loupe · Loupe",
+      "error": false
+    },
+    {
+      "route": "/guides/diamond-clarity",
+      "status": 200,
+      "destination": "/guides/diamond-clarity",
+      "title": "Diamond clarity, under the loupe | Loupe Buying Guides · Loupe",
+      "error": false
+    },
+    {
+      "route": "/guides/gold-purity",
+      "status": 200,
+      "destination": "/guides/gold-purity",
+      "title": "Gold purity, explained | Loupe Buying Guides · Loupe",
+      "error": false
+    },
+    {
+      "route": "/guides",
+      "status": 200,
+      "destination": "/guides",
+      "title": "Buying guides · Loupe",
+      "error": false
+    },
+    {
+      "route": "/guides/ring-size",
+      "status": 200,
+      "destination": "/guides/ring-size",
+      "title": "Find your ring size | Loupe Buying Guides · Loupe",
+      "error": false
+    },
+    {
+      "route": "/help/terms",
+      "status": 200,
+      "destination": "/help/terms",
+      "title": "Terms of Service · Loupe",
+      "error": false
+    },
+    {
+      "route": "/help/shipping-returns",
+      "status": 200,
+      "destination": "/help/shipping-returns",
+      "title": "Direct Purchasing & Jeweler Policies | Loupe · Loupe",
+      "error": false
+    },
+    {
+      "route": "/help/privacy",
+      "status": 200,
+      "destination": "/help/privacy",
+      "title": "Privacy Policy · Loupe",
+      "error": false
+    },
+    {
+      "route": "/sell",
+      "status": 200,
+      "destination": "/sell",
+      "title": "For Jewelers · List Your Atelier for Free | Loupe · Loupe",
+      "error": false
+    },
+    {
+      "route": "/jewelers",
+      "status": 200,
+      "destination": "/jewelers",
+      "title": "Independent Jewelers Directory | Loupe · Loupe",
+      "error": false
+    },
+    {
+      "route": "/",
+      "status": 200,
+      "destination": "/",
+      "title": "Loupe — Independent Jeweler Directory & Showcase",
+      "error": false
+    },
+    {
+      "route": "/admin/audit",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/styling",
+      "status": 200,
+      "destination": "/styling",
+      "title": "Jewelry styling inspiration · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop",
+      "status": 200,
+      "destination": "/shop",
+      "title": "Shop fine jewelry · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/business-names",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/disputes",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/certificates",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/orders",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/monetization",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/kyc",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/reviews",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/payouts",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/admin/users",
+      "status": 200,
+      "destination": "/admin/login",
+      "title": "Admin Login · Loupe Operations · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/analytics",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/account",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/messages",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/integrations",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/custom-requests",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/orders",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/offers",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/notifications",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/preview",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/payouts",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/products",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/products/new",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/pricing",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/settings",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/reviews",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/returns",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/seller/onboarding",
+      "status": 200,
+      "destination": "/jeweler/login",
+      "title": "Jeweler login · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/rings",
+      "status": 200,
+      "destination": "/shop/rings",
+      "title": "Rings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/engagement-rings",
+      "status": 200,
+      "destination": "/shop/engagement-rings",
+      "title": "Engagement rings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/stacking-rings",
+      "status": 200,
+      "destination": "/shop/stacking-rings",
+      "title": "Stacking rings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/cocktail-rings",
+      "status": 200,
+      "destination": "/shop/cocktail-rings",
+      "title": "Cocktail rings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/wedding-bands",
+      "status": 200,
+      "destination": "/shop/wedding-bands",
+      "title": "Wedding bands · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/signet-rings",
+      "status": 200,
+      "destination": "/shop/signet-rings",
+      "title": "Signet rings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/necklaces",
+      "status": 200,
+      "destination": "/shop/necklaces",
+      "title": "Necklaces · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/pendants",
+      "status": 200,
+      "destination": "/shop/pendants",
+      "title": "Pendants · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/pearl-necklaces",
+      "status": 200,
+      "destination": "/shop/pearl-necklaces",
+      "title": "Pearl necklaces · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/earrings",
+      "status": 200,
+      "destination": "/shop/earrings",
+      "title": "Earrings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/chains",
+      "status": 200,
+      "destination": "/shop/chains",
+      "title": "Chains · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/hoops",
+      "status": 200,
+      "destination": "/shop/hoops",
+      "title": "Hoops & huggies · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/drops",
+      "status": 200,
+      "destination": "/shop/drops",
+      "title": "Drops & chandeliers · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/studs",
+      "status": 200,
+      "destination": "/shop/studs",
+      "title": "Studs · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/bracelets",
+      "status": 200,
+      "destination": "/shop/bracelets",
+      "title": "Bracelets · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/chain-bracelets",
+      "status": 200,
+      "destination": "/shop/chain-bracelets",
+      "title": "Chain & link · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/bangles",
+      "status": 200,
+      "destination": "/shop/bangles",
+      "title": "Bangles · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/cuffs",
+      "status": 200,
+      "destination": "/shop/cuffs",
+      "title": "Cuffs · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/high-jewelry",
+      "status": 200,
+      "destination": "/shop/high-jewelry",
+      "title": "High Jewelry · Loupe",
+      "error": false
+    },
+    {
+      "route": "/styling/bridal",
+      "status": 200,
+      "destination": "/styling/bridal",
+      "title": "For your forever · Loupe",
+      "error": false
+    },
+    {
+      "route": "/styling/everyday",
+      "status": 200,
+      "destination": "/styling/everyday",
+      "title": "The everyday signature · Loupe",
+      "error": false
+    },
+    {
+      "route": "/styling/evening",
+      "status": 200,
+      "destination": "/styling/evening",
+      "title": "An evening to remember · Loupe",
+      "error": false
+    },
+    {
+      "route": "/jewelers/kanchan-and-co",
+      "status": 200,
+      "destination": "/jewelers/kanchan-and-co",
+      "title": "Kanchan & Co. Jewellers · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/polki-diamond-and-emerald-bridal-set",
+      "status": 200,
+      "destination": "/product/polki-diamond-and-emerald-bridal-set",
+      "title": "Polki Diamond & Emerald Bridal Set · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/pear-drop-gold-pendant",
+      "status": 200,
+      "destination": "/product/pear-drop-gold-pendant",
+      "title": "Pear Drop Gold Pendant · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/classic-22k-gold-kada-pair",
+      "status": 500,
+      "destination": "/product/classic-22k-gold-kada-pair",
+      "title": "Classic 22k Gold Kada, Pair · Loupe",
+      "error": false
+    },
+    {
+      "route": "/jewelers/atelier-solene",
+      "status": 200,
+      "destination": "/jewelers/atelier-solene",
+      "title": "Atelier Solène · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/marquise-diamond-wreath-earrings",
+      "status": 200,
+      "destination": "/product/marquise-diamond-wreath-earrings",
+      "title": "Marquise Diamond Wreath Earrings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/cushion-halo-engagement-set",
+      "status": 200,
+      "destination": "/product/cushion-halo-engagement-set",
+      "title": "Cushion Halo Engagement Set · Loupe",
+      "error": false
+    },
+    {
+      "route": "/jewelers/marlowe-fine-jewelry",
+      "status": 200,
+      "destination": "/jewelers/marlowe-fine-jewelry",
+      "title": "Marlowe Fine Jewelry · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/diamond-bib-necklace-38-ctw",
+      "status": 200,
+      "destination": "/product/diamond-bib-necklace-38-ctw",
+      "title": "Diamond Bib Necklace, 38 ctw · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/ceylon-sapphire-cluster-drops",
+      "status": 200,
+      "destination": "/product/ceylon-sapphire-cluster-drops",
+      "title": "Ceylon Sapphire Cluster Drops · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/vintage",
+      "status": 200,
+      "destination": "/shop/vintage",
+      "title": "Vintage & Pre-owned · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/colombian-emerald-halo-pendant",
+      "status": 200,
+      "destination": "/product/colombian-emerald-halo-pendant",
+      "title": "Colombian Emerald Halo Pendant · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/layered-tennis-chain-and-crescent-set",
+      "status": 500,
+      "destination": "/product/layered-tennis-chain-and-crescent-set",
+      "title": "Layered Tennis Chain & Crescent Set · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/pearl-and-emerald-kundan-choker",
+      "status": 200,
+      "destination": "/product/pearl-and-emerald-kundan-choker",
+      "title": "Pearl & Emerald Kundan Choker · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/kundan-ruby-bangle-pair",
+      "status": 200,
+      "destination": "/product/kundan-ruby-bangle-pair",
+      "title": "Kundan Ruby Bangle Pair · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/handwoven-22k-gold-chain",
+      "status": 200,
+      "destination": "/product/handwoven-22k-gold-chain",
+      "title": "Handwoven 22k Gold Chain · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/emerald-cut-solitaire-on-pave-band",
+      "status": 200,
+      "destination": "/product/emerald-cut-solitaire-on-pave-band",
+      "title": "Emerald-Cut Solitaire on Pavé Band · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/temple-gold-necklace-and-jhumka-set",
+      "status": 500,
+      "destination": "/product/temple-gold-necklace-and-jhumka-set",
+      "title": "Temple Gold Necklace & Jhumka Set · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/filigree-chandbali-earrings",
+      "status": 500,
+      "destination": "/product/filigree-chandbali-earrings",
+      "title": "Filigree Chandbali Earrings · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/pink-sapphire-and-diamond-halo-ring",
+      "status": 200,
+      "destination": "/product/pink-sapphire-and-diamond-halo-ring",
+      "title": "Pink Sapphire & Diamond Halo Ring · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/pave-dome-ring",
+      "status": 500,
+      "destination": "/product/pave-dome-ring",
+      "title": "Pavé Dome Ring · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/round-diamond-studs",
+      "status": 500,
+      "destination": "/product/round-diamond-studs",
+      "title": "Round Diamond Studs · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/diamond-riviere-with-emerald-drops",
+      "status": 200,
+      "destination": "/product/diamond-riviere-with-emerald-drops",
+      "title": "Diamond Rivière with Emerald Drops · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/rose-gold-link-bracelet",
+      "status": 200,
+      "destination": "/product/rose-gold-link-bracelet",
+      "title": "Rose Gold Link Bracelet · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/diamond-station-necklace",
+      "status": 500,
+      "destination": "/product/diamond-station-necklace",
+      "title": "Diamond Station Necklace · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/crossover-pave-diamond-ring",
+      "status": 200,
+      "destination": "/product/crossover-pave-diamond-ring",
+      "title": "Crossover Pavé Diamond Ring · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/cushion-halo-diamond-pendant",
+      "status": 200,
+      "destination": "/product/cushion-halo-diamond-pendant",
+      "title": "Cushion Halo Diamond Pendant · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/cushion-diamond-drop-pendant",
+      "status": 500,
+      "destination": "/product/cushion-diamond-drop-pendant",
+      "title": "Cushion Diamond Drop Pendant · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/diamond-eternity-band-2-ctw",
+      "status": 200,
+      "destination": "/product/diamond-eternity-band-2-ctw",
+      "title": "Diamond Eternity Band, 2 ctw · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/double-halo-emerald-cut-ring",
+      "status": 200,
+      "destination": "/product/double-halo-emerald-cut-ring",
+      "title": "Double Halo Emerald-Cut Ring · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/oval-solitaire-in-rose-gold",
+      "status": 500,
+      "destination": "/product/oval-solitaire-in-rose-gold",
+      "title": "Oval Solitaire in Rose Gold · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/round-brilliant-solitaire-1-00-ct",
+      "status": 200,
+      "destination": "/product/round-brilliant-solitaire-1-00-ct",
+      "title": "Round Brilliant Solitaire, 1.00 ct · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/open-heart-diamond-pendant",
+      "status": 500,
+      "destination": "/product/open-heart-diamond-pendant",
+      "title": "Open Heart Diamond Pendant · Loupe",
+      "error": false
+    },
+    {
+      "route": "/product/rose-gold-diamond-link-bracelet",
+      "status": 500,
+      "destination": "/product/rose-gold-diamond-link-bracelet",
+      "title": "Rose Gold Diamond Link Bracelet · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/estate-jewelry",
+      "status": 200,
+      "destination": "/shop/estate-jewelry",
+      "title": "Estate & pre-owned · Loupe",
+      "error": false
+    },
+    {
+      "route": "/shop/antique-jewelry",
+      "status": 200,
+      "destination": "/shop/antique-jewelry",
+      "title": "Antique (pre-1925) · Loupe",
+      "error": false
+    }
+  ],
+  "brokenLinks": [
+    {
+      "source": "/jewelers",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/jewelers",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/",
+      "href": "/product/temple-gold-necklace-and-jhumka-set",
+      "target": "/product/temple-gold-necklace-and-jhumka-set"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/pave-dome-ring",
+      "target": "/product/pave-dome-ring"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/diamond-station-necklace",
+      "target": "/product/diamond-station-necklace"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/temple-gold-necklace-and-jhumka-set",
+      "target": "/product/temple-gold-necklace-and-jhumka-set"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/shop",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/shop/rings",
+      "href": "/product/pave-dome-ring",
+      "target": "/product/pave-dome-ring"
+    },
+    {
+      "source": "/shop/rings",
+      "href": "/product/oval-solitaire-in-rose-gold",
+      "target": "/product/oval-solitaire-in-rose-gold"
+    },
+    {
+      "source": "/shop/engagement-rings",
+      "href": "/product/oval-solitaire-in-rose-gold",
+      "target": "/product/oval-solitaire-in-rose-gold"
+    },
+    {
+      "source": "/shop/cocktail-rings",
+      "href": "/product/pave-dome-ring",
+      "target": "/product/pave-dome-ring"
+    },
+    {
+      "source": "/shop/necklaces",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/shop/necklaces",
+      "href": "/product/diamond-station-necklace",
+      "target": "/product/diamond-station-necklace"
+    },
+    {
+      "source": "/shop/necklaces",
+      "href": "/product/temple-gold-necklace-and-jhumka-set",
+      "target": "/product/temple-gold-necklace-and-jhumka-set"
+    },
+    {
+      "source": "/shop/necklaces",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/shop/necklaces",
+      "href": "/product/open-heart-diamond-pendant",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/shop/pendants",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/shop/pendants",
+      "href": "/product/open-heart-diamond-pendant",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/shop/earrings",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/shop/earrings",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/shop/chains",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/shop/chains",
+      "href": "/product/diamond-station-necklace",
+      "target": "/product/diamond-station-necklace"
+    },
+    {
+      "source": "/shop/drops",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/shop/studs",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/shop/bracelets",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/shop/bracelets",
+      "href": "/product/rose-gold-diamond-link-bracelet",
+      "target": "/product/rose-gold-diamond-link-bracelet"
+    },
+    {
+      "source": "/shop/chain-bracelets",
+      "href": "/product/rose-gold-diamond-link-bracelet",
+      "target": "/product/rose-gold-diamond-link-bracelet"
+    },
+    {
+      "source": "/shop/bangles",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/styling/bridal",
+      "href": "/product/oval-solitaire-in-rose-gold",
+      "target": "/product/oval-solitaire-in-rose-gold"
+    },
+    {
+      "source": "/styling/everyday",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/styling/everyday",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/styling/evening",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/styling/evening",
+      "href": "/product/diamond-station-necklace",
+      "target": "/product/diamond-station-necklace"
+    },
+    {
+      "source": "/styling/evening",
+      "href": "/product/temple-gold-necklace-and-jhumka-set",
+      "target": "/product/temple-gold-necklace-and-jhumka-set"
+    },
+    {
+      "source": "/styling/evening",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/styling/evening",
+      "href": "/product/open-heart-diamond-pendant",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/temple-gold-necklace-and-jhumka-set",
+      "target": "/product/temple-gold-necklace-and-jhumka-set"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/temple-gold-necklace-and-jhumka-set",
+      "target": "/product/temple-gold-necklace-and-jhumka-set"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/temple-gold-necklace-and-jhumka-set",
+      "target": "/product/temple-gold-necklace-and-jhumka-set"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/jewelers/kanchan-and-co",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/polki-diamond-and-emerald-bridal-set",
+      "href": "/product/classic-22k-gold-kada-pair#reviews",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/polki-diamond-and-emerald-bridal-set",
+      "href": "/product/filigree-chandbali-earrings#reviews",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/polki-diamond-and-emerald-bridal-set",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "href": "/product/classic-22k-gold-kada-pair#reviews",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "href": "/product/filigree-chandbali-earrings#reviews",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "href": "/product/open-heart-diamond-pendant",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/diamond-station-necklace",
+      "target": "/product/diamond-station-necklace"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/oval-solitaire-in-rose-gold",
+      "target": "/product/oval-solitaire-in-rose-gold"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/diamond-station-necklace",
+      "target": "/product/diamond-station-necklace"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/oval-solitaire-in-rose-gold",
+      "target": "/product/oval-solitaire-in-rose-gold"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/jewelers/atelier-solene",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/marquise-diamond-wreath-earrings",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/marquise-diamond-wreath-earrings",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/marquise-diamond-wreath-earrings",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/marquise-diamond-wreath-earrings",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/cushion-halo-engagement-set",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/cushion-halo-engagement-set",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/cushion-halo-engagement-set",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/pave-dome-ring",
+      "target": "/product/pave-dome-ring"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/open-heart-diamond-pendant",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/rose-gold-diamond-link-bracelet",
+      "target": "/product/rose-gold-diamond-link-bracelet"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/pave-dome-ring",
+      "target": "/product/pave-dome-ring"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/jewelers/marlowe-fine-jewelry",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/diamond-bib-necklace-38-ctw",
+      "href": "/product/cushion-diamond-drop-pendant#reviews",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/diamond-bib-necklace-38-ctw",
+      "href": "/product/open-heart-diamond-pendant#reviews",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/diamond-bib-necklace-38-ctw",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/product/ceylon-sapphire-cluster-drops",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/ceylon-sapphire-cluster-drops",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/ceylon-sapphire-cluster-drops",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/ceylon-sapphire-cluster-drops",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/colombian-emerald-halo-pendant",
+      "href": "/product/cushion-diamond-drop-pendant#reviews",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/colombian-emerald-halo-pendant",
+      "href": "/product/open-heart-diamond-pendant#reviews",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/colombian-emerald-halo-pendant",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/product/pearl-and-emerald-kundan-choker",
+      "href": "/product/classic-22k-gold-kada-pair#reviews",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/pearl-and-emerald-kundan-choker",
+      "href": "/product/filigree-chandbali-earrings#reviews",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/pearl-and-emerald-kundan-choker",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/pearl-and-emerald-kundan-choker",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/kundan-ruby-bangle-pair",
+      "href": "/product/classic-22k-gold-kada-pair#reviews",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/kundan-ruby-bangle-pair",
+      "href": "/product/filigree-chandbali-earrings#reviews",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/kundan-ruby-bangle-pair",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/kundan-ruby-bangle-pair",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "href": "/product/classic-22k-gold-kada-pair#reviews",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "href": "/product/filigree-chandbali-earrings#reviews",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "href": "/product/classic-22k-gold-kada-pair",
+      "target": "/product/classic-22k-gold-kada-pair"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "href": "/product/filigree-chandbali-earrings",
+      "target": "/product/filigree-chandbali-earrings"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "href": "/product/diamond-station-necklace",
+      "target": "/product/diamond-station-necklace"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/product/emerald-cut-solitaire-on-pave-band",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/emerald-cut-solitaire-on-pave-band",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/emerald-cut-solitaire-on-pave-band",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/pink-sapphire-and-diamond-halo-ring",
+      "href": "/product/cushion-diamond-drop-pendant#reviews",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/pink-sapphire-and-diamond-halo-ring",
+      "href": "/product/open-heart-diamond-pendant#reviews",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/pink-sapphire-and-diamond-halo-ring",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/product/pink-sapphire-and-diamond-halo-ring",
+      "href": "/product/rose-gold-diamond-link-bracelet",
+      "target": "/product/rose-gold-diamond-link-bracelet"
+    },
+    {
+      "source": "/product/diamond-riviere-with-emerald-drops",
+      "href": "/product/cushion-diamond-drop-pendant#reviews",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/diamond-riviere-with-emerald-drops",
+      "href": "/product/open-heart-diamond-pendant#reviews",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/diamond-riviere-with-emerald-drops",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/product/rose-gold-link-bracelet",
+      "href": "/product/cushion-diamond-drop-pendant#reviews",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/rose-gold-link-bracelet",
+      "href": "/product/open-heart-diamond-pendant#reviews",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/rose-gold-link-bracelet",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/product/crossover-pave-diamond-ring",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/crossover-pave-diamond-ring",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/crossover-pave-diamond-ring",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/crossover-pave-diamond-ring",
+      "href": "/product/pave-dome-ring",
+      "target": "/product/pave-dome-ring"
+    },
+    {
+      "source": "/product/cushion-halo-diamond-pendant",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/cushion-halo-diamond-pendant",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/cushion-halo-diamond-pendant",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/cushion-halo-diamond-pendant",
+      "href": "/product/open-heart-diamond-pendant",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/cushion-halo-diamond-pendant",
+      "href": "/product/cushion-diamond-drop-pendant",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/diamond-eternity-band-2-ctw",
+      "href": "/product/cushion-diamond-drop-pendant#reviews",
+      "target": "/product/cushion-diamond-drop-pendant"
+    },
+    {
+      "source": "/product/diamond-eternity-band-2-ctw",
+      "href": "/product/open-heart-diamond-pendant#reviews",
+      "target": "/product/open-heart-diamond-pendant"
+    },
+    {
+      "source": "/product/diamond-eternity-band-2-ctw",
+      "href": "/product/layered-tennis-chain-and-crescent-set",
+      "target": "/product/layered-tennis-chain-and-crescent-set"
+    },
+    {
+      "source": "/product/double-halo-emerald-cut-ring",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/double-halo-emerald-cut-ring",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/double-halo-emerald-cut-ring",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/round-brilliant-solitaire-1-00-ct",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/round-brilliant-solitaire-1-00-ct",
+      "href": "/product/round-diamond-studs#reviews",
+      "target": "/product/round-diamond-studs"
+    },
+    {
+      "source": "/product/round-brilliant-solitaire-1-00-ct",
+      "href": "/product/round-diamond-studs",
+      "target": "/product/round-diamond-studs"
+    }
+  ],
+  "brokenFragments": [
+    {
+      "source": "/product/polki-diamond-and-emerald-bridal-set",
+      "target": "/product/classic-22k-gold-kada-pair",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/polki-diamond-and-emerald-bridal-set",
+      "target": "/product/filigree-chandbali-earrings",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "target": "/product/classic-22k-gold-kada-pair",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/pear-drop-gold-pendant",
+      "target": "/product/filigree-chandbali-earrings",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/marquise-diamond-wreath-earrings",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/marquise-diamond-wreath-earrings",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/cushion-halo-engagement-set",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/cushion-halo-engagement-set",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/diamond-bib-necklace-38-ctw",
+      "target": "/product/cushion-diamond-drop-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/diamond-bib-necklace-38-ctw",
+      "target": "/product/open-heart-diamond-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/ceylon-sapphire-cluster-drops",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/ceylon-sapphire-cluster-drops",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/colombian-emerald-halo-pendant",
+      "target": "/product/cushion-diamond-drop-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/colombian-emerald-halo-pendant",
+      "target": "/product/open-heart-diamond-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/pearl-and-emerald-kundan-choker",
+      "target": "/product/classic-22k-gold-kada-pair",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/pearl-and-emerald-kundan-choker",
+      "target": "/product/filigree-chandbali-earrings",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/kundan-ruby-bangle-pair",
+      "target": "/product/classic-22k-gold-kada-pair",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/kundan-ruby-bangle-pair",
+      "target": "/product/filigree-chandbali-earrings",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "target": "/product/classic-22k-gold-kada-pair",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/handwoven-22k-gold-chain",
+      "target": "/product/filigree-chandbali-earrings",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/emerald-cut-solitaire-on-pave-band",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/emerald-cut-solitaire-on-pave-band",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/pink-sapphire-and-diamond-halo-ring",
+      "target": "/product/cushion-diamond-drop-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/pink-sapphire-and-diamond-halo-ring",
+      "target": "/product/open-heart-diamond-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/diamond-riviere-with-emerald-drops",
+      "target": "/product/cushion-diamond-drop-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/diamond-riviere-with-emerald-drops",
+      "target": "/product/open-heart-diamond-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/rose-gold-link-bracelet",
+      "target": "/product/cushion-diamond-drop-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/rose-gold-link-bracelet",
+      "target": "/product/open-heart-diamond-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/crossover-pave-diamond-ring",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/crossover-pave-diamond-ring",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/cushion-halo-diamond-pendant",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/cushion-halo-diamond-pendant",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/diamond-eternity-band-2-ctw",
+      "target": "/product/cushion-diamond-drop-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/diamond-eternity-band-2-ctw",
+      "target": "/product/open-heart-diamond-pendant",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/double-halo-emerald-cut-ring",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/double-halo-emerald-cut-ring",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/round-brilliant-solitaire-1-00-ct",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    },
+    {
+      "source": "/product/round-brilliant-solitaire-1-00-ct",
+      "target": "/product/round-diamond-studs",
+      "hash": "reviews"
+    }
+  ],
+  "missingAssets": [],
+  "limitations": [
+    "HTTP checks are unauthenticated, do not execute JavaScript, and do not submit forms.",
+    "Protected-page redirects are checked; authenticated content requires browser verification.",
+    "Remote destinations and external side effects are excluded."
+  ]
+}

@@ -1,9 +1,10 @@
 import "server-only";
 
 import { z } from "zod";
+import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
 import { DisputePriority, KycDocumentType, type Role, type VerificationStatus } from "@/generated/prisma/enums";
-import { convertMinor, type FxRates, isCurrency, toMinor } from "@/lib/money";
+import { convertMinor } from "@/lib/money";
 import { num } from "@/lib/utils";
 import { db } from "@/server/db";
 import { publicProductWhere } from "./catalog";
@@ -16,16 +17,6 @@ export class AdminError extends Error {}
 
 const DAY = 86_400_000;
 const dayKey = (d: Date) => d.toISOString().slice(0, 10);
-const PAID = ["SUCCEEDED", "PARTIALLY_REFUNDED", "REFUNDED"] as const;
-
-/** Order-currency minor units → USD cents, at the order's FX snapshot when it has one. */
-function toUsd(minor: bigint | number, currency: string, snapshot: unknown, fallback: FxRates) {
-  if (currency === "USD") return num(minor);
-  const rates = (snapshot as { rates?: FxRates } | null)?.rates;
-  const table = rates?.[currency] ? { USD: 1, ...rates } : fallback;
-  return table[currency] ? convertMinor(num(minor), currency, "USD", table, "exact") : 0;
-}
-
 const pct = (a: number, b: number) => (b ? ((a - b) / b) * 100 : null);
 
 function zeroSeries(rangeDays: number, now: number) {
@@ -37,95 +28,29 @@ const toPoints = (m: Map<string, number>) => [...m.entries()].map(([date, value]
 
 // ── Platform analytics ────────────────────────────────────────────────────────
 
-/**
- * GMV is merchandise value (item subtotals, excluding tax, duties and
- * shipping) of paid seller orders that weren't cancelled before dispatch.
- * Everything is reported in USD at each order's FX snapshot.
- */
 export async function getPlatformAnalytics(rangeDays: number) {
   const now = Date.now();
   const since = new Date(now - rangeDays * DAY);
   const prevSince = new Date(now - 2 * rangeDays * DAY);
-  const fx = await getFxRates();
-
-  const [orders, ledger, traffic, listings, units, storeStatus, activeStores, newStores, stages, queues] = await Promise.all([
-    db.order.findMany({
-      where: { placedAt: { gte: prevSince }, paymentStatus: { in: [...PAID] } },
-      select: {
-        placedAt: true,
-        currency: true,
-        fxSnapshot: true,
-        sellerOrders: { select: { sellerId: true, status: true, subtotalMinor: true, commissionMinor: true } },
-        items: { select: { totalMinor: true, sellerOrder: { select: { status: true } }, product: { select: { category: { select: { name: true, parent: { select: { name: true } } } } } } } },
-      },
-    }),
-    db.ledgerEntry.findMany({
-      where: { occurredAt: { gte: prevSince }, type: { in: ["COMMISSION_REVERSAL", "LISTING_FEE", "SUBSCRIPTION_FEE", "REFUND"] } },
-      select: { type: true, amountUsdMinor: true, occurredAt: true },
-    }),
+  const visible = await publicProductWhere();
+  const [traffic, listings, storeStatus, activeStores, newStores, queues, showcasePieces, enquiries] = await Promise.all([
     db.$queryRaw<{ day: Date; sessions: bigint }[]>`
       SELECT date_trunc('day', "createdAt") AS day, COUNT(DISTINCT "sessionId")::bigint AS sessions
-      FROM "AnalyticsEvent"
-      WHERE "createdAt" >= ${prevSince} AND "sessionId" IS NOT NULL
-      GROUP BY 1 ORDER BY 1`,
-    db.product.count({ where: await publicProductWhere() }),
-    db.productVariant.aggregate({ where: { isActive: true, product: await publicProductWhere() }, _sum: { stockQuantity: true } }),
+      FROM "AnalyticsEvent" WHERE "createdAt" >= ${prevSince} AND "sessionId" IS NOT NULL GROUP BY 1 ORDER BY 1`,
+    db.product.count({ where: visible }),
     db.sellerProfile.groupBy({ by: ["verificationStatus"], _count: { _all: true } }),
     db.sellerProfile.count({ where: { verificationStatus: "APPROVED", products: { some: { status: "ACTIVE", deletedAt: null } } } }),
     db.sellerProfile.count({ where: { approvedAt: { gte: since } } }),
-    db.sellerOrder.groupBy({ by: ["status"], where: { createdAt: { gte: since }, order: { paymentStatus: { in: [...PAID] } } }, _count: { _all: true } }),
     getAdminQueues(),
+    db.product.findMany({ where: visible, select: { category: { select: { name: true, parent: { select: { name: true } } } } } }),
+    db.customRequest.count({ where: { createdAt: { gte: since } } }),
   ]);
 
-  const gmvSeries = zeroSeries(rangeDays, now);
-  const commissionSeries = zeroSeries(rangeDays, now);
-  const bySeller = new Map<string, { gmv: number; commission: number; orders: number }>();
   const byCategory = new Map<string, number>();
-  let gmv = 0, prevGmv = 0, commission = 0, prevCommission = 0, orderCount = 0, prevOrderCount = 0;
-
-  for (const o of orders) {
-    const current = o.placedAt! >= since;
-    const live = o.sellerOrders.filter((so) => so.status !== "CANCELLED");
-    if (!live.length) continue;
-    const g = live.reduce((n, so) => n + toUsd(so.subtotalMinor, o.currency, o.fxSnapshot, fx), 0);
-    const c = live.reduce((n, so) => n + toUsd(so.commissionMinor, o.currency, o.fxSnapshot, fx), 0);
-    if (!current) {
-      prevGmv += g;
-      prevCommission += c;
-      prevOrderCount++;
-      continue;
-    }
-    gmv += g;
-    commission += c;
-    orderCount++;
-    const k = dayKey(o.placedAt!);
-    if (gmvSeries.has(k)) {
-      gmvSeries.set(k, gmvSeries.get(k)! + g);
-      commissionSeries.set(k, commissionSeries.get(k)! + c);
-    }
-    for (const so of live) {
-      const row = bySeller.get(so.sellerId) ?? { gmv: 0, commission: 0, orders: 0 };
-      row.gmv += toUsd(so.subtotalMinor, o.currency, o.fxSnapshot, fx);
-      row.commission += toUsd(so.commissionMinor, o.currency, o.fxSnapshot, fx);
-      row.orders++;
-      bySeller.set(so.sellerId, row);
-    }
-    for (const item of o.items) {
-      if (item.sellerOrder.status === "CANCELLED") continue;
-      const cat = item.product?.category;
-      const root = cat?.parent?.name ?? cat?.name ?? "Other";
-      byCategory.set(root, (byCategory.get(root) ?? 0) + toUsd(item.totalMinor, o.currency, o.fxSnapshot, fx));
-    }
+  for (const piece of showcasePieces) {
+    const label = piece.category?.parent?.name ?? piece.category?.name ?? "Other";
+    byCategory.set(label, (byCategory.get(label) ?? 0) + 1);
   }
-
-  const sumLedger = (type: string, from: Date, to = new Date(now + DAY)) =>
-    ledger.filter((l) => l.type === type && l.occurredAt >= from && l.occurredAt < to).reduce((n, l) => n + num(l.amountUsdMinor), 0);
-  const reversals = sumLedger("COMMISSION_REVERSAL", since);
-  const prevReversals = sumLedger("COMMISSION_REVERSAL", prevSince, since);
-  const fees = sumLedger("LISTING_FEE", since) + sumLedger("SUBSCRIPTION_FEE", since);
-  const refunds = sumLedger("REFUND", since);
-  const netCommission = commission - reversals;
-
   const trafficSeries = zeroSeries(rangeDays, now);
   let sessions = 0, prevSessions = 0;
   for (const t of traffic) {
@@ -138,57 +63,28 @@ export async function getPlatformAnalytics(rangeDays: number) {
     } else prevSessions += n;
   }
 
-  const sellerRows = await db.sellerProfile.findMany({
-    where: { id: { in: [...bySeller.keys()] } },
-    select: { id: true, storeName: true, slug: true, logoUrl: true, country: true, ratingAverage: true },
-  });
-  const topSellers = sellerRows
-    .map((s) => ({ ...s, ...bySeller.get(s.id)! }))
-    .sort((a, b) => b.gmv - a.gmv)
-    .slice(0, 8);
-
   const statusCount = Object.fromEntries(storeStatus.map((s) => [s.verificationStatus, s._count._all])) as Partial<Record<VerificationStatus, number>>;
 
   return {
-    gmv,
-    gmvDelta: pct(gmv, prevGmv),
-    commission,
-    netCommission,
-    netCommissionDelta: pct(netCommission, prevCommission - prevReversals),
-    reversals,
-    takeRate: gmv ? (netCommission / gmv) * 100 : 0,
-    fees,
-    refunds,
-    orders: orderCount,
-    ordersDelta: pct(orderCount, prevOrderCount),
-    aov: orderCount ? Math.round(gmv / orderCount) : 0,
     listings,
-    units: units._sum.stockQuantity ?? 0,
+    enquiries,
     stores: { active: activeStores, approved: statusCount.APPROVED ?? 0, pending: statusCount.PENDING ?? 0, suspended: statusCount.SUSPENDED ?? 0, newInRange: newStores },
     sessions,
     sessionsDelta: pct(sessions, prevSessions),
-    conversion: sessions ? (orderCount / sessions) * 100 : 0,
-    gmvSeries: toPoints(gmvSeries),
-    commissionSeries: toPoints(commissionSeries),
     trafficSeries: toPoints(trafficSeries),
-    stages: Object.fromEntries(stages.map((s) => [s.status, s._count._all])) as Record<string, number>,
     categories: [...byCategory.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value),
-    topSellers,
     queues,
   };
 }
 
 /** Work waiting on the admin team — drives nav badges and the overview. */
-export async function getAdminQueues() {
-  const [kyc, disputes, urgent, certificates, heldPayouts] = await Promise.all([
+export const getAdminQueues = cache(async () => {
+  const [kyc, certificates] = await Promise.all([
     db.sellerProfile.count({ where: { verificationStatus: "PENDING" } }),
-    db.dispute.count({ where: { status: { notIn: ["RESOLVED", "CLOSED"] } } }),
-    db.dispute.count({ where: { status: { notIn: ["RESOLVED", "CLOSED"] }, priority: { in: ["HIGH", "URGENT"] } } }),
     db.certificate.count({ where: { status: "PENDING_REVIEW", product: { deletedAt: null } } }),
-    db.payout.count({ where: { status: "ON_HOLD" } }),
   ]);
-  return { kyc, disputes, urgent, certificates, heldPayouts };
-}
+  return { kyc, certificates };
+});
 
 // ── Jeweler verification (KYC) ────────────────────────────────────────────────
 
@@ -198,7 +94,7 @@ export async function getKycCounts() {
 }
 
 export async function listKycApplications(status: VerificationStatus | "ALL") {
-  return db.sellerProfile.findMany({
+  const rows = await db.sellerProfile.findMany({
     where: status === "ALL" ? { verificationStatus: { not: "NOT_SUBMITTED" } } : { verificationStatus: status },
     orderBy: status === "PENDING" ? { submittedAt: "asc" } : { updatedAt: "desc" },
     take: 200,
@@ -207,6 +103,13 @@ export async function listKycApplications(status: VerificationStatus | "ALL") {
       kycSubmissions: { orderBy: { submittedAt: "desc" }, take: 1, include: { reviewer: { select: { name: true } }, _count: { select: { documents: true } } } },
     },
   });
+  const listingCounts = await db.product.groupBy({
+    by: ["sellerId"],
+    where: { AND: [await publicProductWhere(), { sellerId: { in: rows.map(row => row.id) } }] },
+    _count: { _all: true },
+  });
+  const counts = new Map(listingCounts.map(row => [row.sellerId, row._count._all]));
+  return rows.map(row => ({ ...row, activeListingCount: counts.get(row.id) ?? 0 }));
 }
 
 const fileSelect = { select: { id: true, fileName: true, mimeType: true, sizeBytes: true } } as const;
@@ -223,21 +126,18 @@ export async function getKycReview(sellerId: string) {
           orderBy: { submittedAt: "desc" },
           include: { reviewer: { select: { name: true } }, documents: { orderBy: { createdAt: "asc" }, include: { file: fileSelect } } },
         },
-        subscription: { include: { plan: { select: { name: true } } } },
-        _count: { select: { products: true, sellerOrders: true, disputes: true, reviews: true } },
+        _count: { select: { products: { where: { status: "ACTIVE", deletedAt: null } }, reviews: true } },
       },
     }),
-    db.platformSettings.findUniqueOrThrow({ where: { id: "platform" } }),
+    db.platformSettings.findUniqueOrThrow({ where: { id: "platform" }, select: { requiredKycDocuments: true } }),
   ]);
   if (!seller) return null;
 
-  const [duplicates, audit, openDisputes, gmv] = await Promise.all([
+  const [duplicates, audit] = await Promise.all([
     seller.registrationNumber
       ? db.sellerProfile.findMany({ where: { id: { not: seller.id }, registrationNumber: seller.registrationNumber, country: seller.country }, select: { id: true, storeName: true } })
       : Promise.resolve([]),
     db.auditLog.findMany({ where: { entityType: "SellerProfile", entityId: seller.id }, orderBy: { createdAt: "desc" }, take: 25, include: { actor: { select: { name: true, email: true } } } }),
-    db.dispute.count({ where: { sellerId: seller.id, status: { notIn: ["RESOLVED", "CLOSED"] } } }),
-    db.ledgerEntry.aggregate({ where: { sellerId: seller.id, type: "COMMISSION" }, _sum: { amountUsdMinor: true }, _count: { _all: true } }),
   ]);
 
   const latest = seller.kycSubmissions[0] ?? null;
@@ -249,27 +149,16 @@ export async function getKycReview(sellerId: string) {
       ? ((rawReqDocs as string).replace(/[{}"']/g, "").split(",").map((s) => s.trim()).filter(Boolean) as KycDocumentType[])
       : ["TAX_REGISTRATION", "BUSINESS_LICENSE", "GOVERNMENT_ID"];
   const missing = requiredDocs.filter((t) => !docs.some((d) => d.type === t));
-  const payoutReady = seller.payoutMethod === "STRIPE_CONNECT" ? seller.stripeDetailsSubmitted : !!seller.bankAccountLast4;
 
   const checks = [
     { label: "Required documents", ok: missing.length === 0, detail: missing.length ? `Missing ${missing.map((m) => m.toLowerCase().replace(/_/g, " ")).join(", ")}` : `${docs.length} uploaded` },
     { label: "Legal entity", ok: !!(seller.legalBusinessName && seller.registrationNumber), detail: seller.legalBusinessName ?? "Not provided" },
     { label: "Tax ID on file", ok: !!seller.taxIdLast4, detail: seller.taxIdLast4 ? `Ending ${seller.taxIdLast4} · stored encrypted` : "Not provided" },
-    {
-      label: "Payout account",
-      ok: payoutReady,
-      detail:
-        seller.payoutMethod === "STRIPE_CONNECT"
-          ? `Stripe ${seller.stripeAccountId ?? "—"} · ${seller.stripeDetailsSubmitted ? "details submitted" : "onboarding incomplete"}`
-          : seller.bankAccountLast4
-            ? `${seller.bankName ?? "Bank"} ••••${seller.bankAccountLast4}`
-            : "Not set up",
-    },
     { label: "Return address", ok: !!seller.returnAddress, detail: seller.returnAddress ? `${seller.returnAddress.city}, ${seller.returnAddress.country}` : "Missing" },
     { label: "Unique registration", ok: duplicates.length === 0, detail: duplicates.length ? `Also used by ${duplicates.map((d) => d.storeName).join(", ")}` : "Not used by any other store" },
   ];
 
-  return { seller, settings, latest, checks, audit, openDisputes, commissionUsd: num(gmv._sum.amountUsdMinor), commissionOrders: gmv._count._all };
+  return { seller, latest, checks, audit };
 }
 
 export const kycDecisionSchema = z.object({
@@ -344,8 +233,6 @@ export async function suspendSeller(adminId: string, sellerId: string, reason: s
   if (reason.trim().length < 10) throw new AdminError("Record why the store is being suspended.");
   await db.$transaction(async (tx) => {
     await tx.sellerProfile.update({ where: { id: sellerId }, data: { verificationStatus: "SUSPENDED", suspendedAt: new Date(), suspensionReason: reason.trim() } });
-    // Hold undisbursed funds while the store is under review.
-    await tx.payout.updateMany({ where: { sellerId, status: "PENDING" }, data: { status: "ON_HOLD", holdReason: "Store suspended" } });
     await tx.auditLog.create({ data: { actorId: adminId, action: "seller.suspend", entityType: "SellerProfile", entityId: sellerId, metadata: { reason: reason.trim() } } });
     await notify(tx, seller.userId, "KYC", "Your store has been suspended", reason.trim().slice(0, 160), "/seller/onboarding");
   });
@@ -356,24 +243,21 @@ export async function reinstateSeller(adminId: string, sellerId: string) {
   if (!seller || seller.verificationStatus !== "SUSPENDED") throw new AdminError("Only suspended stores can be reinstated.");
   await db.$transaction(async (tx) => {
     await tx.sellerProfile.update({ where: { id: sellerId }, data: { verificationStatus: "APPROVED", suspendedAt: null, suspensionReason: null } });
-    await tx.payout.updateMany({ where: { sellerId, status: "ON_HOLD", holdReason: "Store suspended" }, data: { status: "PENDING", holdReason: null } });
     await tx.auditLog.create({ data: { actorId: adminId, action: "seller.reinstate", entityType: "SellerProfile", entityId: sellerId } });
     await notify(tx, seller.userId, "KYC", "Your store is live again", "Thanks for your patience — listings are visible to buyers.", "/seller");
   });
 }
 
-export async function updateSellerTerms(adminId: string, sellerId: string, patch: { commissionPercent: number | null; isFeatured: boolean; isTopRated: boolean }) {
-  if (patch.commissionPercent !== null && (patch.commissionPercent < 0 || patch.commissionPercent > 50)) throw new AdminError("Commission must be between 0% and 50%.");
-  const bps = patch.commissionPercent === null ? null : Math.round(patch.commissionPercent * 100);
-  const before = await db.sellerProfile.findUnique({ where: { id: sellerId }, select: { commissionRateBps: true, isFeatured: true, isTopRated: true } });
+export const sellerControlsSchema = z.object({ isFeatured: z.boolean(), isTopRated: z.boolean() });
+export async function updateSellerControls(adminId: string, sellerId: string, input: z.input<typeof sellerControlsSchema>) {
+  const patch = sellerControlsSchema.parse(input);
+  const before = await db.sellerProfile.findUnique({ where: { id: sellerId }, select: { isFeatured: true, isTopRated: true } });
   if (!before) throw new AdminError("Jeweler not found.");
   await db.$transaction([
-    db.sellerProfile.update({ where: { id: sellerId }, data: { commissionRateBps: bps, isFeatured: patch.isFeatured, isTopRated: patch.isTopRated } }),
-    db.auditLog.create({ data: { actorId: adminId, action: "seller.terms", entityType: "SellerProfile", entityId: sellerId, metadata: { before, after: { commissionRateBps: bps, isFeatured: patch.isFeatured, isTopRated: patch.isTopRated } } } }),
+    db.sellerProfile.update({ where: { id: sellerId }, data: patch }),
+    db.auditLog.create({ data: { actorId: adminId, action: "seller.controls", entityType: "SellerProfile", entityId: sellerId, metadata: { before, after: patch } } }),
   ]);
 }
-
-// ── Certificates ──────────────────────────────────────────────────────────────
 
 export async function listCertificates(status: "PENDING_REVIEW" | "VERIFIED" | "REJECTED") {
   return db.certificate.findMany({
@@ -512,138 +396,17 @@ export async function updateDisputeCase(adminId: string, input: z.infer<typeof d
   });
 }
 
-// ── Monetization ──────────────────────────────────────────────────────────────
+// Verification settings
 
-export const platformSettingsSchema = z
-  .object({
-    defaultCommissionPercent: z.coerce.number().min(0, "Commission can't be negative.").max(50, "Commission is capped at 50%."),
-    listingFee: z.coerce.number().min(0).max(1000, "Listing fee is capped at 1,000."),
-    listingFeeCurrency: z.string().refine((c) => isCurrency(c), "Choose a currency."),
-    inspectionWindowDays: z.coerce.number().int().min(0).max(30),
-    offerExpiryHours: z.coerce.number().int().min(1).max(336),
-    minOfferPercent: z.coerce.number().min(0).max(100),
-    reservationMinutes: z.coerce.number().int().min(5).max(120),
-    signatureThresholdUsd: z.coerce.number().min(0),
-    secureCourierThresholdUsd: z.coerce.number().min(0),
-    requiredKycDocuments: z.array(z.enum(KycDocumentType)).min(1, "Require at least one document."),
-  })
-  .refine((v) => v.secureCourierThresholdUsd >= v.signatureThresholdUsd, { message: "The secure-courier threshold should be at or above the signature threshold.", path: ["secureCourierThresholdUsd"] });
-
-export async function updatePlatformSettings(adminId: string, input: z.infer<typeof platformSettingsSchema>) {
-  const before = await db.platformSettings.findUniqueOrThrow({ where: { id: "platform" } });
-  const data = {
-    defaultCommissionBps: Math.round(input.defaultCommissionPercent * 100),
-    listingFeeMinor: toMinor(input.listingFee, input.listingFeeCurrency),
-    listingFeeCurrency: input.listingFeeCurrency,
-    inspectionWindowDays: input.inspectionWindowDays,
-    offerExpiryHours: input.offerExpiryHours,
-    minOfferBps: Math.round(input.minOfferPercent * 100),
-    reservationMinutes: input.reservationMinutes,
-    signatureThresholdUsd: Math.round(input.signatureThresholdUsd * 100),
-    secureCourierThresholdUsd: Math.round(input.secureCourierThresholdUsd * 100),
-    requiredKycDocuments: input.requiredKycDocuments,
-    updatedById: adminId,
-  };
-  await db.$transaction([
-    db.platformSettings.update({ where: { id: "platform" }, data }),
-    db.auditLog.create({
-      data: {
-        actorId: adminId,
-        action: "settings.update",
-        entityType: "PlatformSettings",
-        entityId: "platform",
-        metadata: { before: { defaultCommissionBps: before.defaultCommissionBps, listingFeeMinor: num(before.listingFeeMinor), inspectionWindowDays: before.inspectionWindowDays }, after: { defaultCommissionBps: data.defaultCommissionBps, listingFeeMinor: data.listingFeeMinor, inspectionWindowDays: data.inspectionWindowDays } },
-      },
-    }),
-  ]);
+export const verificationSettingsSchema = z.object({ requiredKycDocuments: z.array(z.enum(KycDocumentType)).min(1, "Require at least one document.") });
+export async function updateVerificationSettings(adminId: string, input: z.input<typeof verificationSettingsSchema>) {
+  const data = verificationSettingsSchema.parse(input);
+  await db.$transaction(async (tx) => {
+    const before = await tx.platformSettings.findUniqueOrThrow({ where: { id: "platform" }, select: { requiredKycDocuments: true } });
+    await tx.platformSettings.update({ where: { id: "platform" }, data: { ...data, updatedById: adminId } });
+    await tx.auditLog.create({ data: { actorId: adminId, action: "verification_settings.update", entityType: "PlatformSettings", entityId: "platform", metadata: { before, after: data } } });
+  });
 }
-
-export const commissionRuleSchema = z
-  .object({
-    id: z.string().optional(),
-    name: z.string().trim().min(2, "Name the rule."),
-    scope: z.enum(["CATEGORY", "SELLER"]),
-    categoryId: z.string().optional(),
-    sellerId: z.string().optional(),
-    ratePercent: z.coerce.number().min(0).max(50, "Commission is capped at 50%."),
-    priority: z.coerce.number().int().min(0).max(100),
-    isActive: z.boolean(),
-    startsAt: z.string().optional(),
-    endsAt: z.string().optional(),
-  })
-  .refine((r) => (r.scope === "CATEGORY" ? !!r.categoryId : !!r.sellerId), { message: "Choose what this rule applies to.", path: ["categoryId"] })
-  .refine((r) => !r.startsAt || !r.endsAt || new Date(r.startsAt) < new Date(r.endsAt), { message: "The end date must be after the start date.", path: ["endsAt"] });
-
-export async function saveCommissionRule(adminId: string, input: z.infer<typeof commissionRuleSchema>) {
-  const data = {
-    name: input.name,
-    categoryId: input.scope === "CATEGORY" ? input.categoryId! : null,
-    sellerId: input.scope === "SELLER" ? input.sellerId! : null,
-    rateBps: Math.round(input.ratePercent * 100),
-    priority: input.priority,
-    isActive: input.isActive,
-    startsAt: input.startsAt ? new Date(input.startsAt) : null,
-    endsAt: input.endsAt ? new Date(input.endsAt) : null,
-  };
-  const rule = input.id ? await db.commissionRule.update({ where: { id: input.id }, data }) : await db.commissionRule.create({ data });
-  await db.auditLog.create({ data: { actorId: adminId, action: input.id ? "commission_rule.update" : "commission_rule.create", entityType: "CommissionRule", entityId: rule.id, metadata: { rateBps: data.rateBps, scope: input.scope } } });
-}
-
-export async function deleteCommissionRule(adminId: string, id: string) {
-  await db.commissionRule.delete({ where: { id } });
-  await db.auditLog.create({ data: { actorId: adminId, action: "commission_rule.delete", entityType: "CommissionRule", entityId: id } });
-}
-
-export const planSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().trim().min(2),
-  description: z.string().trim().max(300).optional(),
-  price: z.coerce.number().min(0),
-  commissionDiscountPercent: z.coerce.number().min(0).max(10, "Plan discounts are capped at 10 points."),
-  featuredSlots: z.coerce.number().int().min(0).max(50),
-  homepagePlacement: z.boolean(),
-  listingFeeWaived: z.boolean(),
-  features: z.array(z.string().trim().min(1)).max(12),
-  isActive: z.boolean(),
-});
-
-/** Price changes apply from each subscriber's next billing period (a new Stripe Price in production). */
-export async function savePlan(adminId: string, input: z.infer<typeof planSchema>) {
-  const plan = await db.subscriptionPlan.findUnique({ where: { id: input.id } });
-  if (!plan) throw new AdminError("Plan not found.");
-  await db.$transaction([
-    db.subscriptionPlan.update({
-      where: { id: plan.id },
-      data: {
-        name: input.name,
-        description: input.description || null,
-        priceMinor: toMinor(input.price, plan.currency),
-        commissionDiscountBps: Math.round(input.commissionDiscountPercent * 100),
-        featuredSlots: input.featuredSlots,
-        homepagePlacement: input.homepagePlacement,
-        listingFeeWaived: input.listingFeeWaived,
-        features: input.features,
-        isActive: input.isActive,
-      },
-    }),
-    db.auditLog.create({ data: { actorId: adminId, action: "plan.update", entityType: "SubscriptionPlan", entityId: plan.id, metadata: { priceBefore: num(plan.priceMinor), priceAfter: toMinor(input.price, plan.currency) } } }),
-  ]);
-}
-
-export async function getRevenueBreakdown(days = 30) {
-  const since = new Date(Date.now() - days * DAY);
-  const rows = await db.ledgerEntry.groupBy({ by: ["type"], where: { occurredAt: { gte: since } }, _sum: { amountUsdMinor: true } });
-  const get = (t: string) => num(rows.find((r) => r.type === t)?._sum.amountUsdMinor);
-  return {
-    commission: get("COMMISSION") - get("COMMISSION_REVERSAL"),
-    listingFees: get("LISTING_FEE"),
-    subscriptions: get("SUBSCRIPTION_FEE"),
-    taxCollected: get("TAX_COLLECTED"),
-    dutiesCollected: get("DUTIES_COLLECTED"),
-  };
-}
-
-// ── Users ─────────────────────────────────────────────────────────────────────
 
 export async function listUsers(args: { q?: string; role?: Role; status?: "ACTIVE" | "SUSPENDED" | "DEACTIVATED"; page: number; perPage?: number }) {
   const perPage = args.perPage ?? 30;
@@ -658,7 +421,7 @@ export async function listUsers(args: { q?: string; role?: Role; status?: "ACTIV
       orderBy: { createdAt: "desc" },
       skip: (args.page - 1) * perPage,
       take: perPage,
-      select: { id: true, name: true, email: true, role: true, status: true, country: true, createdAt: true, lastLoginAt: true, sellerProfile: { select: { id: true, storeName: true, verificationStatus: true } }, _count: { select: { orders: true } } },
+      select: { id: true, name: true, email: true, role: true, status: true, country: true, createdAt: true, lastLoginAt: true, sellerProfile: { select: { id: true, storeName: true, verificationStatus: true } } },
     }),
     db.user.count({ where }),
   ]);

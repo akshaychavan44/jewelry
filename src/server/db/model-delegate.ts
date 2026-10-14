@@ -19,11 +19,21 @@ import {
 } from "./query-builder";
 
 export interface SqlExecutor {
-  query<R = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<R[]>;
+  query<R = Record<string, unknown>>(sql: string, params?: unknown[], options?: { readOnly?: boolean }): Promise<R[]>;
 }
 
 function generateId(): string {
   return "c" + randomUUID().replace(/-/g, "").slice(0, 24);
+}
+
+function countColumns(spec: boolean | Record<string, boolean>): string[] {
+  const fields = typeof spec === "boolean" ? ["_all"] : Object.keys(spec).filter(key => spec[key]);
+  return fields.map(field => `COUNT(${field === "_all" ? "*" : escapeIdentifier(field)})::int AS ${escapeIdentifier(`_count_${field}`)}`);
+}
+
+function countResult(spec: boolean | Record<string, boolean>, row: Record<string, unknown>) {
+  if (typeof spec === "boolean") return Number(row._count__all ?? 0);
+  return Object.fromEntries(Object.keys(spec).filter(key => spec[key]).map(key => [key, Number(row[`_count_${key}`] ?? 0)]));
 }
 
 export class ModelDelegate<TModel extends Record<string, unknown> = Record<string, unknown>> {
@@ -53,7 +63,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     if (args.take !== undefined) sql += ` LIMIT ${Number(args.take)}`;
     if (args.skip !== undefined) sql += ` OFFSET ${Number(args.skip)}`;
 
-    const rawRows = await this.executor.query<Record<string, unknown>>(sql, collector.params);
+    const rawRows = await this.executor.query<Record<string, unknown>>(sql, collector.params, { readOnly: true });
     const rows = rawRows.map((r) => normalizeRow(r, this.meta));
 
     // Handle include / select relations
@@ -365,7 +375,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     const selects: string[] = [];
 
     if (args._count) {
-      selects.push(`COUNT(*)::int AS _count_all`);
+      selects.push(...countColumns(args._count));
     }
     if (args._sum) {
       for (const col of Object.keys(args._sum)) {
@@ -400,7 +410,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
 
     const result: Record<string, unknown> = {};
     if (args._count) {
-      result._count = typeof args._count === "object" ? { _all: Number(row._count_all ?? 0) } : Number(row._count_all ?? 0);
+      result._count = countResult(args._count, row);
     }
     if (args._sum) {
       const s: Record<string, unknown> = {};
@@ -452,7 +462,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     const selects: string[] = args.by.map((col) => escapeIdentifier(col));
 
     if (args._count) {
-      selects.push(`COUNT(*)::int AS _count_all`);
+      selects.push(...countColumns(args._count));
     }
     if (args._sum) {
       for (const col of Object.keys(args._sum)) {
@@ -470,7 +480,17 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     sql += ` GROUP BY ${args.by.map((col) => escapeIdentifier(col)).join(", ")}`;
 
     if (args.orderBy) {
-      sql += ` ${buildOrderByClause(args.orderBy)}`;
+      const orderSpecs = Array.isArray(args.orderBy) ? args.orderBy : [args.orderBy];
+      const orders = orderSpecs.flatMap(spec => {
+        if (!spec || typeof spec !== "object") return [];
+        return Object.entries(spec).flatMap(([field, direction]) => {
+          if (["_count", "_sum", "_avg"].includes(field) && direction && typeof direction === "object") {
+            return Object.entries(direction).map(([column, order]) => ({ [`${field}_${column}`]: order }));
+          }
+          return [{ [field]: direction }];
+        });
+      });
+      sql += ` ${buildOrderByClause(orders)}`;
     }
     if (args.take !== undefined) sql += ` LIMIT ${Number(args.take)}`;
     if (args.skip !== undefined) sql += ` OFFSET ${Number(args.skip)}`;
@@ -483,7 +503,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
         res[col] = r[col];
       }
       if (args._count) {
-        res._count = typeof args._count === "object" ? { _all: Number(r._count_all ?? 0) } : Number(r._count_all ?? 0);
+        res._count = countResult(args._count, r);
       }
       if (args._sum) {
         const s: Record<string, unknown> = {};
@@ -511,21 +531,25 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
   ): Promise<void> {
     if (rows.length === 0 || !includeOrSelect) return;
 
-    for (const [key, value] of Object.entries(includeOrSelect)) {
-      if (!value) continue;
+    // Relations are independent. Hydrate them together instead of making every
+    // document, owner, history and count query wait for the preceding relation.
+    await Promise.all(Object.entries(includeOrSelect).map(async ([key, value]) => {
+      if (!value) return;
 
       if (key === "_count") {
         if (typeof value === "object" && value !== null) {
-          const countSpec = (value as Record<string, unknown>).select as Record<string, boolean> | undefined;
+          const countSpec = (value as Record<string, unknown>).select as Record<string, boolean | { where?: Record<string, unknown> }> | undefined;
           if (countSpec) {
-            for (const countRel of Object.keys(countSpec)) {
+            await Promise.all(Object.keys(countSpec).map(async (countRel) => {
+              const selection = countSpec[countRel];
+              if (!selection) return;
               const rel = this.meta.relations[countRel];
               if (rel) {
                 const targetDelegate = this.getDelegate(rel.model);
                 const ids = rows.map((r) => r[this.meta.primaryKey]).filter(Boolean);
                 const grouped = await targetDelegate.groupBy({
                   by: [rel.foreignKey],
-                  where: { [rel.foreignKey]: { in: ids } },
+                  where: { AND: [{ [rel.foreignKey]: { in: ids } }, ...(typeof selection === "object" && selection.where ? [selection.where] : [])] },
                   _count: { _all: true },
                 });
                 const countMap = new Map<unknown, number>();
@@ -539,14 +563,14 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
                   (r._count as Record<string, number>)[countRel] = countMap.get(r[this.meta.primaryKey]) ?? 0;
                 }
               }
-            }
+            }));
           }
         }
-        continue;
+        return;
       }
 
       const rel = this.meta.relations[key];
-      if (!rel) continue;
+      if (!rel) return;
 
       const targetDelegate = this.getDelegate(rel.model);
       const subArgs = typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -609,6 +633,6 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
           }
         }
       }
-    }
+    }));
   }
 }

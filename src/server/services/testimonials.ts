@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { unstable_rethrow } from "next/navigation";
 import { db } from "@/server/db";
 import { testimonials } from "@/config/site";
 
@@ -54,6 +55,7 @@ export const getFeaturedStories = cache(async (): Promise<TestimonialStory[]> =>
       });
     }
   } catch (error) {
+    unstable_rethrow(error);
     console.error("Failed to fetch customer reviews for homepage:", error);
   }
 

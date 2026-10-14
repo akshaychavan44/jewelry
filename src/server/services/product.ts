@@ -14,6 +14,7 @@ import type {
 import { convertMinor } from "@/lib/money";
 import { zoneFor } from "@/lib/regions";
 import { num } from "@/lib/utils";
+import { summarizeRatings } from "@/lib/review-rating";
 import { db } from "@/server/db";
 import { cardSelect, publicProductWhere, toCard } from "./catalog";
 import { type Money, type PriceContext, toDisplay } from "./currency";
@@ -184,7 +185,7 @@ export const getProductDetail = cache(async (slug: string, ctx: PriceContext, vi
     variants,
     certificates,
     shipping,
-    rating: { average: product.ratingAverage, count: product.ratingCount, distribution },
+    rating: { ...summarizeRatings(distribution), distribution },
     reviews,
     photoReviews,
     engravingFee: product.engravingFeeMinor ? toDisplay(product.engravingFeeMinor, product.currency, ctx) : null,

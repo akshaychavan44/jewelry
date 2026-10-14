@@ -8,22 +8,17 @@ import { AccessDenied, assertAdmin } from "@/server/auth/session";
 import { db } from "@/server/db";
 import {
   AdminError,
-  commissionRuleSchema,
-  deleteCommissionRule,
   disputeUpdateSchema,
   kycDecisionSchema,
-  planSchema,
-  platformSettingsSchema,
   reinstateSeller,
   reviewCertificate,
   reviewKyc,
-  saveCommissionRule,
-  savePlan,
   setUserStatus,
   suspendSeller,
   updateDisputeCase,
-  updatePlatformSettings,
-  updateSellerTerms,
+  updateVerificationSettings,
+  verificationSettingsSchema,
+  updateSellerControls,
 } from "@/server/services/admin";
 import { AfterSalesError, resolveDispute } from "@/server/services/after-sales";
 import type { ActionResult } from "./cart";
@@ -56,7 +51,7 @@ export async function reviewKycAction(input: z.input<typeof kycDecisionSchema>) 
 export async function suspendSellerAction(sellerId: string, reason: string) {
   return run(async (adminId) => {
     await suspendSeller(adminId, sellerId, reason);
-    return "Store suspended. Listings are hidden and payouts held.";
+    return "Store suspended. Listings are hidden.";
   }, ["/admin", "/jewelers", "/shop"]);
 }
 
@@ -67,10 +62,10 @@ export async function reinstateSellerAction(sellerId: string) {
   }, ["/admin", "/jewelers", "/shop"]);
 }
 
-export async function updateSellerTermsAction(sellerId: string, patch: { commissionPercent: number | null; isFeatured: boolean; isTopRated: boolean }) {
+export async function updateSellerControlsAction(sellerId: string, patch: { isFeatured: boolean; isTopRated: boolean }) {
   return run(async (adminId) => {
-    await updateSellerTerms(adminId, sellerId, patch);
-    return "Store terms saved.";
+    await updateSellerControls(adminId, sellerId, patch);
+    return "Store controls saved.";
   }, ["/admin", "/jewelers", "/"]);
 }
 
@@ -115,36 +110,12 @@ export async function resolveDisputeAction(input: z.input<typeof resolveSchema>)
 
 // ── Monetization ──────────────────────────────────────────────────────────────
 
-export async function updatePlatformSettingsAction(input: z.input<typeof platformSettingsSchema>) {
+export async function updateVerificationSettingsAction(input: z.input<typeof verificationSettingsSchema>) {
   return run(async (adminId) => {
-    await updatePlatformSettings(adminId, platformSettingsSchema.parse(input));
-    return "Platform settings saved.";
-  }, ["/admin/monetization"]);
+    await updateVerificationSettings(adminId, verificationSettingsSchema.parse(input));
+    return "Verification settings saved.";
+  }, ["/admin", "/seller/onboarding"]);
 }
-
-export async function saveCommissionRuleAction(input: z.input<typeof commissionRuleSchema>) {
-  return run(async (adminId) => {
-    const data = commissionRuleSchema.parse(input);
-    await saveCommissionRule(adminId, data);
-    return data.id ? "Rule updated." : "Rule added.";
-  }, ["/admin/monetization"]);
-}
-
-export async function deleteCommissionRuleAction(id: string) {
-  return run(async (adminId) => {
-    await deleteCommissionRule(adminId, id);
-    return "Rule removed.";
-  }, ["/admin/monetization"]);
-}
-
-export async function savePlanAction(input: z.input<typeof planSchema>) {
-  return run(async (adminId) => {
-    await savePlan(adminId, planSchema.parse(input));
-    return "Plan saved.";
-  }, ["/admin/monetization", "/sell"]);
-}
-
-// ── Users ─────────────────────────────────────────────────────────────────────
 
 export async function setUserStatusAction(userId: string, status: "ACTIVE" | "SUSPENDED") {
   return run(async (adminId) => {

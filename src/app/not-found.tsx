@@ -11,7 +11,7 @@ const cartouche = "[clip-path:polygon(10px_0,calc(100%-10px)_0,100%_10px,100%_ca
 export default function NotFound() {
   return (
     <>
-      <SiteHeader />
+      <SiteHeader staticNavigation />
       <main id="main" className="shell flex min-h-[62vh] flex-col items-center justify-center py-20 text-center">
         {/* Struck like a fineness mark — the site's hallmark device. */}
         <span aria-hidden className={`inline-flex bg-gold/55 p-[2px] ${cartouche}`}>
@@ -30,7 +30,7 @@ export default function NotFound() {
           </Link>
         </div>
       </main>
-      <SiteFooter />
+      <SiteFooter staticNavigation />
     </>
   );
 }

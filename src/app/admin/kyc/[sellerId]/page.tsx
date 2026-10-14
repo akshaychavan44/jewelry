@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import { KycDecisionPanel, StoreControls } from "@/components/admin/kyc-review";
 import { Badge, Card, CardHeader, Monogram, StatusBadge } from "@/components/ui/display";
 import { formatDate, timeAgo } from "@/lib/format";
-import { bpsToPercent, formatMoney } from "@/lib/money";
 import { countryName } from "@/lib/regions";
 import { DOCUMENT_REVIEW_STATUS, KYC_DOCUMENT_LABELS, VERIFICATION_STATUS } from "@/lib/status";
 import { humanize } from "@/lib/utils";
@@ -35,7 +34,7 @@ export default async function KycReviewPage({ params }: { params: Promise<{ sell
   const { sellerId } = await params;
   const data = await getKycReview(sellerId);
   if (!data) notFound();
-  const { seller, latest, checks, audit, settings } = data;
+  const { seller, latest, checks, audit } = data;
   const pending = seller.verificationStatus === "PENDING";
   const live = seller.verificationStatus === "APPROVED" || seller.verificationStatus === "SUSPENDED";
   const addr = seller.returnAddress;
@@ -109,18 +108,7 @@ export default async function KycReviewPage({ params }: { params: Promise<{ sell
                 ["Entity type", seller.businessType && humanize(seller.businessType)],
                 ["Registration number", seller.registrationNumber && <span className="font-mono text-[13px]">{seller.registrationNumber}</span>],
                 ["Tax ID", seller.taxIdLast4 && <span className="font-mono text-[13px]">•••• {seller.taxIdLast4}</span>],
-                [
-                  "Payouts",
-                  seller.payoutMethod === "STRIPE_CONNECT"
-                    ? `Stripe Connect · ${seller.stripeAccountId ?? "not linked"}`
-                    : seller.payoutMethod === "BANK_TRANSFER"
-                      ? `${seller.bankName ?? "Bank"} · ${seller.bankAccountHolder ?? ""} ••••${seller.bankAccountLast4 ?? ""} · ${seller.payoutCurrency ?? seller.defaultCurrency}`
-                      : null,
-                ],
-                [
-                  "Stripe capabilities",
-                  seller.payoutMethod === "STRIPE_CONNECT" ? `Charges ${seller.stripeChargesEnabled ? "on" : "off"} · payouts ${seller.stripePayoutsEnabled ? "on" : "off"}` : "Not applicable",
-                ],
+
               ]}
             />
           </Card>
@@ -231,8 +219,7 @@ export default async function KycReviewPage({ params }: { params: Promise<{ sell
                 <StoreControls
                   sellerId={seller.id}
                   status={seller.verificationStatus as "APPROVED" | "SUSPENDED"}
-                  defaultCommission={bpsToPercent(settings.defaultCommissionBps)}
-                  initial={{ commissionPercent: seller.commissionRateBps === null ? "" : String(seller.commissionRateBps / 100), isFeatured: seller.isFeatured, isTopRated: seller.isTopRated }}
+                  initial={{ isFeatured: seller.isFeatured, isTopRated: seller.isTopRated }}
                 />
               </div>
             </Card>
@@ -246,10 +233,8 @@ export default async function KycReviewPage({ params }: { params: Promise<{ sell
                 ["Email", seller.user.email],
                 ["Joined", formatDate(seller.user.createdAt, "long")],
                 ["Last sign-in", seller.user.lastLoginAt ? timeAgo(seller.user.lastLoginAt) : "—"],
-                ["Plan", seller.subscription?.plan.name ?? "Atelier (free)"],
-                ["Listings · orders", `${seller._count.products} · ${seller._count.sellerOrders}`],
+                ["Showcase pieces", seller._count.products],
                 ["Rating", seller.ratingCount ? `${seller.ratingAverage.toFixed(1)} from ${seller.ratingCount} reviews` : "No reviews yet"],
-                ["Commission earned", `${formatMoney(data.commissionUsd, "USD")} · ${data.openDisputes} open ${data.openDisputes === 1 ? "dispute" : "disputes"}`],
               ]}
             />
           </Card>

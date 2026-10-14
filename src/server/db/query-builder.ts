@@ -106,6 +106,9 @@ export function buildWhereClause(
   if (!where || Object.keys(where).length === 0) return "";
 
   const prefix = tableAlias ? `${escapeIdentifier(tableAlias)}.` : "";
+  // Correlated subqueries must name the outer table: an unqualified "id"
+  // otherwise resolves to the related row's own id inside EXISTS.
+  const parentPrefix = tableAlias ? prefix : `${escapeIdentifier(meta.table)}.`;
   const conditions: string[] = [];
 
   for (const [key, value] of Object.entries(where)) {
@@ -150,28 +153,28 @@ export function buildWhereClause(
         if ("some" in relObj && relObj.some) {
           const subAlias = `rel_${key}_${collector.params.length}`;
           const subWhere = buildWhereClause(relObj.some as Record<string, unknown>, targetMeta, collector, subAlias);
-          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${prefix}${escapeIdentifier(relation.targetKey)}`;
+          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${parentPrefix}${escapeIdentifier(relation.targetKey)}`;
           conditions.push(`EXISTS (SELECT 1 FROM ${escapeIdentifier(targetMeta.table)} AS ${escapeIdentifier(subAlias)} WHERE ${link}${subWhere ? ` AND (${subWhere})` : ""})`);
         } else if ("none" in relObj && relObj.none) {
           const subAlias = `rel_${key}_${collector.params.length}`;
           const subWhere = buildWhereClause(relObj.none as Record<string, unknown>, targetMeta, collector, subAlias);
-          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${prefix}${escapeIdentifier(relation.targetKey)}`;
+          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${parentPrefix}${escapeIdentifier(relation.targetKey)}`;
           conditions.push(`NOT EXISTS (SELECT 1 FROM ${escapeIdentifier(targetMeta.table)} AS ${escapeIdentifier(subAlias)} WHERE ${link}${subWhere ? ` AND (${subWhere})` : ""})`);
         } else if ("is" in relObj && relObj.is) {
           const subAlias = `rel_${key}_${collector.params.length}`;
           const subWhere = buildWhereClause(relObj.is as Record<string, unknown>, targetMeta, collector, subAlias);
-          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${prefix}${escapeIdentifier(relation.targetKey)}`;
+          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${parentPrefix}${escapeIdentifier(relation.targetKey)}`;
           conditions.push(`EXISTS (SELECT 1 FROM ${escapeIdentifier(targetMeta.table)} AS ${escapeIdentifier(subAlias)} WHERE ${link}${subWhere ? ` AND (${subWhere})` : ""})`);
         } else if ("isNot" in relObj && relObj.isNot) {
           const subAlias = `rel_${key}_${collector.params.length}`;
           const subWhere = buildWhereClause(relObj.isNot as Record<string, unknown>, targetMeta, collector, subAlias);
-          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${prefix}${escapeIdentifier(relation.targetKey)}`;
+          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${parentPrefix}${escapeIdentifier(relation.targetKey)}`;
           conditions.push(`NOT EXISTS (SELECT 1 FROM ${escapeIdentifier(targetMeta.table)} AS ${escapeIdentifier(subAlias)} WHERE ${link}${subWhere ? ` AND (${subWhere})` : ""})`);
         } else {
           // Direct nested relation filter
           const subAlias = `rel_${key}_${collector.params.length}`;
           const subWhere = buildWhereClause(relObj, targetMeta, collector, subAlias);
-          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${prefix}${escapeIdentifier(relation.targetKey)}`;
+          const link = `${escapeIdentifier(subAlias)}.${escapeIdentifier(relation.foreignKey)} = ${parentPrefix}${escapeIdentifier(relation.targetKey)}`;
           conditions.push(`EXISTS (SELECT 1 FROM ${escapeIdentifier(targetMeta.table)} AS ${escapeIdentifier(subAlias)} WHERE ${link}${subWhere ? ` AND (${subWhere})` : ""})`);
         }
       }

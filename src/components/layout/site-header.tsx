@@ -4,7 +4,12 @@ import { getCategoryTree } from "@/server/services/catalog";
 import { getDisplayCurrency } from "@/server/services/currency";
 import { HeaderClient } from "./header-client";
 
-export async function SiteHeader() {
+export async function SiteHeader({ staticNavigation = false }: { staticNavigation?: boolean } = {}) {
+  // The root 404 fallback is part of Next's route tree, including login. It
+  // must render independently of database availability.
+  if (staticNavigation) {
+    return <HeaderClient categories={mainCategories.map(c => ({ slug: c.slug, name: c.name, imageUrl: null, children: [] }))} currency="USD" user={null} />;
+  }
   const user = await getCurrentUser();
   const [tree, currency, seller] = await Promise.all([
     getCategoryTree(),

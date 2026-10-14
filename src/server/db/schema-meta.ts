@@ -31,7 +31,7 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
       paymentMethods: { type: "many", model: "PaymentMethod", foreignKey: "userId", targetKey: "id" },
       cart: { type: "one", model: "Cart", foreignKey: "userId", targetKey: "id" },
       orders: { type: "many", model: "Order", foreignKey: "buyerId", targetKey: "id" },
-      reviews: { type: "many", model: "Review", foreignKey: "userId", targetKey: "id" },
+      reviews: { type: "many", model: "Review", foreignKey: "authorId", targetKey: "id" },
       wishlistItems: { type: "many", model: "WishlistItem", foreignKey: "userId", targetKey: "id" },
       favoriteStores: { type: "many", model: "FavoriteStore", foreignKey: "userId", targetKey: "id" },
       offers: { type: "many", model: "Offer", foreignKey: "buyerId", targetKey: "id" },
@@ -364,9 +364,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   Review: {
     table: "Review",
     primaryKey: "id",
-    arrayFields: new Set(["images"]),
+    arrayFields: new Set(["photoUrls"]),
     relations: {
-      user: { type: "one", model: "User", foreignKey: "id", targetKey: "userId" },
+      author: { type: "one", model: "User", foreignKey: "id", targetKey: "authorId" },
       seller: { type: "one", model: "SellerProfile", foreignKey: "id", targetKey: "sellerId" },
       product: { type: "one", model: "Product", foreignKey: "id", targetKey: "productId" },
       orderItem: { type: "one", model: "OrderItem", foreignKey: "id", targetKey: "orderItemId" },

@@ -4,6 +4,8 @@
  */
 
 import { Pool, neon } from "@neondatabase/serverless";
+import { unstable_rethrow } from "next/navigation";
+import { DatabaseUnavailableError, isDatabaseUnavailable } from "@/lib/database-errors";
 import { SCHEMA_META, type ModelMeta } from "./schema-meta";
 import { ModelDelegate, type SqlExecutor } from "./model-delegate";
 
@@ -14,6 +16,15 @@ function toCamelCase(str: string): string {
 export function createNeonDbClient(connectionString?: string) {
   const connStr = connectionString || process.env.DATABASE_URL || "";
   let pool: Pool | null = null;
+  let http: ReturnType<typeof neon> | null = null;
+
+  function getHttp() {
+    if (!http) {
+      if (!connStr) throw new Error("DATABASE_URL is not configured. Please set DATABASE_URL in your .env file.");
+      http = neon(connStr);
+    }
+    return http;
+  }
 
   function getPool(): Pool {
     if (!pool) {
@@ -23,16 +34,38 @@ export function createNeonDbClient(connectionString?: string) {
       pool = new Pool({
         connectionString: connStr,
         max: Number(process.env.DATABASE_POOL_SIZE ?? 10),
+        connectionTimeoutMillis: 10_000,
+        idleTimeoutMillis: 30_000,
       });
     }
     return pool;
   }
 
   const baseExecutor: SqlExecutor = {
-    async query<R = Record<string, unknown>>(sql: string, params: unknown[] = []): Promise<R[]> {
-      const p = getPool();
-      const res = await p.query(sql, params as any[]);
-      return (res.rows ?? []) as R[];
+    async query<R = Record<string, unknown>>(sql: string, params: unknown[] = [], options: { readOnly?: boolean } = {}): Promise<R[]> {
+      // Independent queries do not need a persistent WebSocket. HTTP avoids
+      // stale sockets after idle/sleep and the connection handshake per request.
+      // Interactive transactions below still use a single checked-out client.
+      const signal = AbortSignal.timeout(10_000);
+      for (let attempt = 0; ; attempt++) {
+        try {
+          return await getHttp().query(sql, params, { fetchOptions: { cache: "no-store", signal } }) as R[];
+        } catch (error) {
+          // Neon wraps fetch failures. Preserve Next's rendering control flow.
+          const source = error && typeof error === "object" && "sourceError" in error ? error.sourceError : error;
+          unstable_rethrow(source);
+          if (isDatabaseUnavailable(error)) {
+            // Only explicitly read-only delegate queries may retry. Mutations
+            // and raw SQL never repeat, and both attempts share one deadline.
+            if (options.readOnly && attempt === 0 && !signal.aborted) {
+              await new Promise(resolve => setTimeout(resolve, 150));
+              continue;
+            }
+            throw new DatabaseUnavailableError(error);
+          }
+          throw error;
+        }
+      }
     },
   };
 

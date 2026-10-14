@@ -8,8 +8,8 @@ import { NewsletterForm } from "./newsletter-form";
 import { FooterBackToTop } from "./footer-back-to-top";
 import styles from "./footer.module.css";
 
-export async function SiteFooter() {
-  const user = await getCurrentUser();
+export async function SiteFooter({ staticNavigation = false }: { staticNavigation?: boolean } = {}) {
+  const user = staticNavigation ? null : await getCurrentUser();
   const isJeweler = user?.role === "SELLER";
   return (
     <footer id="site-footer" className={styles.footer}>

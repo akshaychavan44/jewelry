@@ -2,9 +2,11 @@
 
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { homeFor, safeCallback, type LoginIntent } from "@/lib/auth-routing";
+import { DATABASE_UNAVAILABLE_MESSAGE, isDatabaseUnavailable } from "@/lib/database-errors";
 import { signIn, signOut, unstable_update } from "@/server/auth";
 import { requireUser } from "@/server/auth/session";
 import { db } from "@/server/db";
@@ -18,6 +20,7 @@ async function signInWithPassword(email: string, password: string, intent: Login
     if (typeof url === "string" && url.includes("error=")) return "Email or password is incorrect.";
     return null;
   } catch (error) {
+    if (isDatabaseUnavailable(error)) return DATABASE_UNAVAILABLE_MESSAGE;
     if (error instanceof AuthError) {
       const code = (error as AuthError & { code?: string }).code;
       if (code === "wrong_portal") {
@@ -46,8 +49,12 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
   const error = await signInWithPassword(parsed.data.email, parsed.data.password, parsed.data.intent);
   if (error) return { error };
 
+  // The credentials provider already verified the administrator role. Admin
+  // sign-in has no cart to merge and needs no additional database round trips.
+  if (parsed.data.intent === "admin") redirect(safeCallback(formData.get("callbackUrl")) ?? "/admin");
+
   const user = await db.user.findFirst({ where: { email: { equals: parsed.data.email, mode: "insensitive" } }, select: { id: true, role: true } });
-  if (user) await mergeGuestCart(user.id);
+  if (user?.role === "BUYER") await mergeGuestCart(user.id);
   redirect(safeCallback(formData.get("callbackUrl")) ?? homeFor(user?.role ?? "BUYER"));
 }
 
@@ -94,7 +101,9 @@ export async function registerAction(_: AuthFormState, formData: FormData): Prom
 }
 
 export async function signOutAction() {
-  await signOut({ redirectTo: "/" });
+  await signOut({ redirect: false });
+  revalidatePath("/", "layout");
+  redirect("/");
 }
 
 /** An existing buyer opens a store: upgrade the role and refresh the session. */

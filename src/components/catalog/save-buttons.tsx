@@ -11,7 +11,7 @@ import { toggleFavoriteStore, toggleWishlist } from "@/server/actions/wishlist";
 function useToggle(
   initial: boolean,
   action: () => Promise<Awaited<ReturnType<typeof toggleWishlist>>>,
-  messages: { on: string; off: string }
+  messages: { on: string; off: string; signIn: string }
 ) {
   const router = useRouter();
   const pathname = usePathname();
@@ -26,6 +26,7 @@ function useToggle(
     e?.preventDefault();
     e?.stopPropagation();
     if (pending) return;
+    const returnPath = pathname + window.location.search;
 
     const next = !active;
     setActive(next);
@@ -36,7 +37,14 @@ function useToggle(
         if (!res.ok) {
           setActive(initial);
           if (res.requiresAuth) {
-            router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+            toast.info(messages.signIn, {
+              id: "favorites-sign-in-required",
+              duration: 6000,
+              action: {
+                label: "Sign in",
+                onClick: () => router.push(`/login?callbackUrl=${encodeURIComponent(returnPath)}`),
+              },
+            });
           } else {
             toast.error(res.message);
           }
@@ -69,7 +77,7 @@ export function WishlistButton({
   const { active, pending, toggle } = useToggle(
     saved,
     () => toggleWishlist(productId),
-    { on: "Added to favorites", off: "Removed from favorites" }
+    { on: "Added to favorites", off: "Removed from favorites", signIn: "Sign in to add to favorites" }
   );
 
   if (variant === "full") {
@@ -138,7 +146,7 @@ export function FollowStoreButton({
   const { active, pending, toggle } = useToggle(
     following,
     () => toggleFavoriteStore(sellerId),
-    { on: "Added to your favourite jewelers", off: "Removed from your favourite jewelers" }
+    { on: "Added to your favourite jewelers", off: "Removed from your favourite jewelers", signIn: "Sign in to follow jewelers" }
   );
 
   if (variant === "icon") {

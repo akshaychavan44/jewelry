@@ -12,7 +12,7 @@ import type { Carrier, ShippingMethod, ShippingZone } from "@/generated/prisma/e
 import { ZONE_LABELS } from "@/lib/regions";
 import { CARRIERS, METHOD_LABELS } from "@/lib/shipping";
 import { cn } from "@/lib/utils";
-import { changePlanAction, savePoliciesAction, saveShippingRatesAction } from "@/server/actions/seller";
+import { savePoliciesAction, saveShippingRatesAction } from "@/server/actions/seller";
 
 export function PoliciesForm({ initial }: { initial: { returnWindowDays: number; handlingDays: number; acceptsOffers: boolean; acceptsCustomOrders: boolean } }) {
   const router = useRouter();
@@ -142,47 +142,6 @@ export function RateCardEditor({ initial, currency }: { initial: Rate[]; currenc
         </Button>
       </div>
       <p className="mt-3 text-[12.5px] text-muted">Shipping terms, fulfillment timeframes and direct dispatch options displayed to prospective customers.</p>
-    </div>
-  );
-}
-
-export function PlanPicker({ plans, current }: { plans: { code: string; name: string; price: string; commission: string; features: string[] }[]; current: string }) {
-  const router = useRouter();
-  const [pending, start] = useTransition();
-  return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {plans.map((p) => (
-        <div key={p.code} className={cn("flex flex-col rounded-[3px] border p-5", p.code === current ? "border-sage bg-sage-mist/40" : "border-line bg-ivory")}>
-          <p className="caps text-ink">{p.name}</p>
-          <p className="mt-2 text-[22px] font-semibold text-ink">{p.price}</p>
-          <p className="text-[13px] text-sage-deep">0% sales commission · Direct client sales</p>
-          <ul className="mt-4 flex-1 space-y-1.5 text-[13px] text-ink-soft">
-            {p.features.map((f) => (
-              <li key={f}>✦ {f}</li>
-            ))}
-          </ul>
-          {p.code === current ? (
-            <p className="mt-4 text-[13px] text-sage-deep">Current plan</p>
-          ) : (
-            <Button
-              className="mt-4"
-              size="sm"
-              variant="outline"
-              pending={pending}
-              onClick={() =>
-                start(async () => {
-                  const res = await changePlanAction(p.code);
-                  if (res.ok) toast.success(res.message);
-                  else toast.error(res.message);
-                  router.refresh();
-                })
-              }
-            >
-              Switch to {p.name}
-            </Button>
-          )}
-        </div>
-      ))}
     </div>
   );
 }

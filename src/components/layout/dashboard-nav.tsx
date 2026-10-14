@@ -10,6 +10,7 @@ import {
   Heart,
   Landmark,
   LayoutDashboard,
+  LoaderCircle,
   MapPin,
   MessageSquare,
   Package,
@@ -28,7 +29,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -66,15 +67,24 @@ const ICONS = {
 export type NavIcon = keyof typeof ICONS;
 export type NavItem = { href: string; label: string; icon: NavIcon; badge?: number; exact?: boolean };
 
+function NavigationPending() {
+  const { pending } = useLinkStatus();
+  return <span className={cn("absolute inset-0 grid place-items-center bg-parchment", pending ? "opacity-100" : "opacity-0")} role="status" aria-label={pending ? "Loading page" : undefined}>
+    <LoaderCircle aria-hidden className="size-3.5 motion-safe:animate-spin" />
+  </span>;
+}
+
 /** Sidebar navigation for account, seller and admin areas. */
 export function DashboardNav({
   items,
   className,
   variant = "default",
+  showPending = false,
 }: {
   items: NavItem[];
   className?: string;
   variant?: "default" | "underlined";
+  showPending?: boolean;
 }) {
   const pathname = usePathname();
   const isUnderlined = variant === "underlined";
@@ -110,13 +120,16 @@ export function DashboardNav({
                   ),
             )}
           >
-            <Icon
-              className={cn(
-                "size-[18px] shrink-0 transition-colors",
-                isUnderlined && active ? "text-[#b8883b]" : "text-ink/65",
-              )}
-              strokeWidth={isUnderlined && active ? 2 : 1.6}
-            />
+            <span className="relative grid size-[18px] shrink-0 place-items-center">
+              <Icon
+                className={cn(
+                  "size-[18px] shrink-0 transition-colors",
+                  isUnderlined && active ? "text-[#b8883b]" : "text-ink/65",
+                )}
+                strokeWidth={isUnderlined && active ? 2 : 1.6}
+              />
+              {showPending && <NavigationPending />}
+            </span>
             <span className="flex-1 whitespace-nowrap">{label}</span>
             {!!badge && (
               <span className="grid min-w-5 place-items-center rounded-full bg-sage px-1.5 text-[11px] leading-5 text-white">

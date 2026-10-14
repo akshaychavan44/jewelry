@@ -13,7 +13,12 @@ import { createConnectOnboardingLink } from "@/server/services/payments";
 import { UploadError } from "@/server/services/storage";
 import { socialEnrollmentSchema } from "@/lib/jeweler-profile";
 
-export type StepState = { ok?: boolean; message?: string; fieldErrors?: Record<string, string[] | undefined> };
+export type StepState = {
+  ok?: boolean;
+  message?: string;
+  fieldErrors?: Record<string, string[] | undefined>;
+  values?: Record<string, string>;
+};
 
 async function sellerUser() {
   const user = await assertUser();
@@ -22,8 +27,8 @@ async function sellerUser() {
 }
 
 function fail(error: unknown): StepState {
-  if (error instanceof OnboardingError || error instanceof UploadError) return { message: error.message };
-  throw error;
+  if (error instanceof Error) return { ok: false, message: error.message };
+  return { ok: false, message: "An unexpected error occurred." };
 }
 
 const file = (v: FormDataEntryValue | null) => (v instanceof File && v.size > 0 ? v : null);
@@ -35,7 +40,10 @@ const storeSchema = z.object({
   country: z.string().length(2, "Choose a country."),
   city: z.string().trim().min(2, "Enter your city."),
   defaultCurrency: z.string().refine((c) => isCurrency(c), "Choose a currency."),
-  foundedYear: z.coerce.number().int().min(1700).max(new Date().getFullYear()).optional(),
+  foundedYear: z
+    .union([z.coerce.number().int().min(1700).max(new Date().getFullYear()), z.literal(""), z.nan()])
+    .optional()
+    .transform((v) => (typeof v === "number" && !Number.isNaN(v) ? v : undefined)),
   specialties: z.string().optional(),
   ra_line1: z.string().trim().min(3, "Enter the return street address."),
   ra_line2: z.string().trim().optional(),
@@ -46,11 +54,16 @@ const storeSchema = z.object({
 }).extend({ instagram: socialEnrollmentSchema.shape.instagram.default(""), facebook: socialEnrollmentSchema.shape.facebook.default(""), youtube: socialEnrollmentSchema.shape.youtube.default(""), whatsapp: socialEnrollmentSchema.shape.whatsapp.default(""), publicEmail: socialEnrollmentSchema.shape.publicEmail.default(""), maps: socialEnrollmentSchema.shape.maps.default("") });
 
 export async function saveStoreProfileAction(_: StepState, formData: FormData): Promise<StepState> {
+  const raw = Object.fromEntries(
+    [...formData.entries()]
+      .filter(([, v]) => typeof v === "string")
+      .map(([k, v]) => [k, (v as string).trim()])
+  ) as Record<string, string>;
+
   try {
     const user = await sellerUser();
-    const raw = Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string" && v !== ""));
     const parsed = storeSchema.safeParse(raw);
-    if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+    if (!parsed.success) return { ok: false, fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
     const d = parsed.data;
     await saveStoreProfile(user.id, {
       storeName: d.storeName,
@@ -67,19 +80,25 @@ export async function saveStoreProfileAction(_: StepState, formData: FormData): 
       banner: file(formData.get("banner")),
     });
   } catch (error) {
-    return fail(error);
+    const res = fail(error);
+    return { ...res, values: raw };
   }
   revalidatePath("/seller/onboarding");
-  redirect("/seller/onboarding?step=2");
+  return { ok: true, message: "Store profile saved." };
 }
 
 /** Same fields as onboarding step 1, for approved stores (no redirect). */
 export async function updateStoreProfileAction(_: StepState, formData: FormData): Promise<StepState> {
+  const raw = Object.fromEntries(
+    [...formData.entries()]
+      .filter(([, v]) => typeof v === "string")
+      .map(([k, v]) => [k, (v as string).trim()])
+  ) as Record<string, string>;
+
   try {
     const user = await sellerUser();
-    const raw = Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string" && v !== ""));
     const parsed = storeSchema.safeParse(raw);
-    if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+    if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
     const d = parsed.data;
     await saveStoreProfile(user.id, {
       storeName: d.storeName,
@@ -96,7 +115,8 @@ export async function updateStoreProfileAction(_: StepState, formData: FormData)
       banner: file(formData.get("banner")),
     });
   } catch (error) {
-    return fail(error);
+    const res = fail(error);
+    return { ...res, values: raw };
   }
   revalidatePath("/seller/settings");
   return { ok: true, message: "Store profile saved." };
@@ -111,11 +131,16 @@ const businessSchema = z.object({
 });
 
 export async function saveBusinessAction(_: StepState, formData: FormData): Promise<StepState> {
+  const raw = Object.fromEntries(
+    [...formData.entries()]
+      .filter(([, v]) => typeof v === "string")
+      .map(([k, v]) => [k, (v as string).trim()])
+  ) as Record<string, string>;
+
   try {
     const user = await sellerUser();
-    const raw = Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string"));
     const parsed = businessSchema.safeParse(raw);
-    if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
+    if (!parsed.success) return { ok: false, fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
 
     const existing = await db.sellerProfile.findUnique({
       where: { userId: user.id },
@@ -123,7 +148,7 @@ export async function saveBusinessAction(_: StepState, formData: FormData): Prom
     });
 
     if (!parsed.data.taxId && !existing?.taxIdLast4) {
-      return { fieldErrors: { taxId: ["Enter your tax ID (VAT, GST, EIN…)."] } };
+      return { ok: false, fieldErrors: { taxId: ["Enter your tax ID (VAT, GST, EIN…)."] }, values: raw };
     }
 
     const docTax = file(formData.get("doc_TAX_REGISTRATION"));
@@ -142,8 +167,10 @@ export async function saveBusinessAction(_: StepState, formData: FormData): Prom
 
     if (Object.keys(docErrors).length > 0) {
       return {
+        ok: false,
         fieldErrors: docErrors,
         message: "Please upload all required verification documents to continue.",
+        values: raw,
       };
     }
 
@@ -157,10 +184,11 @@ export async function saveBusinessAction(_: StepState, formData: FormData): Prom
       },
     });
   } catch (error) {
-    return fail(error);
+    const res = fail(error);
+    return { ...res, values: raw };
   }
   revalidatePath("/seller/onboarding");
-  redirect("/seller/onboarding?step=3");
+  return { ok: true, message: "Business verification saved." };
 }
 
 const bankSchema = z.object({

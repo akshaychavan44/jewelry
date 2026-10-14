@@ -17,10 +17,7 @@ export async function SiteHeader({ staticNavigation = false }: { staticNavigatio
     user?.role === "SELLER" ? getSellerForUser(user.id) : Promise.resolve(null),
   ]);
 
-  const isApprovedJeweler = Boolean(
-    (user?.role === "SELLER" && seller?.verificationStatus === "APPROVED") ||
-    user?.role === "ADMIN"
-  );
+  const isApprovedJeweler = Boolean(user?.role === "SELLER" && seller);
 
   const categories = mainCategories.map((c) => {
     const node = tree.find((t) => t.slug === c.slug);

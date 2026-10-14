@@ -51,7 +51,7 @@ export async function AdminLoginPageContent({ searchParams }: { searchParams: Pr
         <div className="mt-6 rounded-[3px] border border-dashed border-line-strong bg-porcelain px-3.5 py-2.5 text-[11.5px] text-ink-soft">
           <p className="caps mb-1 text-[9.5px] text-muted">Super admin credentials · development only</p>
           <p className="font-mono text-[11px] text-ink">
-            admin@loupe.example · <span className="text-muted">Password:</span> LoupeDemo!2026
+            akshaychavan44.ac@gmail.com
           </p>
         </div>
       )}

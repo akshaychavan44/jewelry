@@ -119,11 +119,11 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler }: 
             <Link href="/custom-orders" className={cn(navLink, isCustomOrdersActive && styles.activeNavItem)} data-active={isCustomOrdersActive ? "true" : undefined}>
               Custom orders
             </Link>
-            <Link href="/guides" className={cn(navLink, "hidden xl:inline", isGuidesActive && styles.activeNavItem)} data-active={isGuidesActive ? "true" : undefined}>
+            <Link href="/guides" className={cn(navLink, isGuidesActive && styles.activeNavItem)} data-active={isGuidesActive ? "true" : undefined}>
               Guides
             </Link>
             {!isApprovedJeweler && (
-              <Link href="/sell" className={cn(navLink, "hidden xl:inline", isSellActive && styles.activeNavItem)} data-active={isSellActive ? "true" : undefined}>
+              <Link href="/sell" className={cn(navLink, isSellActive && styles.activeNavItem)} data-active={isSellActive ? "true" : undefined}>
                 For jewelers
               </Link>
             )}
@@ -304,7 +304,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
         aria-label={`Account menu for ${displayName}`}
       >
         <span
-          className="grid size-9 place-items-center rounded-full border border-[#c18d2d]/50 bg-[#faf6ee] font-display text-[15px] font-semibold text-[#865d1b] shadow-2xs transition-all duration-200 group-hover:border-[#93691f] group-hover:bg-white group-hover:shadow-xs group-hover:scale-105"
+          className="grid size-9 place-items-center rounded-full bg-[#faf6ee] font-display text-[15px] font-semibold text-[#865d1b] shadow-2xs transition-all duration-200 group-hover:bg-white group-hover:shadow-xs group-hover:scale-105"
           title={displayName}
         >
           {initial}
@@ -323,7 +323,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
           <div className="flex items-center gap-3">
             <span
               aria-hidden
-              className="grid size-9 shrink-0 place-items-center rounded-full border border-[#c18d2d]/50 bg-[#faf6ee] font-display text-[15px] font-semibold text-[#865d1b] shadow-2xs"
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-[#faf6ee] font-display text-[15px] font-semibold text-[#865d1b] shadow-2xs"
             >
               {initial}
             </span>

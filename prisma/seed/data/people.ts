@@ -8,8 +8,7 @@
 export const DEMO_PASSWORD = "LoupeDemo!2026";
 
 export const ADMINS = [
-  { name: "Nadia Brooks", email: "admin@loupe.example" },
-  { name: "Tomás Rivera", email: "tomas.rivera@loupe.example" },
+  { name: "Akshay Deepak Chavan", email: "akshaychavan44.ac@gmail.com" },
 ];
 
 export type BuyerSpec = {

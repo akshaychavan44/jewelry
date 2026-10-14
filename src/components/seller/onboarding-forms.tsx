@@ -2,10 +2,11 @@
 
 import { CheckCircle2, FileUp } from "lucide-react";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import { Field, FormError } from "@/components/ui/field";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { Button } from "@/components/ui/button";
 import type { KycDocumentType } from "@/generated/prisma/enums";
 import { CURRENCIES, SUPPORTED_CURRENCIES } from "@/lib/money";
 import { COUNTRY_CODES, countryName } from "@/lib/regions";
@@ -41,20 +42,158 @@ export function StoreProfileForm({
   action?: (state: StepState, formData: FormData) => Promise<StepState>;
   submitLabel?: string;
 }) {
-  const [state, action] = useActionState<StepState, FormData>(submit, {});
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [state, setState] = useState<StepState>({});
   const err = (k: string) => state.fieldErrors?.[k];
   const ra = store.returnAddress;
+
+  const [values, setValues] = useState<Record<string, string>>(() => ({
+    storeName: store.storeName ?? "",
+    tagline: store.tagline ?? "",
+    bio: store.bio ?? "",
+    country: store.country ?? "US",
+    city: store.city ?? "",
+    defaultCurrency: store.defaultCurrency ?? "USD",
+    foundedYear: store.foundedYear ? String(store.foundedYear) : "",
+    specialties: store.specialties?.join(", ") ?? "",
+    ra_line1: ra?.line1 ?? "",
+    ra_line2: ra?.line2 ?? "",
+    ra_city: ra?.city ?? "",
+    ra_region: ra?.region ?? "",
+    ra_postalCode: ra?.postalCode ?? "",
+    ra_phone: ra?.phone ?? "",
+    instagram: store.socials?.instagram ?? "",
+    facebook: store.socials?.facebook ?? "",
+    youtube: store.socials?.youtube ?? "",
+    whatsapp: store.socials?.whatsapp ?? "",
+    publicEmail: store.socials?.publicEmail ?? "",
+    maps: store.socials?.maps ?? "",
+  }));
+
+  // Restore draft from storage on mount if available
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("loupe_onboarding_store_profile") || localStorage.getItem("loupe_onboarding_store_profile");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          setValues((prev) => {
+            const next = { ...prev };
+            for (const [k, v] of Object.entries(parsed)) {
+              if (typeof v === "string" && v) {
+                next[k] = v;
+              }
+            }
+            return next;
+          });
+        }
+      }
+    } catch {}
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setValues((prev) => {
+      const next = { ...prev, [name]: value };
+      try {
+        sessionStorage.setItem("loupe_onboarding_store_profile", JSON.stringify(next));
+        localStorage.setItem("loupe_onboarding_store_profile", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    if (state.fieldErrors?.[name]) {
+      setState((prev) => {
+        if (!prev.fieldErrors) return prev;
+        const nextErrors = { ...prev.fieldErrors };
+        delete nextErrors[name];
+        return { ...prev, fieldErrors: nextErrors };
+      });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const errors: Record<string, string[]> = {};
+    if (!values.storeName || values.storeName.trim().length < 2) {
+      errors.storeName = ["Enter your store name (at least 2 characters)."];
+    }
+    if (!values.city || values.city.trim().length < 2) {
+      errors.city = ["Enter your city."];
+    }
+    if (!values.ra_line1 || values.ra_line1.trim().length < 3) {
+      errors.ra_line1 = ["Enter the return street address."];
+    }
+    if (!values.ra_city || values.ra_city.trim().length < 2) {
+      errors.ra_city = ["Enter the return city."];
+    }
+    if (!values.ra_postalCode || values.ra_postalCode.trim().length < 2) {
+      errors.ra_postalCode = ["Enter the return postal code."];
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setState({
+        ok: false,
+        message: "Please fill in all required fields before continuing.",
+        fieldErrors: errors,
+      });
+
+      const firstKey = Object.keys(errors)[0];
+      const el = document.getElementById(firstKey);
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
+
+    startTransition(async () => {
+      try {
+        const res = await submit({}, formData);
+        setState(res);
+        if (res.ok) {
+          try {
+            sessionStorage.removeItem("loupe_onboarding_store_profile");
+            localStorage.removeItem("loupe_onboarding_store_profile");
+          } catch {}
+          router.push("/seller/onboarding?step=2");
+        } else {
+          if (res.values) {
+            setValues((prev) => ({ ...prev, ...res.values }));
+          }
+          if (res.fieldErrors && Object.keys(res.fieldErrors).length > 0) {
+            const firstKey = Object.keys(res.fieldErrors)[0];
+            const el = document.getElementById(firstKey);
+            if (el) {
+              el.focus();
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
+        }
+      } catch (err) {
+        setState({
+          ok: false,
+          message: err instanceof Error ? err.message : "Failed to save profile. Please try again.",
+        });
+      }
+    });
+  };
+
   return (
-    <form action={action} className="grid gap-5 sm:grid-cols-2" noValidate>
+    <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2" noValidate>
       {state.ok ? <p className="rounded-[2px] bg-moss-mist px-4 py-2.5 text-[13.5px] text-moss sm:col-span-2">{state.message}</p> : <FormError message={state.message} />}
       <Field label="Store name" htmlFor="storeName" error={err("storeName")} className="sm:col-span-2">
-        <Input id="storeName" name="storeName" defaultValue={store.storeName} aria-invalid={!!err("storeName")} required />
+        <Input id="storeName" name="storeName" value={values.storeName} onChange={handleChange} aria-invalid={!!err("storeName")} required />
       </Field>
       <Field label="Tagline" htmlFor="tagline" optional hint="One line shown under your name, e.g. “Hand-set bridal diamonds from Paris”." className="sm:col-span-2">
-        <Input id="tagline" name="tagline" defaultValue={store.tagline ?? ""} maxLength={120} />
+        <Input id="tagline" name="tagline" value={values.tagline} onChange={handleChange} maxLength={120} />
       </Field>
       <Field label="Your story" htmlFor="bio" optional className="sm:col-span-2">
-        <Textarea id="bio" name="bio" defaultValue={store.bio ?? ""} className="min-h-32" />
+        <Textarea id="bio" name="bio" value={values.bio} onChange={handleChange} className="min-h-32" />
       </Field>
       <Field label="Logo" htmlFor="logo" optional hint={store.logoUrl ? "Uploaded — choose a file to replace it." : "Square PNG, JPG or SVG."}>
         <Input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="h-auto py-2 file:mr-3 file:border-0 file:bg-parchment file:px-3 file:py-1.5" />
@@ -63,7 +202,7 @@ export function StoreProfileForm({
         <Input id="banner" name="banner" type="file" accept="image/png,image/jpeg,image/webp" className="h-auto py-2 file:mr-3 file:border-0 file:bg-parchment file:px-3 file:py-1.5" />
       </Field>
       <Field label="Operating country" htmlFor="country" error={err("country")}>
-        <NativeSelect id="country" name="country" defaultValue={store.country ?? "US"}>
+        <NativeSelect id="country" name="country" value={values.country} onChange={handleChange}>
           {COUNTRY_CODES.map((c) => (
             <option key={c} value={c}>
               {countryName(c)}
@@ -72,10 +211,10 @@ export function StoreProfileForm({
         </NativeSelect>
       </Field>
       <Field label="City" htmlFor="city" error={err("city")}>
-        <Input id="city" name="city" defaultValue={store.city ?? ""} aria-invalid={!!err("city")} required />
+        <Input id="city" name="city" value={values.city} onChange={handleChange} aria-invalid={!!err("city")} required />
       </Field>
       <Field label="Default currency" htmlFor="defaultCurrency" hint="Used for custom request budgets.">
-        <NativeSelect id="defaultCurrency" name="defaultCurrency" defaultValue={store.defaultCurrency ?? "USD"}>
+        <NativeSelect id="defaultCurrency" name="defaultCurrency" value={values.defaultCurrency} onChange={handleChange}>
           {SUPPORTED_CURRENCIES.map((c) => (
             <option key={c} value={c}>
               {c} — {CURRENCIES[c].name}
@@ -84,41 +223,41 @@ export function StoreProfileForm({
         </NativeSelect>
       </Field>
       <Field label="Founded" htmlFor="foundedYear" optional>
-        <Input id="foundedYear" name="foundedYear" inputMode="numeric" defaultValue={store.foundedYear ?? ""} />
+        <Input id="foundedYear" name="foundedYear" inputMode="numeric" value={values.foundedYear} onChange={handleChange} />
       </Field>
       <Field label="Specialities" htmlFor="specialties" optional hint="Comma-separated, e.g. Bridal, Art Deco, Coloured gemstones" className="sm:col-span-2">
-        <Input id="specialties" name="specialties" defaultValue={store.specialties?.join(", ")} />
+        <Input id="specialties" name="specialties" value={values.specialties} onChange={handleChange} />
       </Field>
 
       <fieldset className="grid gap-5 border-t border-line pt-6 sm:col-span-2 sm:grid-cols-2">
         <legend className="caps mb-1 text-ink">Business / Atelier Address</legend>
         <p className="text-[13px] text-muted sm:col-span-2">Your workshop or showroom address for customer visits, inquiries, and direct correspondence.</p>
         <Field label="Street address" htmlFor="ra_line1" error={err("ra_line1")} className="sm:col-span-2">
-          <Input id="ra_line1" name="ra_line1" defaultValue={ra?.line1} aria-invalid={!!err("ra_line1")} required />
+          <Input id="ra_line1" name="ra_line1" value={values.ra_line1} onChange={handleChange} aria-invalid={!!err("ra_line1")} required />
         </Field>
         <Field label="Suite / floor" htmlFor="ra_line2" optional>
-          <Input id="ra_line2" name="ra_line2" defaultValue={ra?.line2 ?? ""} />
+          <Input id="ra_line2" name="ra_line2" value={values.ra_line2} onChange={handleChange} />
         </Field>
         <Field label="City" htmlFor="ra_city" error={err("ra_city")}>
-          <Input id="ra_city" name="ra_city" defaultValue={ra?.city} required />
+          <Input id="ra_city" name="ra_city" value={values.ra_city} onChange={handleChange} aria-invalid={!!err("ra_city")} required />
         </Field>
         <Field label="State / region" htmlFor="ra_region" optional>
-          <Input id="ra_region" name="ra_region" defaultValue={ra?.region ?? ""} />
+          <Input id="ra_region" name="ra_region" value={values.ra_region} onChange={handleChange} />
         </Field>
         <Field label="Postal code" htmlFor="ra_postalCode" error={err("ra_postalCode")}>
-          <Input id="ra_postalCode" name="ra_postalCode" defaultValue={ra?.postalCode} required />
+          <Input id="ra_postalCode" name="ra_postalCode" value={values.ra_postalCode} onChange={handleChange} aria-invalid={!!err("ra_postalCode")} required />
         </Field>
         <Field label="Business phone" htmlFor="ra_phone" optional>
-          <Input id="ra_phone" name="ra_phone" type="tel" defaultValue={ra?.phone ?? ""} />
+          <Input id="ra_phone" name="ra_phone" type="tel" value={values.ra_phone} onChange={handleChange} />
         </Field>
       </fieldset>
       <fieldset className="grid gap-5 border-t border-line pt-6 sm:col-span-2 sm:grid-cols-2"><legend className="caps text-ink">Social & contact links</legend><p className="text-sm text-muted sm:col-span-2">Optional. These links appear on your business profile after approval and can be edited in My Business.</p>{[
         ["instagram", "Instagram", "url", "https://instagram.com/yourbusiness"], ["facebook", "Facebook", "url", "https://facebook.com/yourbusiness"], ["youtube", "YouTube", "url", "https://youtube.com/@yourbusiness"], ["whatsapp", "WhatsApp", "tel", "+91 9876543210"], ["publicEmail", "Public contact email", "email", "hello@yourbusiness.com"], ["maps", "Google Maps", "url", "https://maps.app.goo.gl/…"]
-      ].map(([key, label, type, placeholder]) => <Field key={key} label={label} htmlFor={key} optional error={err(key)}><Input id={key} name={key} type={type} placeholder={placeholder} defaultValue={store.socials?.[key] ?? ""} aria-invalid={!!err(key)} /></Field>)}</fieldset>
+      ].map(([key, label, type, placeholder]) => <Field key={key} label={label} htmlFor={key} optional error={err(key)}><Input id={key} name={key} type={type} placeholder={placeholder} value={values[key] ?? ""} onChange={handleChange} aria-invalid={!!err(key)} /></Field>)}</fieldset>
       <div className="sm:col-span-2">
-        <SubmitButton size="lg" pendingLabel="Saving…">
-          {submitLabel}
-        </SubmitButton>
+        <Button type="submit" size="lg" pending={isPending}>
+          {isPending ? "Saving…" : submitLabel}
+        </Button>
       </div>
     </form>
   );
@@ -144,16 +283,136 @@ export function BusinessForm({
   };
   uploaded: Partial<Record<KycDocumentType, string>>;
 }) {
-  const [state, action] = useActionState<StepState, FormData>(saveBusinessAction, {});
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [state, setState] = useState<StepState>({});
   const err = (k: string) => state.fieldErrors?.[k];
+  const [bizValues, setBizValues] = useState({
+    legalBusinessName: values.legalBusinessName ?? "",
+    businessType: values.businessType ?? "COMPANY",
+    registrationNumber: values.registrationNumber ?? "",
+    taxId: "",
+    website: values.website ?? "",
+  });
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("loupe_onboarding_biz_profile") || localStorage.getItem("loupe_onboarding_biz_profile");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          setBizValues((prev) => {
+            const next = { ...prev };
+            for (const [k, v] of Object.entries(parsed)) {
+              if (typeof v === "string" && v) {
+                (next as Record<string, string>)[k] = v;
+              }
+            }
+            return next;
+          });
+        }
+      }
+    } catch {}
+  }, []);
+
+  const handleBizChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setBizValues((prev) => {
+      const next = { ...prev, [name]: value };
+      try {
+        sessionStorage.setItem("loupe_onboarding_biz_profile", JSON.stringify(next));
+        localStorage.setItem("loupe_onboarding_biz_profile", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    if (state.fieldErrors?.[name]) {
+      setState((prev) => {
+        if (!prev.fieldErrors) return prev;
+        const nextErrors = { ...prev.fieldErrors };
+        delete nextErrors[name];
+        return { ...prev, fieldErrors: nextErrors };
+      });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const errors: Record<string, string[]> = {};
+    if (!bizValues.legalBusinessName || bizValues.legalBusinessName.trim().length < 2) {
+      errors.legalBusinessName = ["Enter the registered business name."];
+    }
+    if (!bizValues.registrationNumber || bizValues.registrationNumber.trim().length < 3) {
+      errors.registrationNumber = ["Enter the registration number."];
+    }
+    if (!values.taxIdLast4 && (!bizValues.taxId || !bizValues.taxId.trim())) {
+      errors.taxId = ["Enter your tax ID (VAT, GST, EIN…)."];
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setState({
+        ok: false,
+        message: "Please fill in all required fields before continuing.",
+        fieldErrors: errors,
+      });
+      const firstKey = Object.keys(errors)[0];
+      const el = document.getElementById(firstKey);
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
+
+    startTransition(async () => {
+      try {
+        const res = await saveBusinessAction({}, formData);
+        setState(res);
+        if (res.ok) {
+          try {
+            sessionStorage.removeItem("loupe_onboarding_biz_profile");
+            localStorage.removeItem("loupe_onboarding_biz_profile");
+          } catch {}
+          router.push("/seller/onboarding?step=3");
+        } else {
+          if (res.values) {
+            setBizValues((prev) => ({
+              ...prev,
+              legalBusinessName: res.values?.legalBusinessName ?? prev.legalBusinessName,
+              businessType: res.values?.businessType ?? prev.businessType,
+              registrationNumber: res.values?.registrationNumber ?? prev.registrationNumber,
+              website: res.values?.website ?? prev.website,
+            }));
+          }
+          if (res.fieldErrors && Object.keys(res.fieldErrors).length > 0) {
+            const firstKey = Object.keys(res.fieldErrors)[0];
+            const el = document.getElementById(firstKey);
+            if (el) {
+              el.focus();
+              el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
+        }
+      } catch (err) {
+        setState({
+          ok: false,
+          message: err instanceof Error ? err.message : "Failed to save verification. Please try again.",
+        });
+      }
+    });
+  };
+
   return (
-    <form action={action} className="grid gap-5 sm:grid-cols-2" noValidate>
+    <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2" noValidate>
       <FormError message={state.message} />
       <Field label="Registered business name" htmlFor="legalBusinessName" error={err("legalBusinessName")} className="sm:col-span-2">
-        <Input id="legalBusinessName" name="legalBusinessName" defaultValue={values.legalBusinessName ?? ""} aria-invalid={!!err("legalBusinessName")} required />
+        <Input id="legalBusinessName" name="legalBusinessName" value={bizValues.legalBusinessName} onChange={handleBizChange} aria-invalid={!!err("legalBusinessName")} required />
       </Field>
       <Field label="Business type" htmlFor="businessType">
-        <NativeSelect id="businessType" name="businessType" defaultValue={values.businessType ?? "COMPANY"}>
+        <NativeSelect id="businessType" name="businessType" value={bizValues.businessType} onChange={handleBizChange}>
           <option value="INDIVIDUAL">Individual</option>
           <option value="SOLE_PROPRIETOR">Sole proprietor</option>
           <option value="PARTNERSHIP">Partnership</option>
@@ -161,13 +420,13 @@ export function BusinessForm({
         </NativeSelect>
       </Field>
       <Field label="Registration number" htmlFor="registrationNumber" error={err("registrationNumber")}>
-        <Input id="registrationNumber" name="registrationNumber" defaultValue={values.registrationNumber ?? ""} aria-invalid={!!err("registrationNumber")} required />
+        <Input id="registrationNumber" name="registrationNumber" value={bizValues.registrationNumber} onChange={handleBizChange} aria-invalid={!!err("registrationNumber")} required />
       </Field>
       <Field label="Tax ID" htmlFor="taxId" error={err("taxId")} hint={values.taxIdLast4 ? `On file: ••••${values.taxIdLast4}. Leave blank to keep it.` : "Encrypted at rest — only the last four digits are ever shown."}>
-        <Input id="taxId" name="taxId" type="password" autoComplete="off" aria-invalid={!!err("taxId")} required={!values.taxIdLast4} />
+        <Input id="taxId" name="taxId" type="password" autoComplete="off" value={bizValues.taxId} onChange={handleBizChange} aria-invalid={!!err("taxId")} required={!values.taxIdLast4} />
       </Field>
       <Field label="Website" htmlFor="website" optional error={err("website")}>
-        <Input id="website" name="website" type="url" placeholder="https://" defaultValue={values.website ?? ""} />
+        <Input id="website" name="website" type="url" placeholder="https://" value={bizValues.website} onChange={handleBizChange} />
       </Field>
 
       <fieldset className="grid gap-3 border-t border-line pt-6 sm:col-span-2">
@@ -201,18 +460,42 @@ export function BusinessForm({
         >
           Back
         </Link>
-        <SubmitButton size="lg" pendingLabel="Uploading…">
-          Save and continue
-        </SubmitButton>
+        <Button type="submit" size="lg" pending={isPending}>
+          {isPending ? "Uploading…" : "Save and continue"}
+        </Button>
       </div>
     </form>
   );
 }
 
 export function SubmitApplicationForm() {
-  const [state, action] = useActionState<StepState, FormData>(submitApplicationAction, {});
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [state, setState] = useState<StepState>({});
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formElement = e.currentTarget;
+    const formData = new FormData(formElement);
+    startTransition(async () => {
+      try {
+        const res = await submitApplicationAction({}, formData);
+        setState(res);
+        if (res.ok) {
+          router.push("/seller/onboarding");
+          router.refresh();
+        }
+      } catch (err) {
+        setState({
+          ok: false,
+          message: err instanceof Error ? err.message : "Failed to submit application. Please try again.",
+        });
+      }
+    });
+  };
+
   return (
-    <form action={action} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <FormError message={state.message} />
       <label className="flex items-start gap-3 rounded-[3px] border border-line bg-ivory p-4 text-[14px] leading-relaxed text-ink-soft">
         <input type="checkbox" name="agree" className="mt-1 size-4 accent-[#7b8069]" required />
@@ -227,9 +510,9 @@ export function SubmitApplicationForm() {
         >
           Back
         </Link>
-        <SubmitButton size="lg" pendingLabel="Submitting…">
-          Submit for review
-        </SubmitButton>
+        <Button type="submit" size="lg" pending={isPending}>
+          {isPending ? "Submitting…" : "Submit for review"}
+        </Button>
       </div>
     </form>
   );

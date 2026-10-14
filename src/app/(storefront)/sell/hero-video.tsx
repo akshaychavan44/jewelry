@@ -45,6 +45,17 @@ export function JewelerHeroVideo() {
 
   return (
     <>
+      <svg className="sr-only" aria-hidden="true" focusable="false" style={{ position: "absolute", width: 0, height: 0 }}>
+        <defs>
+          <filter id="cleanBlackRing" colorInterpolationFilters="sRGB">
+            <feComponentTransfer>
+              <feFuncR type="linear" slope="1.5" intercept="-0.32" />
+              <feFuncG type="linear" slope="1.5" intercept="-0.32" />
+              <feFuncB type="linear" slope="1.5" intercept="-0.32" />
+            </feComponentTransfer>
+          </filter>
+        </defs>
+      </svg>
       <div className={styles.media} aria-hidden="true">
         <video ref={ref} loop muted playsInline preload="auto" poster="/media/for-jewelers-hero.jpg" className={styles.video} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => setFailed(true)}>
           <source src="/media/gemini_generated_video_932f8c86.mp4" type="video/mp4" />

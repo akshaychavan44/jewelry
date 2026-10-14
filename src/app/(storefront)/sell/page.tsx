@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/auth/session";
 import styles from "./sell-hero.module.css";
 import { JewelerHeroVideo } from "./hero-video";
@@ -55,7 +54,6 @@ const BENEFITS = [
 
 export default async function SellPage() {
   const user = await getCurrentUser();
-  if (user?.role === "SELLER") redirect("/seller");
 
   const primaryCta = (
     <Link

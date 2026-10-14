@@ -23,6 +23,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+  filter: url("#cleanBlackRing") brightness(0.92) contrast(1.2);
 }
 
 .blend {

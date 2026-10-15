@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Role } from "@/generated/prisma/enums";
+import type { Role } from "@/lib/domain-enums";
 import { db } from "@/server/db";
 import { sellerCanReadReference } from "./jeweler-directory";
 

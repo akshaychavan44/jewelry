@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
-import type { SpotMetal } from "@/generated/prisma/enums";
+import type { SpotMetal } from "@/lib/domain-enums";
 import type { FxRates } from "@/lib/money";
 import type { SpotRatesUsd } from "@/lib/pricing";
 import { db } from "@/server/db";

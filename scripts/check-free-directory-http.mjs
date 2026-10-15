@@ -14,7 +14,7 @@ async function request(path, options = {}) {
   }
   return response;
 }
-const seed = await readFile("prisma/seed/data/people.ts", "utf8");
+const seed = await readFile("database/seed/data/people.ts", "utf8");
 const password = seed.match(/DEMO_PASSWORD\s*=\s*"([^"]+)"/)?.[1];
 assert.ok(password, "Demo password must come from the existing seed");
 const csrfResponse = await request("/api/auth/csrf");

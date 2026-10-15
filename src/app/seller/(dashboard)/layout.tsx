@@ -31,6 +31,6 @@ export default async function SellerLayout({ children }: { children: React.React
       </div>
       <DashboardAccountMenu name={user.name} email={user.email} image={user.image} label="Jeweler account" settingsHref="/seller/account" />
     </aside>
-    <main className="min-w-0 px-4 py-8 sm:px-8 lg:px-12"><div className="mx-auto max-w-5xl">{children}</div></main>
+    <main className="min-w-0 px-4 py-8 sm:px-8 lg:px-12"><div className="mx-auto max-w-5xl">{seller.verificationStatus === "PENDING" && <p role="status" className="mb-6 rounded border border-line bg-porcelain p-4 text-sm text-ink-soft">{settings.isPaused ? "Your shop is paused." : "Your shop is live."} Verification is pending. Your verified badge will appear after admin approval.</p>}{children}</div></main>
   </div>;
 }

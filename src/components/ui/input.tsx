@@ -27,9 +27,9 @@ export function Input({ className, type = "text", ...props }: React.ComponentPro
           tabIndex={-1}
         >
           {showPassword ? (
-            <EyeOff size={20} strokeWidth={1.5} className="size-5 shrink-0" aria-hidden />
-          ) : (
             <Eye size={20} strokeWidth={1.5} className="size-5 shrink-0" aria-hidden />
+          ) : (
+            <EyeOff size={20} strokeWidth={1.5} className="size-5 shrink-0" aria-hidden />
           )}
         </button>
       </div>

@@ -1,4 +1,10 @@
 import { z } from "zod";
+import { contactLinks, directoryWhatsappLink } from "./jeweler-contact";
+import { COUNTRY_CODES } from "./regions";
+import { isCurrency } from "./money";
+
+export const businessPhoneSchema = z.string().trim().max(30).refine(v => !v || !!contactLinks(v), "Enter a valid phone number with 7–15 digits.");
+export const businessSpecialtiesSchema = z.string().trim().max(300).refine(v => v.split(",").filter(s => s.trim()).length <= 6, "Add up to six specialties.");
 
 const webLink = (hosts?: string[]) => z.string().trim().max(500).refine((value) => {
   if (!value) return true;
@@ -14,13 +20,20 @@ export const directoryProfileSchema = z.object({
   tagline: z.string().trim().max(120),
   bio: z.string().trim().max(1500),
   city: z.string().trim().min(2, "Enter your city.").max(100),
-  specialties: z.string().trim().max(300),
+  country: z.string().refine(v => COUNTRY_CODES.includes(v), "Choose a country."),
+  defaultCurrency: z.string().refine((v): boolean => isCurrency(v), "Choose a currency."),
+  foundedYear: z.string().trim().refine(v => !v || (/^\d{4}$/.test(v) && Number(v) >= 1700 && Number(v) <= new Date().getFullYear()), "Enter a valid founding year."),
+  specialties: businessSpecialtiesSchema,
   address: z.string().trim().min(3, "Enter your business address.").max(200),
+  addressLine2: z.string().trim().max(200),
+  addressCity: z.string().trim().min(2, "Enter your showroom city.").max(100),
+  region: z.string().trim().max(100),
+  postalCode: z.string().trim().max(30),
   hours: z.string().trim().max(200),
   latitude: z.string().trim().refine(v => !v || (Number.isFinite(Number(v)) && Math.abs(Number(v)) <= 90), "Enter a latitude between -90 and 90.").optional(),
   longitude: z.string().trim().refine(v => !v || (Number.isFinite(Number(v)) && Math.abs(Number(v)) <= 180), "Enter a longitude between -180 and 180.").optional(),
-  phone: z.string().trim().max(30).refine((v) => !v || /^\+?[\d\s()-]{7,30}$/.test(v), "Enter a valid phone number."),
-  whatsapp: z.string().trim().max(30).refine((v) => !v || /^\+?\d{8,15}$/.test(v.replace(/[\s()-]/g, "")), "Include the country code, e.g. +91 9876543210."),
+  phone: businessPhoneSchema,
+  whatsapp: z.string().trim().max(30).refine(v => !v || !!directoryWhatsappLink(v), "Include the country code, e.g. +91 9876543210."),
   publicEmail: z.union([z.email(), z.literal("")]),
   instagram: webLink(["instagram.com"]),
   facebook: webLink(["facebook.com", "fb.com"]),

@@ -12,17 +12,17 @@ export async function toggleWishlist(productId: string): Promise<ToggleResult> {
 
   const existing = await db.wishlistItem.findUnique({ where: { userId_productId: { userId: user.id, productId } } });
   if (existing) {
-    await db.$transaction([
-      db.wishlistItem.delete({ where: { id: existing.id } }),
-      db.product.update({ where: { id: productId }, data: { wishlistCount: { decrement: 1 } } }),
-    ]);
+    await db.$transaction(async (tx) => {
+      await tx.wishlistItem.delete({ where: { id: existing.id } });
+      await tx.product.update({ where: { id: productId }, data: { wishlistCount: { decrement: 1 } } });
+    });
   } else {
     const product = await db.product.findUnique({ where: { id: productId }, select: { id: true } });
     if (!product) return { ok: false, message: "This piece is no longer available." };
-    await db.$transaction([
-      db.wishlistItem.create({ data: { userId: user.id, productId } }),
-      db.product.update({ where: { id: productId }, data: { wishlistCount: { increment: 1 } } }),
-    ]);
+    await db.$transaction(async (tx) => {
+      await tx.wishlistItem.create({ data: { userId: user.id, productId } });
+      await tx.product.update({ where: { id: productId }, data: { wishlistCount: { increment: 1 } } });
+    });
   }
   revalidatePath("/account/wishlist");
   return { ok: true, saved: !existing };

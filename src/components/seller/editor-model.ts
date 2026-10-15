@@ -1,5 +1,5 @@
 // Listing-editor form model — shared by the client editor and server pages.
-import type { Gemstone, MakingChargeType, MetalColor, MetalType, PricingMode, ProductCondition, ShippingRegion, SizingMode, StoneShape } from "@/generated/prisma/enums";
+import type { Gemstone, MakingChargeType, MetalColor, MetalType, PricingMode, ProductCondition, ShippingRegion, SizingMode, StoneShape } from "@/lib/domain-enums";
 
 export type VariantRow = {
   key: string;

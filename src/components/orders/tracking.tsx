@@ -1,10 +1,10 @@
 import { Check, ExternalLink } from "lucide-react";
-import type { FulfillmentStatus, ShipmentStatus } from "@/generated/prisma/enums";
+import type { FulfillmentStatus, ShipmentStatus } from "@/lib/domain-enums";
 import { formatDate, formatDateRange } from "@/lib/format";
 import { CARRIERS, trackingUrl } from "@/lib/shipping";
 import { FULFILLMENT_STATUS } from "@/lib/status";
 import { cn } from "@/lib/utils";
-import type { Carrier } from "@/generated/prisma/enums";
+import type { Carrier } from "@/lib/domain-enums";
 
 type Event = { status: FulfillmentStatus; createdAt: Date; note: string | null };
 type Shipment = {

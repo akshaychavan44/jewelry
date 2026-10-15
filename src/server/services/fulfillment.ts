@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Carrier, FulfillmentStatus } from "@/generated/prisma/enums";
+import type { Carrier, FulfillmentStatus } from "@/lib/domain-enums";
 import type { AddressSnapshot } from "@/lib/order-math";
 import { trackingUrl } from "@/lib/shipping";
 import { num, randomCode } from "@/lib/utils";

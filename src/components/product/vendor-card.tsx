@@ -15,6 +15,7 @@ type Seller = {
   city: string | null;
   country: string;
   foundedYear: number | null;
+  verificationStatus: string;
   isTopRated: boolean;
   ratingAverage: number;
   ratingCount: number;
@@ -38,8 +39,8 @@ export function VendorCard({ seller, following }: { seller: Seller; following: b
             {seller.foundedYear && ` · since ${seller.foundedYear}`}
           </p>
           <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-            <VerifiedJeweler />
-            {seller.isTopRated && <TopRated />}
+            {seller.verificationStatus === "APPROVED" && <VerifiedJeweler />}
+            {seller.verificationStatus === "APPROVED" && seller.isTopRated && <TopRated />}
           </div>
         </div>
       </div>

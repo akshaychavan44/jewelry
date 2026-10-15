@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/catalog/product-card";
 import { EmptyState, Pagination } from "@/components/ui/display";
-import type { Category } from "@/generated/prisma/client";
+import type { Category } from "@/server/db/model-types";
 import { CERTIFICATION_FILTERS, GEMSTONES, LABS, METAL_OPTIONS, METALS } from "@/lib/jewelry";
 import { activeFilterCount, parseListingParams, toSlug } from "@/lib/listing-params";
 import { REGION_LABELS } from "@/lib/regions";
@@ -67,8 +67,8 @@ export async function ListingPage({
     ...(filters.labs ?? []).map((l) => ({ key: "cert", value: toSlug(l), label: LABS[l].name })),
     ...(filters.regions ?? []).map((r) => ({ key: "ship", value: toSlug(r), label: `Ships to ${REGION_LABELS[r]}` })),
     ...(filters.conditions ?? []).map((c) => ({ key: "condition", value: toSlug(c), label: humanize(c) })),
-    ...(filters.price ? [{ key: "price", label: `${groups.currencySymbol}${filters.price.min ?? 0} – ${filters.price.max ? `${groups.currencySymbol}${filters.price.max}` : "any"}` }] : []),
-    ...(filters.carat ? [{ key: "carat", label: `${filters.carat.min ?? 0} – ${filters.carat.max ?? "any"} ct` }] : []),
+    ...(filters.price ? [{ key: "price", label: `${groups.currencySymbol}${filters.price.min ?? 0} â€“ ${filters.price.max ? `${groups.currencySymbol}${filters.price.max}` : "any"}` }] : []),
+    ...(filters.carat ? [{ key: "carat", label: `${filters.carat.min ?? 0} â€“ ${filters.carat.max ?? "any"} ct` }] : []),
     ...(filters.inStock ? [{ key: "stock", label: "In stock" }] : []),
     ...(filters.offers ? [{ key: "offers", label: "Accepts offers" }] : []),
   ];
@@ -94,7 +94,7 @@ export async function ListingPage({
 
   return (
     <div className="shell pt-6 pb-24 sm:pt-8">
-      {/* ── Breadcrumb ── */}
+      {/* â”€â”€ Breadcrumb â”€â”€ */}
       <nav aria-label="Breadcrumb" className="mb-4 text-[12px] text-muted">
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
@@ -109,7 +109,7 @@ export async function ListingPage({
         </ol>
       </nav>
 
-      {/* ── Header Area ── */}
+      {/* â”€â”€ Header Area â”€â”€ */}
       <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           {isShop && <p className="eyebrow mb-3 text-gold-deep">Independent jewelry, thoughtfully discovered</p>}
@@ -146,7 +146,7 @@ export async function ListingPage({
         </div>
       </div>}
 
-      {/* ── Quick Subcategory Chips ── */}
+      {/* â”€â”€ Quick Subcategory Chips â”€â”€ */}
       {subcategories.length > 0 && (
         <div className="scrollbar-none -mx-4 mb-7 flex items-center gap-2 overflow-x-auto px-4 py-1">
           <Link
@@ -167,7 +167,7 @@ export async function ListingPage({
         </div>
       )}
 
-      {/* ── Layout Grid: Filters Sidebar + Product Grid ── */}
+      {/* â”€â”€ Layout Grid: Filters Sidebar + Product Grid â”€â”€ */}
       <div>
         <div>
           {/* Top Bar: Mobile Filters + Sort Options */}
@@ -211,3 +211,4 @@ export async function ListingPage({
     </div>
   );
 }
+

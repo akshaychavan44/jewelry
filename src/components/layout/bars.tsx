@@ -15,7 +15,7 @@ export function AnnouncementBar() {
 }
 
 const TRUST = [
-  { icon: ShieldCheck, title: "Verified jewelers", body: "Every jeweler's business & identity verified" },
+  { icon: ShieldCheck, title: "Verified jewelers", body: "Look for the verified business badge" },
   { icon: MessageSquare, title: "Direct communication", body: "Contact ateliers directly with zero markups" },
   { icon: Gem, title: "Authentic showcases", body: "Independent designs, rare stones & vintage pieces" },
   { icon: Award, title: "Bespoke commissions", body: "Collaborate directly on custom jewelry" },

@@ -1,3 +1,4 @@
+import { isListedJeweler } from "@/lib/jeweler-listing";
 import "server-only";
 
 import { cache } from "react";
@@ -10,7 +11,7 @@ import type {
   MetalColor,
   MetalType,
   StoneShape,
-} from "@/generated/prisma/enums";
+} from "@/lib/domain-enums";
 import { convertMinor } from "@/lib/money";
 import { zoneFor } from "@/lib/regions";
 import { num } from "@/lib/utils";
@@ -87,7 +88,7 @@ export const getProductDetail = cache(async (slug: string, ctx: PriceContext, vi
     },
   });
   if (!product || product.deletedAt) return null;
-  const visible = (product.status === "ACTIVE" || product.status === "SOLD") && product.seller.verificationStatus === "APPROVED";
+  const visible = (product.status === "ACTIVE" || product.status === "SOLD") && isListedJeweler(product.seller.verificationStatus);
   if (!visible || !await db.product.findFirst({ where: { ...(await publicProductWhere("either")), id: product.id, status: product.status } })) return null;
 
   const variants: VariantOption[] = await Promise.all(

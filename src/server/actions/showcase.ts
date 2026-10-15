@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { Gemstone, MetalType } from "@/generated/prisma/enums";
+import { Gemstone, MetalType } from "@/lib/domain-enums";
 import { AccessDenied, assertSeller } from "@/server/auth/session";
 import { db } from "@/server/db";
 import { randomCode, slugify } from "@/lib/utils";
@@ -21,7 +21,7 @@ function refresh(slug: string) {
 }
 export async function saveShowcaseAction(_: ShowcaseState, form: FormData): Promise<ShowcaseState> {
   try {
-    const { seller, user } = await assertSeller();
+    const { seller, user } = await assertSeller({ verified: false, listed: true });
     const d = schema.parse({ ...Object.fromEntries(form), id: form.get("id") || undefined });
     const existing = d.id ? await db.product.findFirst({ where: { id: d.id, sellerId: seller.id, deletedAt: null }, include: { images: true, variants: { orderBy: { position: "asc" } } } }) : null;
     if (d.id && !existing) return { message: "Jewelry not found." };
@@ -62,7 +62,7 @@ export async function saveShowcaseAction(_: ShowcaseState, form: FormData): Prom
   }
 }
 export async function archiveShowcaseAction(id: string): Promise<ShowcaseState> {
-  const { seller } = await assertSeller();
+  const { seller } = await assertSeller({ verified: false, listed: true });
   const result = await db.product.updateMany({ where: { id, sellerId: seller.id, deletedAt: null }, data: { status: "ARCHIVED" } });
   if (!result.count) return { message: "Jewelry not found." };
   refresh(seller.slug);

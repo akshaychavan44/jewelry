@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/controls";
-import type { KycDocumentType } from "@/generated/prisma/enums";
+import type { KycDocumentType } from "@/lib/domain-enums";
 import { KYC_DOCUMENT_LABELS } from "@/lib/status";
 import { updateVerificationSettingsAction } from "@/server/actions/admin";
 

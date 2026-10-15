@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { BusinessType } from "@/generated/prisma/enums";
+import { BusinessType } from "@/lib/domain-enums";
 import { isCurrency } from "@/lib/money";
 import { absoluteUrl } from "@/lib/utils";
 import { assertUser } from "@/server/auth/session";
@@ -11,7 +11,7 @@ import { db } from "@/server/db";
 import { markStripeConnected, OnboardingError, saveBankPayouts, saveBusinessVerification, saveStoreProfile, submitApplication } from "@/server/services/onboarding";
 import { createConnectOnboardingLink } from "@/server/services/payments";
 import { UploadError } from "@/server/services/storage";
-import { socialEnrollmentSchema } from "@/lib/jeweler-profile";
+import { businessPhoneSchema, businessSpecialtiesSchema, socialEnrollmentSchema } from "@/lib/jeweler-profile";
 
 export type StepState = {
   ok?: boolean;
@@ -44,13 +44,13 @@ const storeSchema = z.object({
     .union([z.coerce.number().int().min(1700).max(new Date().getFullYear()), z.literal(""), z.nan()])
     .optional()
     .transform((v) => (typeof v === "number" && !Number.isNaN(v) ? v : undefined)),
-  specialties: z.string().optional(),
+  specialties: businessSpecialtiesSchema.optional(),
   ra_line1: z.string().trim().min(3, "Enter the return street address."),
   ra_line2: z.string().trim().optional(),
   ra_city: z.string().trim().min(2, "Enter the return city."),
   ra_region: z.string().trim().optional(),
   ra_postalCode: z.string().trim().min(2, "Enter the return postal code."),
-  ra_phone: z.string().trim().optional(),
+  ra_phone: businessPhoneSchema.optional(),
 }).extend({ instagram: socialEnrollmentSchema.shape.instagram.default(""), facebook: socialEnrollmentSchema.shape.facebook.default(""), youtube: socialEnrollmentSchema.shape.youtube.default(""), whatsapp: socialEnrollmentSchema.shape.whatsapp.default(""), publicEmail: socialEnrollmentSchema.shape.publicEmail.default(""), maps: socialEnrollmentSchema.shape.maps.default("") });
 
 export async function saveStoreProfileAction(_: StepState, formData: FormData): Promise<StepState> {
@@ -243,5 +243,8 @@ export async function submitApplicationAction(_: StepState, formData: FormData):
     return fail(error);
   }
   revalidatePath("/seller/onboarding");
-  redirect("/seller/onboarding");
+  revalidatePath("/jewelers");
+  revalidatePath("/custom-orders");
+  revalidatePath("/");
+  return { ok: true };
 }

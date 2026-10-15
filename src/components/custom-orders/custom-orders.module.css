@@ -48,7 +48,7 @@
   line-height: 1.65;
 }
 
-.actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 28px; }
+.actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 40px; }
 
 .action {
   display: inline-flex;

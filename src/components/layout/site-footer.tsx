@@ -23,7 +23,7 @@ export async function SiteFooter({ staticNavigation = false }: { staticNavigatio
         <div className={styles.columns}>
           <div className={styles.brand}>
             <Logo className={styles.logo} />
-            <p>Fine, high and vintage jewelry from verified independent jewelers.</p>
+            <p>Fine, high and vintage jewelry from independent jewelers.</p>
             <div className={styles.socials}>
               {(["instagram", "pinterest", "tiktok"] as const).filter(name => /^https:\/\//.test(siteConfig.social[name])).map((name) => (
                 <a key={name} href={siteConfig.social[name]} aria-label={name} rel="noreferrer" target="_blank"><SocialIcon name={name} /></a>

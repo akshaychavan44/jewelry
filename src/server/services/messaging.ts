@@ -1,7 +1,7 @@
 import "server-only";
 
-import type { Prisma } from "@/generated/prisma/client";
-import type { ConversationType, NotificationType, Role } from "@/generated/prisma/enums";
+import type { DbQueryTypes } from "@/server/db/query-types";
+import type { ConversationType, NotificationType, Role } from "@/lib/domain-enums";
 import { db, type Tx } from "@/server/db";
 
 type Client = Tx | typeof db;
@@ -32,7 +32,7 @@ export async function openConversation(
     customRequestId?: string;
   },
 ) {
-  const where: Prisma.ConversationWhereInput = {
+  const where: DbQueryTypes.ConversationWhereInput = {
     type: args.type,
     sellerId: args.sellerId,
     participants: { some: { userId: args.buyerId } },
@@ -67,7 +67,7 @@ export async function postMessage(
   conversationId: string,
   senderId: string | null,
   body: string,
-  opts: { isSystem?: boolean; attachments?: Prisma.InputJsonValue } = {},
+  opts: { isSystem?: boolean; attachments?: DbQueryTypes.InputJsonValue } = {},
 ) {
   const now = new Date();
   const message = await client.message.create({
@@ -82,7 +82,7 @@ export async function postMessage(
 
 /** Conversations visible to a user, newest first, with unread counts. */
 export async function listConversations(userId: string, role: Role | "SELLER_STORE", sellerId?: string) {
-  const where: Prisma.ConversationWhereInput =
+  const where: DbQueryTypes.ConversationWhereInput =
     role === "SELLER_STORE" && sellerId ? { sellerId, type: { not: "DISPUTE" } } : { participants: { some: { userId } } };
   const conversations = await db.conversation.findMany({
     where,

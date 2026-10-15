@@ -6,7 +6,7 @@ import {
   MetalType,
   ProductCondition,
   ShippingRegion,
-} from "@/generated/prisma/enums";
+} from "@/lib/domain-enums";
 import type { ListingFilters, SortKey } from "@/server/services/catalog";
 import { firstParam, listParam, type SearchParams } from "./utils";
 

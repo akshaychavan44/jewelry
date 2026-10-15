@@ -27,7 +27,7 @@ export function StorySection({ stats }: { stats: { jewelers: number; certified: 
         <p className="eyebrow mb-4">The art of choosing well</p>
         <h2 id="story-heading" className="display-lg text-ink">Extraordinary pieces.<br />A more personal story.</h2>
         <div className="mt-6 space-y-4 text-[15.5px] leading-relaxed text-ink-soft">
-          <p>Loupe connects discerning collectors with verified independent jewelers and master ateliers. We verify each jeweler&rsquo;s business registration and identity so you can discover authentic talent with complete peace of mind.</p>
+          <p>Loupe connects discerning collectors with independent jewelers and master ateliers. Look for the verified badge to find jewelers whose business registration and identity have been checked by Loupe.</p>
           <p>When you discover a piece or commission bespoke work, you connect with the jeweler directly. Discuss specifications, arrange viewings, and complete your purchase directly with the maker.</p>
         </div>
         <p className="mt-7 font-script text-[34px] leading-none text-gold-deep">Crafted with care</p>

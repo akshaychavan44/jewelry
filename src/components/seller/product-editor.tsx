@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/controls";
 import { Card, CardHeader } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
-import type { ConditionGrade, Gemstone, MakingChargeType, MetalColor, MetalType, PricingMode, ProductCondition, ShippingRegion, SizingMode, StoneShape } from "@/generated/prisma/enums";
+import type { ConditionGrade, Gemstone, MakingChargeType, MetalColor, MetalType, PricingMode, ProductCondition, ShippingRegion, SizingMode, StoneShape } from "@/lib/domain-enums";
 import { chainLengthLabel, GEMSTONES, METAL_COLORS, METAL_OPTIONS, METALS, STONE_SHAPES } from "@/lib/jewelry";
 import { formatMoney, toMinor, type FxRates } from "@/lib/money";
 import { computeSpotPrice, type SpotRatesUsd } from "@/lib/pricing";

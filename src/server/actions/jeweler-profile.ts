@@ -17,12 +17,13 @@ function refresh(slug: string) {
   revalidatePath("/seller", "layout");
   revalidatePath("/jewelers");
   revalidatePath(`/jewelers/${slug}`);
+  revalidatePath(`/jewelers/${slug}/about`);
   revalidatePath("/custom-orders");
 }
 
 export async function saveDirectoryProfileAction(_: StepState, form: FormData): Promise<StepState> {
   try {
-    const { seller, user } = await assertSeller();
+    const { seller, user } = await assertSeller({ verified: false, listed: true });
     const parsed = directoryProfileSchema.safeParse({ ...Object.fromEntries(form), acceptsCustomOrders: form.get("acceptsCustomOrders") === "on" });
     if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors, message: "Check the highlighted fields." };
     const d = parsed.data;
@@ -31,15 +32,23 @@ export async function saveDirectoryProfileAction(_: StepState, form: FormData): 
     if (d.storeName !== seller.storeName) return { fieldErrors: { storeName: ["Use Change business name to request admin approval."] } };
     const file = form.get("logo");
     const logo = file instanceof File && file.size ? await saveUpload(file, "STORE_BRANDING", seller.id, user.id) : null;
+    const bannerFile = form.get("banner");
+    const banner = bannerFile instanceof File && bannerFile.size ? await saveUpload(bannerFile, "STORE_BRANDING", seller.id, user.id) : null;
     await db.$transaction(async (tx) => {
+      const addressData = { fullName: seller.storeName, line1: d.address, line2: d.addressLine2 || null, city: d.addressCity, region: d.region || null, postalCode: d.postalCode, country: d.country, phone: d.phone || null };
+      const address = seller.returnAddressId
+        ? await tx.address.update({ where: { id: seller.returnAddressId }, data: addressData })
+        : await tx.address.create({ data: { ...addressData, userId: user.id, type: "RETURN", label: "Business address", isDefault: true } });
       await tx.sellerProfile.update({ where: { id: seller.id }, data: {
         tagline: d.tagline || null, bio: d.bio || null, city: d.city,
+        country: d.country, defaultCurrency: d.defaultCurrency, foundedYear: d.foundedYear ? Number(d.foundedYear) : null, returnAddressId: address.id,
         specialties: d.specialties.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 6),
         website: d.website || null, acceptsCustomOrders: d.acceptsCustomOrders,
         ...(logo?.url ? { logoUrl: logo.url } : {}),
+        ...(banner?.url ? { bannerUrl: banner.url } : {}),
       } });
       const location = await tx.storeLocation.findFirst({ where: { sellerId: seller.id }, orderBy: { id: "asc" } });
-      const locationData = { name: seller.storeName, line1: d.address, city: d.city, country: seller.country, phone: d.phone || null, hours: d.hours || null, latitude: d.latitude ? Number(d.latitude) : null, longitude: d.longitude ? Number(d.longitude) : null };
+      const locationData = { name: seller.storeName, line1: d.address, line2: d.addressLine2 || null, region: d.region || null, postalCode: d.postalCode || null, city: d.addressCity, country: d.country, phone: d.phone || null, hours: d.hours || null, latitude: d.latitude ? Number(d.latitude) : null, longitude: d.longitude ? Number(d.longitude) : null };
       if (location) await tx.storeLocation.update({ where: { id: location.id }, data: locationData });
       else await tx.storeLocation.create({ data: { ...locationData, sellerId: seller.id } });
       await tx.$executeRaw`INSERT INTO "JewelerDirectorySettings" ("sellerId", "instagram", "facebook", "youtube", "whatsapp", "publicEmail", "maps")
@@ -56,7 +65,7 @@ export async function saveDirectoryProfileAction(_: StepState, form: FormData): 
 
 export async function setDirectoryPausedAction(paused: boolean) {
   try {
-    const { seller } = await assertSeller();
+    const { seller } = await assertSeller({ verified: false, listed: true });
     const value = z.boolean().parse(paused);
     await db.$executeRaw`INSERT INTO "JewelerDirectorySettings" ("sellerId", "isPaused") VALUES (${seller.id}, ${value})
       ON CONFLICT ("sellerId") DO UPDATE SET "isPaused" = EXCLUDED."isPaused", "updatedAt" = CURRENT_TIMESTAMP`;
@@ -70,7 +79,7 @@ export async function setDirectoryPausedAction(paused: boolean) {
 
 export async function updateInquiryStatusAction(requestId: string, status: string) {
   try {
-    const { seller } = await assertSeller();
+    const { seller } = await assertSeller({ verified: false, listed: true });
     const value = z.enum(["NEW", "CONTACTED", "CLOSED"]).parse(status);
     const request = await db.customRequest.findFirst({ where: { id: requestId, sellerId: seller.id }, select: { buyerId: true, title: true, buyer: { select: { email: true } } } });
     if (!request) return { ok: false, message: "Request not found." };

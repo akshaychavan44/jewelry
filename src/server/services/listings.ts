@@ -1,7 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
-import type { Prisma } from "@/generated/prisma/client";
+import type { DbQueryTypes } from "@/server/db/query-types";
 import {
   CertificateLab,
   ClarityGrade,
@@ -16,7 +16,7 @@ import {
   ShippingRegion,
   SizingMode,
   StoneShape,
-} from "@/generated/prisma/enums";
+} from "@/lib/domain-enums";
 import { toMinor, toUsdMinor } from "@/lib/money";
 import { computeSpotPrice } from "@/lib/pricing";
 import { num, slugify } from "@/lib/utils";
@@ -197,7 +197,7 @@ export async function saveListing(sellerId: string, input: ListingInput) {
     returnWindowDays: input.returnWindowDays ?? null,
     warrantyMonths: input.warrantyMonths,
     tags: input.tags,
-  } satisfies Omit<Prisma.ProductUncheckedCreateInput, "sellerId" | "slug" | "basePriceMinor" | "normalizedPriceUsd">;
+  } satisfies Omit<DbQueryTypes.ProductUncheckedCreateInput, "sellerId" | "slug" | "basePriceMinor" | "normalizedPriceUsd">;
 
   const variantRows = input.variants.map((v, i) => ({
     ...v,

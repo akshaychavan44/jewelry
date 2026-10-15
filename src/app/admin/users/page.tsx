@@ -5,7 +5,7 @@ import { FilterTabs } from "@/components/admin/filter-tabs";
 import { UserStatusButton } from "@/components/admin/user-actions";
 import { Badge, Card, Pagination, StatusBadge, Table, Td, Th } from "@/components/ui/display";
 import { Input } from "@/components/ui/input";
-import type { Role } from "@/generated/prisma/enums";
+import type { Role } from "@/lib/domain-enums";
 import { formatDate, timeAgo } from "@/lib/format";
 import { countryName } from "@/lib/regions";
 import { USER_STATUS, VERIFICATION_STATUS } from "@/lib/status";

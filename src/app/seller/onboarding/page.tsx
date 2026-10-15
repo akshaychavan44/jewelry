@@ -1,15 +1,15 @@
-import { AlertTriangle, Check, Clock, ShieldOff } from "lucide-react";
+import { isListedJeweler } from "@/lib/jeweler-listing";
+import { AlertTriangle, ShieldOff } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BusinessForm, StoreProfileForm, SubmitApplicationForm } from "@/components/seller/onboarding-forms";
-import { formatDate } from "@/lib/format";
 import { countryName } from "@/lib/regions";
 import { cn, firstParam, humanize, type SearchParams } from "@/lib/utils";
 import { requireUser } from "@/server/auth/session";
 import { getDirectorySettings } from "@/server/services/jeweler-directory";
 import { db } from "@/server/db";
-import type { KycDocumentType } from "@/generated/prisma/enums";
+import type { KycDocumentType } from "@/lib/domain-enums";
 
 export const metadata: Metadata = { title: "Open your store" };
 
@@ -28,29 +28,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
       kycSubmissions: { orderBy: { submittedAt: "desc" }, take: 1 },
     },
   });
-  if (seller?.verificationStatus === "APPROVED") redirect("/seller");
-
-  if (seller?.verificationStatus === "PENDING") {
-    return (
-      <div className="text-center">
-        <Clock className="mx-auto size-11 text-gold" strokeWidth={1.2} />
-        <p className="eyebrow mt-6">Application received</p>
-        <h1 className="display-lg mt-3 text-ink">We&rsquo;re reviewing {seller.storeName}</h1>
-        <p className="mx-auto mt-4 max-w-lg text-[15.5px] text-ink-soft">
-          Submitted {formatDate(seller.submittedAt, "long")}. Our verification team checks your registration against business registers and validates your atelier credentials — usually within two working days.
-        </p>
-        <ol className="mx-auto mt-10 max-w-md space-y-3 text-left">
-          {["Application submitted", "Business registry checks", "Identity & atelier verification", "Listing profile goes live"].map((s, i) => (
-            <li key={s} className="flex items-center gap-3 rounded-[3px] border border-line bg-porcelain px-4 py-3 text-[14px]">
-              <span className={cn("grid size-6 place-items-center rounded-full", i === 0 ? "bg-sage text-white" : "border border-line-strong text-muted")}>{i === 0 ? <Check className="size-3.5" /> : <span className="text-[11px]">{i + 1}</span>}</span>
-              <span className={i === 0 ? "text-ink" : "text-ink-soft"}>{s}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-8 text-[13.5px] text-muted">Your jeweler dashboard unlocks as soon as you&rsquo;re approved. We&rsquo;ll email you and notify you here.</p>
-      </div>
-    );
-  }
+  if (seller && isListedJeweler(seller.verificationStatus)) redirect("/seller");
 
   if (seller?.verificationStatus === "SUSPENDED") {
     return (
@@ -112,7 +90,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
 
       <section className="rounded-[3px] border border-line bg-porcelain p-6 md:p-8">
         {step === 1 && (
-          <StoreProfileForm
+          <StoreProfileForm userId={user.id}
             store={
               seller
                 ? { ...seller, returnAddress: seller.returnAddress, socials: socials ? { instagram: socials.instagram, facebook: socials.facebook, youtube: socials.youtube, whatsapp: socials.whatsapp, publicEmail: socials.publicEmail, maps: socials.maps } : undefined }
@@ -120,7 +98,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
             }
           />
         )}
-        {step === 2 && seller && <BusinessForm values={seller} uploaded={uploaded} />}
+        {step === 2 && seller && <BusinessForm userId={user.id} values={seller} uploaded={uploaded} />}
         {step === 3 && seller && (
           <div className="space-y-8">
             <dl className="grid gap-x-8 gap-y-4 text-[14px] sm:grid-cols-2">

@@ -1,3 +1,4 @@
+import { listedJewelerWhere } from "@/lib/jeweler-listing";
 import { z } from "zod";
 import { CONTACT_CHANNELS } from "@/lib/contact-analytics";
 import { getCurrentUser } from "@/server/auth/session";
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(value);
   if (!parsed.success) return new Response(null, { status: 400 });
   const { sellerId, channel, productId } = parsed.data;
-  const [seller, user] = await Promise.all([db.sellerProfile.findFirst({ where: { id: sellerId, verificationStatus: "APPROVED" }, select: { userId: true } }), getCurrentUser()]);
+  const [seller, user] = await Promise.all([db.sellerProfile.findFirst({ where: { id: sellerId, ...listedJewelerWhere }, select: { userId: true } }), getCurrentUser()]);
   if (!seller || (await getDirectorySettings(sellerId)).isPaused) return new Response(null, { status: 404 });
   if (user?.id === seller.userId) return new Response(null, { status: 204 });
   if (productId && !await db.product.findFirst({ where: { ...(await publicProductWhere("either")), id: productId, sellerId }, select: { id: true } })) return new Response(null, { status: 404 });

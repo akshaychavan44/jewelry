@@ -37,7 +37,7 @@ export async function sendKycDecisionEmail(input: KycDecisionEmailInput) {
   
   <p style="font-size: 16px;">We are pleased to inform you that your application for <strong>${input.storeName}</strong> has been approved by the Loupe administration team!</p>
   
-  <p style="font-size: 15px; color: #554a3e;">Your jeweler studio and seller dashboard are now active. You can now access your account, list your fine jewelry pieces, manage client inquiries, and showcase your atelier to clients.</p>
+  <p style="font-size: 15px; color: #554a3e;">Your business is now verified. The verified jeweler badge appears on your existing public shop. Continue managing your jewelry and client inquiries from your dashboard.</p>
 
   <div style="margin: 32px 0;">
     <a href="${targetUrl}" style="background-color: #231d17; color: #faf9f5; text-decoration: none; padding: 12px 24px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; display: inline-block; border-radius: 2px;">
@@ -93,7 +93,7 @@ export async function sendKycDecisionEmail(input: KycDecisionEmailInput) {
     `;
 
   const text = isApproved
-    ? `Hello ${input.jewelerName || input.storeName},\n\nCongratulations! Your jeweler application for ${input.storeName} has been approved by the Loupe administration team.\n\nYour jeweler studio is now active and unlocked.\nAccess your dashboard: ${targetUrl}\n\nWelcome to Loupe!`
+    ? `Hello ${input.jewelerName || input.storeName},\n\nCongratulations! Your jeweler application for ${input.storeName} has been approved by the Loupe administration team.\n\nYour business is now verified. The verified jeweler badge appears on your existing public shop.\nAccess your dashboard: ${targetUrl}\n\nWelcome to Loupe!`
     : `Hello ${input.jewelerName || input.storeName},\n\nThank you for your application for ${input.storeName}. Our verification team has reviewed your application and requested updates before your store can be approved.\n\nReviewer Feedback:\n${input.feedback || "Please review your documents and resubmit."}\n\nUpdate your application: ${targetUrl}`;
 
   const apiKey = process.env.RESEND_API_KEY;

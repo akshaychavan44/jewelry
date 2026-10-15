@@ -4,7 +4,7 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type { FilePurpose, FileVisibility } from "@/generated/prisma/enums";
+import type { FilePurpose, FileVisibility } from "@/lib/domain-enums";
 import { randomToken, sha256 } from "@/server/crypto";
 import { db } from "@/server/db";
 

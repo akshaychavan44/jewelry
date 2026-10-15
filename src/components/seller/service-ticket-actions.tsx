@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { NativeSelect } from "@/components/ui/input";
-import type { ServiceStatus } from "@/generated/prisma/enums";
+import type { ServiceStatus } from "@/lib/domain-enums";
 import { SERVICE_STATUS } from "@/lib/status";
 import { updateServiceAction } from "@/server/actions/seller";
 

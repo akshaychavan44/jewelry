@@ -1,6 +1,6 @@
 "use client";
 
-import type { EngravingStyle } from "@/generated/prisma/enums";
+import type { EngravingStyle } from "@/lib/domain-enums";
 import { ENGRAVING_STYLES } from "@/lib/jewelry";
 import { cn } from "@/lib/utils";
 

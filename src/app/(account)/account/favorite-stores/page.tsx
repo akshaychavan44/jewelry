@@ -1,3 +1,4 @@
+import { listedJewelerWhere } from "@/lib/jeweler-listing";
 import { Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,9 +15,9 @@ import { getPausedSellerIds } from "@/server/services/jeweler-directory";
 export default async function FavoriteStoresPage() {
   const user = await requireUser("/account/favorite-stores");
   const favourites = await db.favoriteStore.findMany({
-    where: { userId: user.id, seller: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } } },
+    where: { userId: user.id, seller: { ...listedJewelerWhere, id: { notIn: await getPausedSellerIds() } } },
     orderBy: { createdAt: "desc" },
-    include: { seller: { select: { id: true, slug: true, storeName: true, tagline: true, city: true, country: true, logoUrl: true, bannerUrl: true, ratingAverage: true, ratingCount: true, activeListingCount: true } } },
+    include: { seller: { select: { id: true, verificationStatus: true, slug: true, storeName: true, tagline: true, city: true, country: true, logoUrl: true, bannerUrl: true, ratingAverage: true, ratingCount: true, activeListingCount: true } } },
   });
   return (
     <>
@@ -38,7 +39,7 @@ export default async function FavoriteStoresPage() {
                     {s.city}, {countryName(s.country)} · {pluralize(s.activeListingCount, "piece")}
                   </p>
                   <div className="mt-2 flex items-center gap-3">
-                    <VerifiedJeweler compact />
+                    {s.verificationStatus === "APPROVED" && <VerifiedJeweler compact />}
                     {s.ratingCount > 0 && (
                       <span className="flex items-center gap-1 text-[12.5px] text-ink-soft">
                         <Stars rating={s.ratingAverage} size={11} label={false} /> {s.ratingAverage.toFixed(1)}

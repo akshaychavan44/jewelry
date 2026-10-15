@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { MakingChargeType, MetalType, PricingMode } from "@/generated/prisma/enums";
+import type { MakingChargeType, MetalType, PricingMode } from "@/lib/domain-enums";
 import { computeSpotPrice, type SpotPriceBreakdown } from "@/lib/pricing";
 import { num } from "@/lib/utils";
 import { getFxRates, getSpotRates } from "./market";

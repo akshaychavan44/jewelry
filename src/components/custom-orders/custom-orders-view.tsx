@@ -1,18 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Diamond,
-  FileText,
-  Lock,
-  Scale,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { CustomRequestForm } from "@/components/account/custom-request-form";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -91,11 +82,25 @@ export function CustomOrdersView({
   jewelers,
 }: Props) {
   const [heroSlide, setHeroSlide] = useState(0);
+  const [prevSlide, setPrevSlide] = useState<number | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
-  const nextHeroSlide = () => setHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-  const prevHeroSlide = () => setHeroSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+  const goToSlide = (nextIndex: number) => {
+    setPrevSlide(heroSlide);
+    setHeroSlide(nextIndex);
+  };
+
+  const nextHeroSlide = () => goToSlide((heroSlide + 1) % HERO_SLIDES.length);
+  const prevHeroSlide = () => goToSlide((heroSlide - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPrevSlide(heroSlide);
+      setHeroSlide((heroSlide + 1) % HERO_SLIDES.length);
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [heroSlide]);
 
   const scrollCarousel = (direction: "left" | "right") => {
     if (!carouselRef.current) return;
@@ -132,12 +137,6 @@ export function CustomOrdersView({
             </button>
             <Link href="/jewelers" className={styles.action}>Explore jewelers</Link>
           </div>
-          <div className={styles.assurances}>
-            <div className={styles.assurance}><Diamond aria-hidden="true" /><span>Verified<br />jewelers</span></div>
-            <div className={styles.assurance}><FileText aria-hidden="true" /><span>Private<br />requests</span></div>
-            <div className={styles.assurance}><Sparkles aria-hidden="true" /><span>Personal<br />designs</span></div>
-            <div className={styles.assurance}><ShieldCheck aria-hidden="true" /><span>Direct<br />contact</span></div>
-          </div>
         </div>
         <div className={styles.showcase}>
           <svg className={styles.arc} viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
@@ -145,13 +144,47 @@ export function CustomOrdersView({
           </svg>
           <span className={styles.star} aria-hidden="true">✦</span>
           <div className={styles.photo}>
-            <Image
-              src={HERO_SLIDES[heroSlide].image}
-              alt={HERO_SLIDES[heroSlide].alt}
-              fill
-              preload={heroSlide === 0}
-              sizes="(min-width: 1024px) 54vw, 100vw"
-            />
+            {HERO_SLIDES.map((slide, idx) => {
+              const isCurrent = idx === heroSlide;
+              const isPrev = idx === prevSlide;
+
+              let zIndex = 0;
+              let transform = "translateX(100%)";
+
+              if (isCurrent) {
+                zIndex = 20;
+                transform = "translateX(0%)";
+              } else if (isPrev) {
+                zIndex = 10;
+                transform = "translateX(0%)";
+              }
+
+              const transition =
+                prevSlide === null || isPrev
+                  ? "none"
+                  : "transform 750ms cubic-bezier(0.22, 1, 0.36, 1)";
+
+              return (
+                <div
+                  key={slide.image}
+                  className="absolute inset-0 will-change-transform"
+                  style={{
+                    transform,
+                    zIndex,
+                    transition,
+                  }}
+                >
+                  <Image
+                    src={slide.image}
+                    alt={slide.alt}
+                    fill
+                    priority={idx === 0}
+                    sizes="(min-width: 1024px) 54vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+              );
+            })}
           </div>
           <div className={styles.seal} aria-hidden="true"><span>MADE<br />JUST<br />FOR<br />YOU</span></div>
           <div className={styles.counter} aria-label={`Image ${heroSlide + 1} of ${HERO_SLIDES.length}`}>

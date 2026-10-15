@@ -1,6 +1,6 @@
 // Live spot-metal pricing:  price = weight × spot(purity) + making charge + stones
 // Pure and isomorphic so the storefront, seller tools, jobs and seed agree.
-import type { MakingChargeType, MetalType, SpotMetal } from "@/generated/prisma/enums";
+import type { MakingChargeType, MetalType, SpotMetal } from "@/lib/domain-enums";
 import { METALS } from "./jewelry";
 import { convertMinor, currencyExponent, type FxRates } from "./money";
 

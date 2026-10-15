@@ -6,6 +6,7 @@
 import { randomUUID } from "node:crypto";
 import {
   SCHEMA_META,
+  UPDATED_AT_MODELS,
   type ModelMeta,
   type RelationMeta,
 } from "./schema-meta";
@@ -17,6 +18,17 @@ import {
   normalizeRow,
   serializeValue,
 } from "./query-builder";
+import type { DatabaseModels } from "./model-types";
+import type { AggregateArgs, AggregateResult, QueryArgs, QueryResult } from "./query-types";
+
+type ModelName = keyof DatabaseModels;
+type GroupByResult<TName extends ModelName, By extends readonly string[], Args> =
+  Pick<DatabaseModels[TName], Extract<By[number], keyof DatabaseModels[TName]>> &
+  (Args extends { _count: infer C } ? { _count: C extends true ? number : { _all: number } & Record<string, number> } : {}) &
+  (Args extends { _sum: infer S } ? { _sum: Record<string, number | bigint> } : {}) &
+  (Args extends { _avg: infer S } ? { _avg: Record<string, number> } : {}) &
+  (Args extends { _min: infer S } ? { _min: Partial<DatabaseModels[TName]> } : {}) &
+  (Args extends { _max: infer S } ? { _max: Partial<DatabaseModels[TName]> } : {});
 
 export interface SqlExecutor {
   query<R = Record<string, unknown>>(sql: string, params?: unknown[], options?: { readOnly?: boolean }): Promise<R[]>;
@@ -36,7 +48,7 @@ function countResult(spec: boolean | Record<string, boolean>, row: Record<string
   return Object.fromEntries(Object.keys(spec).filter(key => spec[key]).map(key => [key, Number(row[`_count_${key}`] ?? 0)]));
 }
 
-export class ModelDelegate<TModel extends Record<string, unknown> = Record<string, unknown>> {
+export class ModelDelegate<TName extends ModelName = any> {
   constructor(
     public readonly modelName: string,
     public readonly meta: ModelMeta,
@@ -44,15 +56,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     private readonly getDelegate: (name: string) => ModelDelegate
   ) {}
 
-  async findMany(args: {
-    where?: Record<string, unknown>;
-    select?: Record<string, unknown>;
-    include?: Record<string, unknown>;
-    orderBy?: unknown;
-    take?: number;
-    skip?: number;
-    distinct?: string[];
-  } = {}): Promise<TModel[]> {
+  async findMany<A extends QueryArgs<TName> = {}>(args: A = {} as A): Promise<Array<QueryResult<TName, A>>> {
     const collector = createParamCollector();
     const whereSql = buildWhereClause(args.where, this.meta, collector);
     const orderSql = buildOrderByClause(args.orderBy);
@@ -71,54 +75,31 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
       await this.resolveRelations(rows, args.include ?? args.select, Boolean(args.select));
     }
 
-    return rows as TModel[];
+    return rows as Array<QueryResult<TName, A>>;
   }
 
-  async findFirst(args: {
-    where?: Record<string, unknown>;
-    select?: Record<string, unknown>;
-    include?: Record<string, unknown>;
-    orderBy?: unknown;
-    skip?: number;
-  } = {}): Promise<TModel | null> {
+  async findFirst<A extends QueryArgs<TName> = {}>(args: A = {} as A): Promise<QueryResult<TName, A> | null> {
     const list = await this.findMany({ ...args, take: 1 });
     return list[0] ?? null;
   }
 
-  async findFirstOrThrow(args: {
-    where?: Record<string, unknown>;
-    select?: Record<string, unknown>;
-    include?: Record<string, unknown>;
-    orderBy?: unknown;
-  } = {}): Promise<TModel> {
+  async findFirstOrThrow<A extends QueryArgs<TName> = {}>(args: A = {} as A): Promise<QueryResult<TName, A>> {
     const row = await this.findFirst(args);
     if (!row) throw new Error(`No ${this.modelName} found matching query.`);
     return row;
   }
 
-  async findUnique(args: {
-    where: Record<string, unknown>;
-    select?: Record<string, unknown>;
-    include?: Record<string, unknown>;
-  }): Promise<TModel | null> {
+  async findUnique<A extends QueryArgs<TName> & { where: Record<string, unknown> }>(args: A): Promise<QueryResult<TName, A> | null> {
     return this.findFirst(args);
   }
 
-  async findUniqueOrThrow(args: {
-    where: Record<string, unknown>;
-    select?: Record<string, unknown>;
-    include?: Record<string, unknown>;
-  }): Promise<TModel> {
+  async findUniqueOrThrow<A extends QueryArgs<TName> & { where: Record<string, unknown> }>(args: A): Promise<QueryResult<TName, A>> {
     const row = await this.findUnique(args);
     if (!row) throw new Error(`No ${this.modelName} found with given unique identifier.`);
     return row;
   }
 
-  async create(args: {
-    data: Record<string, unknown>;
-    select?: Record<string, unknown>;
-    include?: Record<string, unknown>;
-  }): Promise<TModel> {
+  async create<A extends QueryArgs<TName> & { data: Record<string, unknown> }>(args: A): Promise<QueryResult<TName, A>> {
     const data = { ...args.data };
     if (!data[this.meta.primaryKey] && this.meta.primaryKey === "id" && !this.meta.autoIncrement) {
       data.id = generateId();
@@ -176,7 +157,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
       await this.resolveRelations([created], args.include ?? args.select, Boolean(args.select));
     }
 
-    return created as TModel;
+    return created as QueryResult<TName, A>;
   }
 
   async createMany(args: {
@@ -197,13 +178,11 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     return { count };
   }
 
-  async update(args: {
+  async update<A extends QueryArgs<TName> & {
     where: Record<string, unknown>;
     data: Record<string, unknown>;
-    select?: Record<string, unknown>;
-    include?: Record<string, unknown>;
-  }): Promise<TModel> {
-    const existing = await this.findFirst({ where: args.where });
+  }>(args: A): Promise<QueryResult<TName, A>> {
+    const existing = await this.findFirst({ where: args.where }) as Record<string, unknown> | null;
     if (!existing) {
       throw new Error(`Record to update not found in ${this.modelName}`);
     }
@@ -253,9 +232,9 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
 
     if (setClauses.length === 0) {
       if (args.include || args.select) {
-        await this.resolveRelations([existing], args.include ?? args.select, Boolean(args.select));
+        await this.resolveRelations([existing], (args.include ?? args.select) as Record<string, unknown> | undefined, Boolean(args.select));
       }
-      return existing;
+      return existing as QueryResult<TName, A>;
     }
 
     const pkPlaceholder = collector.add(pkVal);
@@ -267,25 +246,53 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
       await this.resolveRelations([updated], args.include ?? args.select, Boolean(args.select));
     }
 
-    return updated as TModel;
+    return updated as QueryResult<TName, A>;
   }
 
   async updateMany(args: {
     where?: Record<string, unknown>;
     data: Record<string, unknown>;
   }): Promise<{ count: number }> {
-    const list = await this.findMany({ where: args.where });
-    if (list.length === 0) return { count: 0 };
+    const collector = createParamCollector();
+    const setClauses: string[] = [];
+    const data = { ...args.data };
 
-    let count = 0;
-    for (const item of list) {
-      await this.update({
-        where: { [this.meta.primaryKey]: item[this.meta.primaryKey] },
-        data: args.data,
-      });
-      count++;
+    if (UPDATED_AT_MODELS.has(this.modelName) && !("updatedAt" in data)) {
+      data.updatedAt = new Date();
     }
-    return { count };
+
+    for (const [key, value] of Object.entries(data)) {
+      if (value === undefined || this.meta.relations[key]) continue;
+      const column = escapeIdentifier(key);
+
+      if (typeof value === "object" && value !== null && !Array.isArray(value) && !(value instanceof Date)) {
+        const operation = value as Record<string, unknown>;
+        if ("increment" in operation) {
+          setClauses.push(`${column} = ${column} + ${collector.add(operation.increment)}`);
+          continue;
+        }
+        if ("decrement" in operation) {
+          setClauses.push(`${column} = ${column} - ${collector.add(operation.decrement)}`);
+          continue;
+        }
+        if ("set" in operation) {
+          setClauses.push(`${column} = ${collector.add(serializeValue(operation.set, key, this.meta))}`);
+          continue;
+        }
+      }
+
+      setClauses.push(`${column} = ${collector.add(serializeValue(value, key, this.meta))}`);
+    }
+
+    if (setClauses.length === 0) {
+      const rows = await this.findMany({ where: args.where, select: { [this.meta.primaryKey]: true } as any });
+      return { count: rows.length };
+    }
+
+    const whereSql = buildWhereClause(args.where, this.meta, collector);
+    const sql = `UPDATE ${escapeIdentifier(this.meta.table)} SET ${setClauses.join(", ")}${whereSql ? ` WHERE ${whereSql}` : ""} RETURNING ${escapeIdentifier(this.meta.primaryKey)}`;
+    const rows = await this.executor.query(sql, collector.params);
+    return { count: rows.length };
   }
 
   async upsert(args: {
@@ -294,21 +301,21 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     update: Record<string, unknown>;
     select?: Record<string, unknown>;
     include?: Record<string, unknown>;
-  }): Promise<TModel> {
-    const existing = await this.findFirst({ where: args.where });
+  }): Promise<DatabaseModels[TName]> {
+    const existing = await this.findFirst({ where: args.where }) as Record<string, unknown> | null;
     if (existing) {
       return this.update({
         where: { [this.meta.primaryKey]: existing[this.meta.primaryKey] },
         data: args.update,
-        select: args.select,
-        include: args.include,
-      });
+        select: args.select as any,
+        include: args.include as any,
+      }) as unknown as DatabaseModels[TName];
     } else {
       return this.create({
         data: args.create,
-        select: args.select,
-        include: args.include,
-      });
+        select: args.select as any,
+        include: args.include as any,
+      }) as unknown as DatabaseModels[TName];
     }
   }
 
@@ -316,8 +323,8 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     where: Record<string, unknown>;
     select?: Record<string, unknown>;
     include?: Record<string, unknown>;
-  }): Promise<TModel> {
-    const existing = await this.findFirst({ where: args.where });
+  }): Promise<DatabaseModels[TName]> {
+    const existing = await this.findFirst({ where: args.where }) as Record<string, unknown> | null;
     if (!existing) {
       throw new Error(`Record to delete not found in ${this.modelName}`);
     }
@@ -331,10 +338,10 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     const deleted = normalizeRow(rows[0] ?? existing, this.meta);
 
     if (args.include || args.select) {
-      await this.resolveRelations([deleted], args.include ?? args.select, Boolean(args.select));
+      await this.resolveRelations([deleted], (args.include ?? args.select) as Record<string, unknown> | undefined, Boolean(args.select));
     }
 
-    return deleted as TModel;
+    return deleted as unknown as DatabaseModels[TName];
   }
 
   async deleteMany(args: {
@@ -352,7 +359,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
   async count(args: {
     where?: Record<string, unknown>;
     select?: Record<string, unknown>;
-  } = {}): Promise<number | Record<string, number>> {
+  } = {}): Promise<number> {
     const collector = createParamCollector();
     const whereSql = buildWhereClause(args.where, this.meta, collector);
     let sql = `SELECT COUNT(*)::int AS count FROM ${escapeIdentifier(this.meta.table)}`;
@@ -362,14 +369,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     return Number(rows[0]?.count ?? 0);
   }
 
-  async aggregate(args: {
-    where?: Record<string, unknown>;
-    _count?: boolean | Record<string, boolean>;
-    _sum?: Record<string, boolean>;
-    _avg?: Record<string, boolean>;
-    _min?: Record<string, boolean>;
-    _max?: Record<string, boolean>;
-  }): Promise<Record<string, unknown>> {
+  async aggregate<A extends AggregateArgs<TName>>(args: A): Promise<AggregateResult<TName, A>> {
     const collector = createParamCollector();
     const whereSql = buildWhereClause(args.where, this.meta, collector);
     const selects: string[] = [];
@@ -442,11 +442,10 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
       result._max = m;
     }
 
-    return result;
+    return result as AggregateResult<TName, A>;
   }
 
-  async groupBy(args: {
-    by: string[];
+  async groupBy<const By extends readonly string[], Args extends {
     where?: Record<string, unknown>;
     _count?: boolean | Record<string, boolean>;
     _sum?: Record<string, boolean>;
@@ -456,7 +455,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
     orderBy?: unknown;
     take?: number;
     skip?: number;
-  }): Promise<Record<string, unknown>[]> {
+  }>(args: Args & { by: By }): Promise<Array<GroupByResult<TName, By, Args>>> {
     const collector = createParamCollector();
     const whereSql = buildWhereClause(args.where, this.meta, collector);
     const selects: string[] = args.by.map((col) => escapeIdentifier(col));
@@ -520,7 +519,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
         }
         res._avg = a;
       }
-      return res;
+      return res as GroupByResult<TName, By, Args>;
     });
   }
 
@@ -586,7 +585,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
             select: subArgs.select as Record<string, unknown> | undefined,
             include: subArgs.include as Record<string, unknown> | undefined,
             orderBy: subArgs.orderBy,
-          });
+          } as any);
 
           const relMap = new Map<unknown, Record<string, unknown>>();
           for (const rr of relatedRows) {
@@ -614,7 +613,7 @@ export class ModelDelegate<TModel extends Record<string, unknown> = Record<strin
             orderBy: subArgs.orderBy,
             take: subArgs.take as number | undefined,
             skip: subArgs.skip as number | undefined,
-          });
+          } as any);
 
           const relListMap = new Map<unknown, Record<string, unknown>[]>();
           for (const rr of relatedRows) {

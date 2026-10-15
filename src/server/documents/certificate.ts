@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Certificate } from "@/generated/prisma/client";
+import type { Certificate } from "@/server/db/model-types";
 import { CLARITY_SCALE, CUT_GRADES, GEMSTONES, LABS, STONE_SHAPES } from "@/lib/jewelry";
 import { createDoc, GOLD, LINE, MUTED, rule, SAGE, text, wordmark } from "./pdf";
 

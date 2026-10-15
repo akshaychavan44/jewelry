@@ -2,7 +2,7 @@
 import { recordContactClick } from "@/lib/contact-analytics";
 import { useState } from "react";
 import Link from "next/link";
-import type { SizingMode } from "@/generated/prisma/enums";
+import type { SizingMode } from "@/lib/domain-enums";
 import type { VariantOption } from "@/server/services/product";
 import { formatMoney } from "@/lib/money";
 import { WishlistButton } from "@/components/catalog/save-buttons";

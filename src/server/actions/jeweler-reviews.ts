@@ -1,4 +1,5 @@
 "use server";
+import { listedJewelerWhere } from "@/lib/jeweler-listing";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -18,7 +19,7 @@ export async function saveJewelerReview(_: ReviewState, form: FormData): Promise
     if (user.role !== "BUYER") return { message: "Use your customer account to review a jeweler." };
     const d = z.object({ sellerId: z.string().min(1), rating: z.coerce.number().int().min(1).max(5), body: z.string().trim().min(1, "Please write a review.").max(2000) }).parse(Object.fromEntries(form));
     if (form.get("experienced") !== "on") return { message: "Confirm this review reflects your own experience." };
-    const seller = await db.sellerProfile.findFirst({ where: { id: d.sellerId, verificationStatus: "APPROVED" } });
+    const seller = await db.sellerProfile.findFirst({ where: { id: d.sellerId, ...listedJewelerWhere } });
     if (!seller || (await getDirectorySettings(seller.id)).isPaused) return { message: "This jeweler is unavailable." };
     await db.$transaction(async tx => {
       await tx.$executeRaw`INSERT INTO "JewelerReview" ("id", "sellerId", "authorId", "rating", "body") VALUES (${randomUUID()}, ${seller.id}, ${user.id}, ${d.rating}, ${d.body})`;
@@ -46,7 +47,7 @@ export async function deleteJewelerReview(_: ReviewState, form: FormData): Promi
 }
 export async function respondToJewelerReview(_: ReviewState, form: FormData): Promise<ReviewState> {
   try {
-    const { seller } = await assertSeller();
+    const { seller } = await assertSeller({ verified: false, listed: true });
     const d = z.object({ id: z.string().min(1), body: z.string().trim().min(3).max(1000), intent: z.enum(["reply", "report"]) }).parse(Object.fromEntries(form));
     const rows = d.intent === "reply"
       ? await db.$queryRaw<{ id: string }[]>`UPDATE "JewelerReview" SET "sellerReply" = ${d.body}, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = ${d.id} AND "sellerId" = ${seller.id} RETURNING "id"`

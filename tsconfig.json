@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -14,12 +18,15 @@
     "jsx": "react-jsx",
     "incremental": true,
     "noUncheckedIndexedAccess": false,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@prisma/client/runtime/client": ["./src/generated/prisma/runtime.ts"],
-      "@prisma/client": ["./src/generated/prisma/client.ts"],
-      "@prisma/client/*": ["./src/generated/prisma/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
@@ -29,5 +36,9 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "data", "storage", "prisma.config.ts"]
+  "exclude": [
+    "node_modules",
+    "data",
+    "storage"
+  ]
 }

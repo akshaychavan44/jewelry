@@ -4,7 +4,7 @@ import { FileCheck2 } from "lucide-react";
 import { PageHeader } from "@/components/account/page-header";
 import { FilterTabs } from "@/components/admin/filter-tabs";
 import { Card, EmptyState, Monogram, Stars, StatusBadge, Table, Td, Th } from "@/components/ui/display";
-import type { VerificationStatus } from "@/generated/prisma/enums";
+import type { VerificationStatus } from "@/lib/domain-enums";
 import { formatDate, timeAgo } from "@/lib/format";
 import { bpsToPercent } from "@/lib/money";
 import { countryName } from "@/lib/regions";

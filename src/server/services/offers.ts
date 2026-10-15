@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { ActorType } from "@/generated/prisma/enums";
+import type { ActorType } from "@/lib/domain-enums";
 import { formatMoney } from "@/lib/money";
 import { num } from "@/lib/utils";
 import { db } from "@/server/db";

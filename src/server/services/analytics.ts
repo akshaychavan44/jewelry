@@ -2,8 +2,8 @@ import "server-only";
 
 import { after } from "next/server";
 import { headers } from "next/headers";
-import type { Prisma } from "@/generated/prisma/client";
-import type { AnalyticsEventType } from "@/generated/prisma/enums";
+import type { DbQueryTypes } from "@/server/db/query-types";
+import type { AnalyticsEventType } from "@/lib/domain-enums";
 import { sha256 } from "@/server/crypto";
 import { db } from "@/server/db";
 
@@ -11,7 +11,7 @@ import { db } from "@/server/db";
  * Records a first-party analytics event after the response is sent. Sessions
  * are a daily-rotating hash of IP + user agent — no tracking cookie needed.
  */
-export async function track(type: AnalyticsEventType, data: { userId?: string | null; sellerId?: string; productId?: string; path?: string; metadata?: Prisma.InputJsonValue } = {}) {
+export async function track(type: AnalyticsEventType, data: { userId?: string | null; sellerId?: string; productId?: string; path?: string; metadata?: DbQueryTypes.InputJsonValue } = {}) {
   const h = await headers();
   if (h.get("next-router-prefetch") || h.get("purpose") === "prefetch") return;
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";

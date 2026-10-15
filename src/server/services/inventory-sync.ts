@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma } from "@/generated/prisma/client";
+import type { DbQueryTypes } from "@/server/db/query-types";
 import { randomToken, sha256, hmacSha256, safeEqual, decrypt, encrypt } from "@/server/crypto";
 import { db } from "@/server/db";
 import { refreshProductFacets } from "./listings";
@@ -50,7 +50,7 @@ async function setStock(integrationId: string, sellerId: string, updates: { vari
   await db.inventoryIntegration.update({ where: { id: integrationId }, data: { lastSyncedAt: new Date(), lastError: null, status: "ACTIVE" } });
 }
 
-async function logEvent(data: Prisma.InventorySyncEventUncheckedCreateInput) {
+async function logEvent(data: DbQueryTypes.InventorySyncEventUncheckedCreateInput) {
   try {
     return await db.inventorySyncEvent.create({ data });
   } catch (error) {
@@ -92,7 +92,7 @@ export async function handleSquareWebhook(integrationId: string, rawBody: string
   if (!safeEqual(expected, headers.get("x-square-hmacsha256-signature") ?? "")) throw new SyncError("Invalid signature", 401);
 
   const body = JSON.parse(rawBody) as { event_id?: string; type?: string; data?: { object?: { inventory_counts?: { catalog_object_id: string; quantity: string; state: string }[] } } };
-  const event = await logEvent({ integrationId, direction: "INBOUND", externalEventId: body.event_id, topic: body.type ?? "inventory.count.updated", status: "RECEIVED", payload: body as Prisma.InputJsonValue });
+  const event = await logEvent({ integrationId, direction: "INBOUND", externalEventId: body.event_id, topic: body.type ?? "inventory.count.updated", status: "RECEIVED", payload: body as DbQueryTypes.InputJsonValue });
   if (!event) return { duplicate: true };
 
   const counts = (body.data?.object?.inventory_counts ?? []).filter((c) => c.state === "IN_STOCK");

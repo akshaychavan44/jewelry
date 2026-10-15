@@ -1,4 +1,4 @@
-import type { ShippingRegion, ShippingZone } from "@/generated/prisma/enums";
+import type { ShippingRegion, ShippingZone } from "@/lib/domain-enums";
 
 export const REGION_LABELS: Record<ShippingRegion, string> = {
   NORTH_AMERICA: "North America",

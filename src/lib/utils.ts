@@ -47,7 +47,7 @@ export function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-/** Converts Prisma BigInt / Decimal / number values into a plain JS number. */
+/** Converts Database BigInt / Decimal / number values into a plain JS number. */
 export function num(value: bigint | number | string | { toString(): string } | null | undefined): number {
   if (value === null || value === undefined) return 0;
   if (typeof value === "number") return value;

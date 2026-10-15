@@ -1,8 +1,8 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import type { Prisma } from "@/generated/prisma/client";
-import type { Carrier, EngravingStyle, ShippingMethod } from "@/generated/prisma/enums";
+import type { DbQueryTypes } from "@/server/db/query-types";
+import type { Carrier, EngravingStyle, ShippingMethod } from "@/lib/domain-enums";
 import { convertMinor } from "@/lib/money";
 import { zoneFor } from "@/lib/regions";
 import { deliveryWindow, eligibleRates, METHOD_LABELS, quoteRate, type RateCardLine } from "@/lib/shipping";
@@ -41,9 +41,9 @@ const cartInclude = {
       },
     },
   },
-} satisfies Prisma.CartInclude;
+} satisfies DbQueryTypes.CartInclude;
 
-export type CartRecord = Prisma.CartGetPayload<{ include: typeof cartInclude }>;
+export type CartRecord = DbQueryTypes.CartGetPayload<{ include: typeof cartInclude }>;
 
 export async function loadCart(userId?: string | null): Promise<CartRecord | null> {
   const owner = await cartOwner(userId);

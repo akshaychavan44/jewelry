@@ -5,14 +5,14 @@ import { MessageCircle, Phone } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
-import { contactLinks, whatsappInquiry } from "@/lib/jeweler-contact";
+import { contactLinks, directoryWhatsappLink, whatsappInquiry } from "@/lib/jeweler-contact";
 
 export function DirectContact({ phone, whatsapp, title, sellerId, productId }: { sellerId?: string; productId?: string; whatsapp?: string | null; phone?: string | null; title: string }) {
   const pathname = usePathname();
   const [url, setUrl] = useState(pathname);
   useEffect(() => { setUrl(new URL(pathname, window.location.origin).href); }, [pathname]);
   const links = contactLinks(phone);
-  const whatsappLink = contactLinks(whatsapp)?.whatsapp;
+  const whatsappLink = directoryWhatsappLink(whatsapp);
   if (!links && !whatsappLink) return <p className="text-[12px] leading-relaxed text-muted">This jeweler has not shared a public contact number yet. Visit their profile for email, website and social links.</p>;
   return (
     <div className="grid gap-2 sm:grid-cols-2">

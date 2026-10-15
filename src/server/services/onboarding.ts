@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { BusinessType, KycDocumentType } from "@/generated/prisma/enums";
+import type { BusinessType, KycDocumentType } from "@/lib/domain-enums";
 import { slugify } from "@/lib/utils";
 import { encrypt, lastFour } from "@/server/crypto";
 import { db } from "@/server/db";
@@ -74,7 +74,7 @@ export async function saveStoreProfile(userId: string, input: StoreProfileInput)
       await tx.$executeRaw`INSERT INTO "JewelerDirectorySettings" ("sellerId", "instagram", "facebook", "youtube", "whatsapp", "publicEmail", "maps") VALUES (${saved.id}, ${d.instagram}, ${d.facebook}, ${d.youtube}, ${d.whatsapp.replace(/\D/g, "")}, ${d.publicEmail}, ${d.maps}) ON CONFLICT ("sellerId") DO UPDATE SET "instagram" = EXCLUDED."instagram", "facebook" = EXCLUDED."facebook", "youtube" = EXCLUDED."youtube", "whatsapp" = EXCLUDED."whatsapp", "publicEmail" = EXCLUDED."publicEmail", "maps" = EXCLUDED."maps", "updatedAt" = CURRENT_TIMESTAMP`;
     }
     const location = await tx.storeLocation.findFirst({ where: { sellerId: saved.id }, orderBy: { id: "asc" } });
-    const locationData = { name: saved.storeName, line1: input.returnAddress.line1, city: input.returnAddress.city, country: input.country, postalCode: input.returnAddress.postalCode, phone: input.returnAddress.phone || null };
+    const locationData = { name: saved.storeName, line1: input.returnAddress.line1, line2: input.returnAddress.line2 || null, region: input.returnAddress.region || null, city: input.returnAddress.city, country: input.country, postalCode: input.returnAddress.postalCode, phone: input.returnAddress.phone || null };
     if (location) await tx.storeLocation.update({ where: { id: location.id }, data: locationData });
     else await tx.storeLocation.create({ data: { ...locationData, sellerId: saved.id } });
     return saved;
@@ -160,6 +160,7 @@ export async function submitApplication(userId: string) {
   const seller = await db.sellerProfile.findUnique({ where: { userId }, include: { kycDocuments: { where: { submissionId: null } } } });
   if (!seller) throw new OnboardingError("Set up your store profile first.");
   if (!EDITABLE.includes(seller.verificationStatus as (typeof EDITABLE)[number])) throw new OnboardingError("Your application has already been submitted.");
+  if (seller.onboardingStep < 3 || !seller.returnAddressId || !seller.storeName || !seller.city || !seller.country) throw new OnboardingError("Complete your store profile and business details before submitting.");
   const settings = await db.platformSettings.findUnique({ where: { id: "platform" } });
   const rawDocs = settings?.requiredKycDocuments;
   const requiredDocs: KycDocumentType[] = Array.isArray(rawDocs)

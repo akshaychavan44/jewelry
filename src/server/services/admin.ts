@@ -2,8 +2,8 @@ import "server-only";
 
 import { z } from "zod";
 import { cache } from "react";
-import type { Prisma } from "@/generated/prisma/client";
-import { DisputePriority, KycDocumentType, type Role, type VerificationStatus } from "@/generated/prisma/enums";
+import type { DbQueryTypes } from "@/server/db/query-types";
+import { DisputePriority, KycDocumentType, type Role, type VerificationStatus } from "@/lib/domain-enums";
 import { convertMinor } from "@/lib/money";
 import { num } from "@/lib/utils";
 import { db } from "@/server/db";
@@ -210,7 +210,7 @@ export async function reviewKyc(adminId: string, input: z.infer<typeof kycDecisi
       seller.userId,
       "KYC",
       approve ? `${seller.storeName} is approved` : "Your application needs changes",
-      approve ? "Your seller studio is unlocked — publish your first piece." : input.feedback.slice(0, 160),
+      approve ? "Your business is verified. The verified badge now appears on your shop." : input.feedback.slice(0, 160),
       approve ? "/seller" : "/seller/onboarding",
     );
   });
@@ -253,10 +253,10 @@ export async function updateSellerControls(adminId: string, sellerId: string, in
   const patch = sellerControlsSchema.parse(input);
   const before = await db.sellerProfile.findUnique({ where: { id: sellerId }, select: { isFeatured: true, isTopRated: true } });
   if (!before) throw new AdminError("Jeweler not found.");
-  await db.$transaction([
-    db.sellerProfile.update({ where: { id: sellerId }, data: patch }),
-    db.auditLog.create({ data: { actorId: adminId, action: "seller.controls", entityType: "SellerProfile", entityId: sellerId, metadata: { before, after: patch } } }),
-  ]);
+  await db.$transaction(async (tx) => {
+    await tx.sellerProfile.update({ where: { id: sellerId }, data: patch });
+    await tx.auditLog.create({ data: { actorId: adminId, action: "seller.controls", entityType: "SellerProfile", entityId: sellerId, metadata: { before, after: patch } } });
+  });
 }
 
 export async function listCertificates(status: "PENDING_REVIEW" | "VERIFIED" | "REJECTED") {
@@ -301,7 +301,7 @@ export const DISPUTE_VIEWS = {
   waiting: { label: "Waiting on a party", where: { status: { in: ["AWAITING_SELLER", "AWAITING_BUYER"] } } },
   resolved: { label: "Resolved", where: { status: { in: ["RESOLVED", "CLOSED"] } } },
   all: { label: "All cases", where: {} },
-} satisfies Record<string, { label: string; where: Prisma.DisputeWhereInput }>;
+} satisfies Record<string, { label: string; where: DbQueryTypes.DisputeWhereInput }>;
 export type DisputeView = keyof typeof DISPUTE_VIEWS;
 
 export async function listDisputes(view: DisputeView) {
@@ -410,7 +410,7 @@ export async function updateVerificationSettings(adminId: string, input: z.input
 
 export async function listUsers(args: { q?: string; role?: Role; status?: "ACTIVE" | "SUSPENDED" | "DEACTIVATED"; page: number; perPage?: number }) {
   const perPage = args.perPage ?? 30;
-  const where: Prisma.UserWhereInput = {
+  const where: DbQueryTypes.UserWhereInput = {
     ...(args.role ? { role: args.role } : {}),
     ...(args.status ? { status: args.status } : {}),
     ...(args.q ? { OR: [{ email: { contains: args.q, mode: "insensitive" } }, { name: { contains: args.q, mode: "insensitive" } }] } : {}),
@@ -433,19 +433,19 @@ export async function setUserStatus(adminId: string, userId: string, status: "AC
   const user = await db.user.findUnique({ where: { id: userId }, select: { role: true, status: true } });
   if (!user) throw new AdminError("User not found.");
   if (user.role === "ADMIN") throw new AdminError("Administrator accounts are managed by the platform owner.");
-  await db.$transaction([
-    db.user.update({ where: { id: userId }, data: { status } }),
-    db.auditLog.create({ data: { actorId: adminId, action: status === "SUSPENDED" ? "user.suspend" : "user.reactivate", entityType: "User", entityId: userId, metadata: { from: user.status } } }),
-  ]);
+  await db.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { status } });
+    await tx.auditLog.create({ data: { actorId: adminId, action: status === "SUSPENDED" ? "user.suspend" : "user.reactivate", entityType: "User", entityId: userId, metadata: { from: user.status } } });
+  });
 }
 
 // ── Orders & audit ────────────────────────────────────────────────────────────
 
 export async function listOrders(args: { q?: string; payment?: string; page: number; perPage?: number }) {
   const perPage = args.perPage ?? 30;
-  const where: Prisma.OrderWhereInput = {
+  const where: DbQueryTypes.OrderWhereInput = {
     status: { not: "PENDING_PAYMENT" },
-    ...(args.payment ? { paymentStatus: args.payment as Prisma.EnumPaymentStatusFilter["equals"] } : {}),
+    ...(args.payment ? { paymentStatus: args.payment as DbQueryTypes.EnumPaymentStatusFilter["equals"] } : {}),
     ...(args.q ? { OR: [{ orderNumber: { contains: args.q.toUpperCase() } }, { email: { contains: args.q, mode: "insensitive" } }] } : {}),
   };
   const [rows, total] = await Promise.all([
@@ -485,7 +485,7 @@ export async function getAdminOrder(orderNumber: string) {
 
 export async function listAudit(args: { entity?: string; page: number; perPage?: number }) {
   const perPage = args.perPage ?? 40;
-  const where: Prisma.AuditLogWhereInput = args.entity ? { entityType: args.entity } : {};
+  const where: DbQueryTypes.AuditLogWhereInput = args.entity ? { entityType: args.entity } : {};
   const [rows, total, entities] = await Promise.all([
     db.auditLog.findMany({ where, orderBy: { createdAt: "desc" }, skip: (args.page - 1) * perPage, take: perPage, include: { actor: { select: { name: true, email: true, role: true } } } }),
     db.auditLog.count({ where }),
@@ -501,7 +501,7 @@ export const PAYOUT_VIEWS = {
   hold: { label: "On hold", where: { status: "ON_HOLD" } },
   released: { label: "Paid out", where: { status: "RELEASED" } },
   reversed: { label: "Reversed & cancelled", where: { status: { in: ["REVERSED", "CANCELLED"] } } },
-} satisfies Record<string, { label: string; where: Prisma.PayoutWhereInput }>;
+} satisfies Record<string, { label: string; where: DbQueryTypes.PayoutWhereInput }>;
 export type PayoutView = keyof typeof PAYOUT_VIEWS;
 
 export async function listPayouts(view: PayoutView) {

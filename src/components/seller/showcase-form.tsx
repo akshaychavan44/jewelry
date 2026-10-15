@@ -6,7 +6,7 @@ import { Field, FormError } from "@/components/ui/field";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { METALS, GEMSTONES } from "@/lib/jewelry";
-import type { Gemstone, MetalType } from "@/generated/prisma/enums";
+import type { Gemstone, MetalType } from "@/lib/domain-enums";
 type Piece = { id: string; title: string; description: string; categoryId: string; primaryMetal: MetalType; primaryGemstone: Gemstone; price: number; status: string; images: { url: string }[]; showOnProfile: boolean; showOnWebsite: boolean };
 export function ShowcaseForm({ piece, categories, currency }: { piece?: Piece; categories: { id: string; name: string }[]; currency: string }) {
   const [state, action] = useActionState<ShowcaseState, FormData>(saveShowcaseAction, {});

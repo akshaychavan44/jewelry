@@ -1,7 +1,7 @@
 import "server-only";
 
-import type { Address } from "@/generated/prisma/client";
-import type { DutiesMode } from "@/generated/prisma/enums";
+import type { Address } from "@/server/db/model-types";
+import type { DutiesMode } from "@/lib/domain-enums";
 import { resolveCommissionBps } from "@/lib/commission";
 import { convertMinor } from "@/lib/money";
 import {

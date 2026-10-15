@@ -7,7 +7,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Field, FormError } from "@/components/ui/field";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { KycDocumentType } from "@/generated/prisma/enums";
+import type { KycDocumentType } from "@/lib/domain-enums";
 import { CURRENCIES, SUPPORTED_CURRENCIES } from "@/lib/money";
 import { COUNTRY_CODES, countryName } from "@/lib/regions";
 import { cn } from "@/lib/utils";
@@ -35,10 +35,12 @@ type Store = {
 
 export function StoreProfileForm({
   store,
+  userId,
   action: submit = saveStoreProfileAction,
   submitLabel = "Save and continue",
 }: {
   store: Store;
+  userId: string;
   action?: (state: StepState, formData: FormData) => Promise<StepState>;
   submitLabel?: string;
 }) {
@@ -74,7 +76,7 @@ export function StoreProfileForm({
   // Restore draft from storage on mount if available
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem("loupe_onboarding_store_profile") || localStorage.getItem("loupe_onboarding_store_profile");
+      const saved = sessionStorage.getItem(`loupe_onboarding_store_profile:${userId}`) || localStorage.getItem(`loupe_onboarding_store_profile:${userId}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === "object") {
@@ -90,15 +92,15 @@ export function StoreProfileForm({
         }
       }
     } catch {}
-  }, []);
+  }, [userId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setValues((prev) => {
       const next = { ...prev, [name]: value };
       try {
-        sessionStorage.setItem("loupe_onboarding_store_profile", JSON.stringify(next));
-        localStorage.setItem("loupe_onboarding_store_profile", JSON.stringify(next));
+        sessionStorage.setItem(`loupe_onboarding_store_profile:${userId}`, JSON.stringify(next));
+        localStorage.setItem(`loupe_onboarding_store_profile:${userId}`, JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -157,8 +159,8 @@ export function StoreProfileForm({
         setState(res);
         if (res.ok) {
           try {
-            sessionStorage.removeItem("loupe_onboarding_store_profile");
-            localStorage.removeItem("loupe_onboarding_store_profile");
+            sessionStorage.removeItem(`loupe_onboarding_store_profile:${userId}`);
+            localStorage.removeItem(`loupe_onboarding_store_profile:${userId}`);
           } catch {}
           router.push("/seller/onboarding?step=2");
         } else {
@@ -273,6 +275,7 @@ const DOCS: { type: KycDocumentType; label: string; hint: string; required: bool
 export function BusinessForm({
   values,
   uploaded,
+  userId,
 }: {
   values: {
     legalBusinessName?: string | null;
@@ -282,6 +285,7 @@ export function BusinessForm({
     website?: string | null;
   };
   uploaded: Partial<Record<KycDocumentType, string>>;
+  userId: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -297,7 +301,7 @@ export function BusinessForm({
 
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem("loupe_onboarding_biz_profile") || localStorage.getItem("loupe_onboarding_biz_profile");
+      const saved = sessionStorage.getItem(`loupe_onboarding_biz_profile:${userId}`) || localStorage.getItem(`loupe_onboarding_biz_profile:${userId}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === "object") {
@@ -313,15 +317,15 @@ export function BusinessForm({
         }
       }
     } catch {}
-  }, []);
+  }, [userId]);
 
   const handleBizChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setBizValues((prev) => {
       const next = { ...prev, [name]: value };
       try {
-        sessionStorage.setItem("loupe_onboarding_biz_profile", JSON.stringify(next));
-        localStorage.setItem("loupe_onboarding_biz_profile", JSON.stringify(next));
+        sessionStorage.setItem(`loupe_onboarding_biz_profile:${userId}`, JSON.stringify(next));
+        localStorage.setItem(`loupe_onboarding_biz_profile:${userId}`, JSON.stringify(next));
       } catch {}
       return next;
     });
@@ -373,8 +377,8 @@ export function BusinessForm({
         setState(res);
         if (res.ok) {
           try {
-            sessionStorage.removeItem("loupe_onboarding_biz_profile");
-            localStorage.removeItem("loupe_onboarding_biz_profile");
+            sessionStorage.removeItem(`loupe_onboarding_biz_profile:${userId}`);
+            localStorage.removeItem(`loupe_onboarding_biz_profile:${userId}`);
           } catch {}
           router.push("/seller/onboarding?step=3");
         } else {
@@ -482,7 +486,7 @@ export function SubmitApplicationForm() {
         const res = await submitApplicationAction({}, formData);
         setState(res);
         if (res.ok) {
-          router.push("/seller/onboarding");
+          router.push("/seller");
           router.refresh();
         }
       } catch (err) {
@@ -500,7 +504,7 @@ export function SubmitApplicationForm() {
       <label className="flex items-start gap-3 rounded-[3px] border border-line bg-ivory p-4 text-[14px] leading-relaxed text-ink-soft">
         <input type="checkbox" name="agree" className="mt-1 size-4 accent-[#7b8069]" required />
         <span>
-          I confirm that our business details and contact links are accurate. I understand that all customer inquiries, consultations, bespoke commissions, transactions, fulfillment, returns, and dispute handling are conducted directly and independently between our atelier and the customer.
+          Your shop will be listed immediately. The verified badge appears after admin approval. I confirm that our business details and contact links are accurate. I understand that all customer inquiries, consultations, bespoke commissions, transactions, fulfillment, returns, and dispute handling are conducted directly and independently between our atelier and the customer.
         </span>
       </label>
       <div className="flex flex-wrap items-center gap-3">
@@ -511,7 +515,7 @@ export function SubmitApplicationForm() {
           Back
         </Link>
         <Button type="submit" size="lg" pending={isPending}>
-          {isPending ? "Submitting…" : "Submit for review"}
+          {isPending ? "Submitting…" : "Submit and list my shop"}
         </Button>
       </div>
     </form>

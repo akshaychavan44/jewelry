@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { ActorType, Carrier, CustomRequestStatus, DisputeReason, DisputeResolution, ReturnReason, ServiceStatus, ServiceType } from "@/generated/prisma/enums";
+import type { ActorType, Carrier, CustomRequestStatus, DisputeReason, DisputeResolution, ReturnReason, ServiceStatus, ServiceType } from "@/lib/domain-enums";
 import { formatMoney } from "@/lib/money";
 import type { AddressSnapshot } from "@/lib/order-math";
 import { num, randomCode } from "@/lib/utils";

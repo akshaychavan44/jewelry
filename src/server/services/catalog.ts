@@ -3,14 +3,14 @@ import { discoveryWhere } from "./discovery";
 import { getPausedSellerIds } from "./jeweler-directory";
 
 import { cache } from "react";
-import type { Prisma } from "@/generated/prisma/client";
+import type { DbQueryTypes } from "@/server/db/query-types";
 import type {
   CertificateLab,
   Gemstone,
   MetalType,
   ProductCondition,
   ShippingRegion,
-} from "@/generated/prisma/enums";
+} from "@/lib/domain-enums";
 import { convertMinor, toMinor } from "@/lib/money";
 import { num } from "@/lib/utils";
 import { db } from "@/server/db";
@@ -61,9 +61,9 @@ export const cardSelect = {
   // Relations are batched by the adapter; a nested limit would apply to the
   // entire batch. toCard picks the first two images for each product instead.
   images: { orderBy: { position: "asc" }, select: { url: true, alt: true } },
-} satisfies Prisma.ProductSelect;
+} satisfies DbQueryTypes.ProductSelect;
 
-type CardRow = Prisma.ProductGetPayload<{ select: typeof cardSelect }>;
+type CardRow = DbQueryTypes.ProductGetPayload<{ select: typeof cardSelect }>;
 
 export function toCard(p: CardRow, ctx: PriceContext): ProductCard {
   const images = p.images ?? [];
@@ -90,7 +90,7 @@ export function toCard(p: CardRow, ctx: PriceContext): ProductCard {
   };
 }
 
-/** Listings visible to shoppers: active, not deleted, from an approved store. */
+/** Listings visible to shoppers: active, not deleted, from a submitted or approved store. */
 export const publicProductWhere = discoveryWhere;
 
 // ── Categories ────────────────────────────────────────────────────────────────
@@ -143,7 +143,7 @@ export type ListingFilters = {
   pageSize?: number;
 };
 
-function orderFor(sort: SortKey = "featured"): Prisma.ProductOrderByWithRelationInput[] {
+function orderFor(sort: SortKey = "featured"): DbQueryTypes.ProductOrderByWithRelationInput[] {
   switch (sort) {
     case "newest":
       return [{ publishedAt: "desc" }];
@@ -160,8 +160,8 @@ function orderFor(sort: SortKey = "featured"): Prisma.ProductOrderByWithRelation
   }
 }
 
-export async function buildListingWhere(f: ListingFilters, ctx: PriceContext): Promise<Prisma.ProductWhereInput> {
-  const and: Prisma.ProductWhereInput[] = [await publicProductWhere()];
+export async function buildListingWhere(f: ListingFilters, ctx: PriceContext): Promise<DbQueryTypes.ProductWhereInput> {
+  const and: DbQueryTypes.ProductWhereInput[] = [await publicProductWhere()];
   if (f.categoryIds?.length) and.push({ categoryId: { in: f.categoryIds } });
   if (f.sellerId) and.push({ sellerId: f.sellerId });
   if (f.q) {
@@ -216,7 +216,7 @@ export async function listProducts(f: ListingFilters, ctx: PriceContext) {
 
 /** Facet counts within a category (or the whole catalogue). */
 export async function getListingFacets(categoryIds?: string[], sellerId?: string) {
-  const base: Prisma.ProductWhereInput = { AND: [await publicProductWhere(), ...(categoryIds?.length ? [{ categoryId: { in: categoryIds } }] : []), ...(sellerId ? [{ sellerId }] : [])] };
+  const base: DbQueryTypes.ProductWhereInput = { AND: [await publicProductWhere(), ...(categoryIds?.length ? [{ categoryId: { in: categoryIds } }] : []), ...(sellerId ? [{ sellerId }] : [])] };
   const [metals, gems, conditions, priceRange] = await Promise.all([
     db.productVariant.groupBy({ by: ["metalType"], where: { isActive: true, product: base }, _count: { productId: true } }),
     db.product.groupBy({ by: ["primaryGemstone"], where: base, _count: { _all: true } }),

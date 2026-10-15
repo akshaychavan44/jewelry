@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const origin = process.argv[2] || "http://localhost:3000";
-const seed = await readFile("prisma/seed/data/people.ts", "utf8");
+const seed = await readFile("database/seed/data/people.ts", "utf8");
 const password = seed.match(/DEMO_PASSWORD\s*=\s*"([^"]+)"/)?.[1];
 assert.ok(password);
 const decode = text => text.replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");

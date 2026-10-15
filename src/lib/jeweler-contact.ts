@@ -9,3 +9,9 @@ export function contactLinks(phone?: string | null) {
 export function whatsappInquiry(base: string, title: string, url: string) {
   return `${base}?${new URLSearchParams({ text: `Hello, I'm interested in ${title}. Could you confirm availability and how to purchase it?\n${url}` })}`;
 }
+
+/** Directory WhatsApp values include a country code and are stored as digits. */
+export function directoryWhatsappLink(value?: string | null) {
+  const digits = value?.trim().replace(/[\s()+.-]/g, "");
+  return digits && /^[1-9]\d{7,14}$/.test(digits) ? `https://wa.me/${digits}` : null;
+}

@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { db } from "@/server/db";
-import type { SpotMetal } from "@/generated/prisma/enums";
+import type { SpotMetal } from "@/lib/domain-enums";
 
 export interface PreciousMetalRateItem {
   metal: SpotMetal;

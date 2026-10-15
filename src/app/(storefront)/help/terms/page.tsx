@@ -12,7 +12,7 @@ export default async function TermsPage() {
       title="Terms of Service"
       updated="October 2026"
       sample
-      intro={`${siteConfig.name} is a software platform and directory connecting clients with verified independent jewelers. Jewelers subscribe to list their businesses and showcase their jewelry pieces. All transactions, discussions, payments, delivery, warranties, returns, and disputes are handled directly and independently between the jeweler and the customer.`}
+      intro={`${siteConfig.name} is a software platform and directory connecting clients with independent jewelers. Jewelers subscribe to list their businesses and showcase their jewelry pieces. All transactions, discussions, payments, delivery, warranties, returns, and disputes are handled directly and independently between the jeweler and the customer.`}
     >
       <h2>1. The Loupe Platform Model</h2>
       <p>

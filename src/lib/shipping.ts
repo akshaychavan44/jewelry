@@ -1,4 +1,4 @@
-import type { Carrier, ShippingMethod, ShippingZone } from "@/generated/prisma/enums";
+import type { Carrier, ShippingMethod, ShippingZone } from "@/lib/domain-enums";
 import { addBusinessDays } from "./format";
 
 export const METHOD_LABELS: Record<ShippingMethod, { label: string; detail: string }> = {

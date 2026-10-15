@@ -1,8 +1,9 @@
+import { isListedJeweler } from "@/lib/jeweler-listing";
 import "server-only";
 
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import type { Role } from "@/generated/prisma/enums";
+import type { Role } from "@/lib/domain-enums";
 import { loginForDestination } from "@/lib/auth-routing";
 import { db } from "@/server/db";
 import { auth } from "./index";
@@ -59,14 +60,15 @@ export const getSellerForUser = cache(async (userId: string) =>
 );
 
 /**
- * Seller guard. Dashboard features require an APPROVED store; onboarding pages
- * pass `{ verified: false }`.
+ * Seller guard. Dashboard features require a submitted or approved store.
+ * Pass `{ verified: true }` for features requiring admin verification.
  */
-export async function requireSeller({ verified = true }: { verified?: boolean } = {}) {
+export async function requireSeller({ verified = false }: { verified?: boolean } = {}) {
   const user = await requireUser("/seller");
   if (user.role !== "SELLER") redirect("/sell");
   const seller = await getSellerForUser(user.id);
   if (!seller) redirect("/seller/onboarding");
+  if (!isListedJeweler(seller.verificationStatus)) redirect("/seller/onboarding");
   if (verified && seller.verificationStatus !== "APPROVED") redirect("/seller/onboarding");
   return { user, seller };
 }
@@ -84,10 +86,11 @@ export async function assertUser() {
   return user;
 }
 
-export async function assertSeller({ verified = true }: { verified?: boolean } = {}) {
+export async function assertSeller({ verified = true, listed = false }: { verified?: boolean; listed?: boolean } = {}) {
   const user = await assertUser();
   const seller = await getSellerForUser(user.id);
   if (user.role !== "SELLER" || !seller) throw new AccessDenied("A jeweler account is required.");
+  if (listed && !isListedJeweler(seller.verificationStatus)) throw new AccessDenied("Submit your application before managing your shop.");
   if (verified && seller.verificationStatus !== "APPROVED") {
     throw new AccessDenied("Your store must be approved before you can do this.");
   }

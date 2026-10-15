@@ -16,7 +16,7 @@ import { DIRECTORY_SORTS, type DirectorySort, listJewelers } from "@/server/serv
 
 export const metadata: Metadata = {
   title: "Independent Jewelers Directory | Loupe",
-  description: "Browse verified independent ateliers, goldsmiths, and heritage jewelry houses — connect directly with the makers.",
+  description: "Browse independent ateliers, goldsmiths, and heritage jewelry houses — connect directly with the makers.",
 };
 
 export default async function JewelersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -42,7 +42,7 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
         </div>
         <div className={styles.heroWash} />
         <div className={styles.heroContent}>
-          <p className={styles.eyebrow}>Verified Directory</p>
+          <p className={styles.eyebrow}>Jeweler Directory</p>
           <h1>Independent Jewelers &amp; Ateliers</h1>
           <p className={styles.intro}>Discover master jewelers, bespoke goldsmiths, and heritage houses.<br className={styles.desktopBreak} /> Browse their showcases and connect directly.</p>
           <form id="jewelers-search" action="/jewelers" className={styles.search} role="search">
@@ -53,7 +53,7 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
             <button type="submit" aria-label="Search jewelers"><Search size={20} strokeWidth={1.5} /></button>
           </form>
           <ul className={styles.assurances} aria-label="Our directory assurances">
-            <li><ShieldCheck size={28} strokeWidth={1.3} /><span>Verified<br />jewelers</span></li>
+            <li><ShieldCheck size={28} strokeWidth={1.3} /><span>Business<br />verification</span></li>
             <li><Gem size={28} strokeWidth={1.3} /><span>Independent<br />showcases</span></li>
             <li><MessageSquare size={28} strokeWidth={1.3} /><span>Direct<br />contact</span></li>
           </ul>
@@ -64,7 +64,7 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
       <section className={styles.directory} aria-label="Find your jeweler">
         <div className={styles.toolbar}>
           <div className={styles.results}>
-            <p>{pluralize(sellers.length, "verified jeweler")}{q && <> for &ldquo;{q}&rdquo;</>}</p>
+            <p>{pluralize(sellers.length, "jeweler")}{q && <> for &ldquo;{q}&rdquo;</>}</p>
             {(q || country || city || specialty || near) && <Link href="/jewelers">Clear filters <span aria-hidden="true">×</span></Link>}
           </div>
           <div className={styles.filters}>
@@ -97,7 +97,7 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
                   </div>
                   <div className={styles.cardBody}>
                     <Monogram name={seller.storeName} src={seller.logoUrl} size={52} className={styles.monogram} />
-                    <h2><Link href={href}>{seller.storeName}</Link><BadgeCheck size={18} className={styles.verified} aria-label="Verified jeweler" /></h2>
+                    <h2><Link href={href}>{seller.storeName}</Link>{seller.verificationStatus === "APPROVED" && <BadgeCheck size={18} className={styles.verified} aria-label="Verified jeweler" />}</h2>
                     <p className={styles.location}>{seller.city}, {countryName(seller.country)}{seller.foundedYear && <> <span>·</span> Est. {seller.foundedYear}</>}</p>
                     {seller.distanceKm !== null && <p className="mt-1 text-xs text-sage-deep">{seller.distanceKm < 1 ? "Less than 1" : seller.distanceKm.toFixed(1)} km away</p>}
                     <div className={styles.details}>

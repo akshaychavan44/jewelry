@@ -96,3 +96,21 @@ test("showcase relation counts honor active and nondeleted filters", async () =>
   assert.match(query, /"status" = \$\d+/);
   assert.deepEqual(parameters, ["store", "ACTIVE"]);
 });
+
+test("bulk updates use one SQL statement and preserve counter operators", async () => {
+  const calls: { sql: string; params: unknown[] }[] = [];
+  const executor: SqlExecutor = { async query<R>(sql: string, params: unknown[] = []): Promise<R[]> {
+    calls.push({ sql, params });
+    return [{ id: "piece-1" }, { id: "piece-2" }] as R[];
+  } };
+  const delegate = new ModelDelegate("Product", SCHEMA_META.Product, executor, () => { throw new Error("Unexpected relation"); });
+
+  const result = await delegate.updateMany({ where: { sellerId: "seller-1", status: "ACTIVE" }, data: { wishlistCount: { increment: 1 } } });
+
+  assert.deepEqual(result, { count: 2 });
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].sql, /UPDATE "Product" SET "wishlistCount" = "wishlistCount" \+ \$1, "updatedAt" = \$2 WHERE/);
+  assert.equal(calls[0].params[0], 1);
+  assert.ok(calls[0].params[1] instanceof Date);
+  assert.deepEqual(calls[0].params.slice(2), ["seller-1", "ACTIVE"]);
+});

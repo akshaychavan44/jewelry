@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { Carrier, FulfillmentStatus, ServiceStatus, ShippingMethod, ShippingZone } from "@/generated/prisma/enums";
+import { Carrier, FulfillmentStatus, ServiceStatus, ShippingMethod, ShippingZone } from "@/lib/domain-enums";
 import { toMinor } from "@/lib/money";
 import { AccessDenied, assertSeller } from "@/server/auth/session";
 import { db } from "@/server/db";
@@ -238,9 +238,9 @@ export async function saveShippingRatesAction(rates: z.input<typeof rateSchema>[
     const keys = new Set(parsed.map((r) => `${r.zone}:${r.method}`));
     if (keys.size !== parsed.length) return { ok: false, message: "Each zone can have each service level only once." };
     if (parsed.some((r) => r.maxDays < r.minDays)) return { ok: false, message: "Maximum days must be at least the minimum." };
-    await db.$transaction([
-      db.shippingRate.deleteMany({ where: { sellerId: seller.id } }),
-      db.shippingRate.createMany({
+    await db.$transaction(async (tx) => {
+      await tx.shippingRate.deleteMany({ where: { sellerId: seller.id } });
+      await tx.shippingRate.createMany({
         data: parsed.map((r) => ({
           sellerId: seller.id,
           zone: r.zone,
@@ -254,8 +254,8 @@ export async function saveShippingRatesAction(rates: z.input<typeof rateSchema>[
           insuranceRateBps: r.insuranceRateBps,
           isActive: r.isActive,
         })),
-      }),
-    ]);
+      });
+    });
     return { ok: true, message: "Rate card saved." };
   }, ["/seller/settings"]);
 }

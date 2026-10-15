@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/menus";
-import type { Role } from "@/generated/prisma/enums";
+import type { Role } from "@/lib/domain-enums";
 import { CURRENCIES, type CurrencyCode, SUPPORTED_CURRENCIES } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { setCurrency } from "@/server/actions/preferences";

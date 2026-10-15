@@ -9,7 +9,7 @@ import type { StepState } from "./onboarding";
 
 export async function requestBusinessNameAction(_: StepState, form: FormData): Promise<StepState> {
   try {
-    const { seller } = await assertSeller();
+    const { seller } = await assertSeller({ verified: false, listed: true });
     const parsed = z.object({ requestedName: z.string().trim().min(2).max(60), reason: z.string().trim().min(10, "Explain why your business name is changing.").max(1000) }).safeParse(Object.fromEntries(form));
     if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
     if (parsed.data.requestedName === seller.storeName) return { message: "Enter a different business name." };

@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma } from "@/generated/prisma/client";
+import type { DbQueryTypes } from "@/server/db/query-types";
 import { toMajor } from "@/lib/money";
 import { num } from "@/lib/utils";
 import { db } from "@/server/db";
@@ -10,9 +10,9 @@ export const editorInclude = {
   images: { orderBy: { position: "asc" } },
   variants: { orderBy: { position: "asc" } },
   certificates: { include: { variant: { select: { sku: true } } }, orderBy: { createdAt: "asc" } },
-} satisfies Prisma.ProductInclude;
+} satisfies DbQueryTypes.ProductInclude;
 
-type EditorProduct = Prisma.ProductGetPayload<{ include: typeof editorInclude }>;
+type EditorProduct = DbQueryTypes.ProductGetPayload<{ include: typeof editorInclude }>;
 
 const str = (v: number | null | undefined) => (v === null || v === undefined ? "" : String(v));
 

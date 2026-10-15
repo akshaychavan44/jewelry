@@ -1,4 +1,4 @@
-import type { CertificateLab, MetalType } from "@/generated/prisma/enums";
+import type { CertificateLab, MetalType } from "@/lib/domain-enums";
 import { LABS, METALS } from "@/lib/jewelry";
 import { cn } from "@/lib/utils";
 

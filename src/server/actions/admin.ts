@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { DisputeResolution } from "@/generated/prisma/enums";
+import { DisputeResolution } from "@/lib/domain-enums";
 import { toMinor } from "@/lib/money";
 import { AccessDenied, assertAdmin } from "@/server/auth/session";
 import { db } from "@/server/db";
@@ -44,8 +44,8 @@ export async function reviewKycAction(input: z.input<typeof kycDecisionSchema>) 
   return run(async (adminId) => {
     const data = kycDecisionSchema.parse(input);
     await reviewKyc(adminId, data);
-    return data.decision === "APPROVE" ? "Approved — the jeweler's studio is unlocked." : "Sent back to the jeweler with your notes.";
-  }, ["/admin"]);
+    return data.decision === "APPROVE" ? "Approved - the jeweler now has a verified badge." : "Sent back to the jeweler with your notes.";
+  }, ["/admin", "/jewelers", "/shop", "/custom-orders", "/seller", "/account/favorite-stores", "/product"]);
 }
 
 export async function suspendSellerAction(sellerId: string, reason: string) {

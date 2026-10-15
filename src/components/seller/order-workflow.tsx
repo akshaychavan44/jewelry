@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
-import type { Carrier, FulfillmentStatus } from "@/generated/prisma/enums";
+import type { Carrier, FulfillmentStatus } from "@/lib/domain-enums";
 import { CARRIERS } from "@/lib/shipping";
 import { advanceOrderAction } from "@/server/actions/seller";
 

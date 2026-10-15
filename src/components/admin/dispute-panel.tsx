@@ -8,7 +8,7 @@ import { RadioGroup, RadioItem } from "@/components/ui/controls";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
-import type { DisputePriority, DisputeResolution } from "@/generated/prisma/enums";
+import type { DisputePriority, DisputeResolution } from "@/lib/domain-enums";
 import { formatMoney, toMajor, toMinor } from "@/lib/money";
 import { DISPUTE_PRIORITY, DISPUTE_RESOLUTIONS } from "@/lib/status";
 import { resolveDisputeAction, updateDisputeAction } from "@/server/actions/admin";

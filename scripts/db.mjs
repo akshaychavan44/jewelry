@@ -3,9 +3,7 @@
 //   node scripts/db.mjs start          → run PostgreSQL in the foreground
 //   node scripts/db.mjs stop           → stop a cluster started elsewhere
 //   node scripts/db.mjs run -- <cmd>   → ensure PostgreSQL, run <cmd>, clean up
-//   node scripts/db.mjs setup          → migrate + seed (first-time setup)
-
-import { databaseState, ensureDatabase, loadEnv, run, stopRunningCluster } from "./lib/database.mjs";
+import { ensureDatabase, loadEnv, run, stopRunningCluster } from "./lib/database.mjs";
 
 loadEnv();
 
@@ -41,20 +39,8 @@ async function main() {
       process.exit(code);
     }
 
-    case "setup": {
-      const db = await ensureDatabase();
-      let code = await run("prisma", ["migrate", "deploy"]);
-      if (code === 0) {
-        const state = await databaseState();
-        if (!state.seeded) code = await run("prisma", ["db", "seed"]);
-        else console.log("[db] Database already seeded — skipping (use pnpm run db:seed to re-seed).");
-      }
-      await db.stop();
-      process.exit(code);
-    }
-
     default:
-      console.log("Usage: node scripts/db.mjs <start|stop|run|setup>");
+      console.log("Usage: node scripts/db.mjs <start|stop|run>");
       process.exit(1);
   }
 }

@@ -57,7 +57,7 @@ export function JewelerHeroVideo() {
         </defs>
       </svg>
       <div className={styles.media} aria-hidden="true">
-        <video ref={ref} loop muted playsInline preload="auto" poster="/media/for-jewelers-hero.jpg" className={styles.video} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => setFailed(true)}>
+        <video ref={ref} loop muted playsInline preload="auto" poster="/media/for-jewelers-ring-poster.jpg" className={styles.video} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => setFailed(true)}>
           <source src="/media/gemini_generated_video_932f8c86.mp4" type="video/mp4" />
           <source src="/media/for-jewelers-hero.mp4" type="video/mp4" />
         </video>

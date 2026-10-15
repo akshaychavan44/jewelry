@@ -20,6 +20,17 @@ export interface ModelMeta {
   relations: Record<string, RelationMeta>;
 }
 
+// Models whose schema has ORM-style updatedAt behavior. Kept in the
+// metadata layer so bulk updates can apply the timestamp in one SQL statement.
+export const UPDATED_AT_MODELS = new Set([
+  "User", "Account", "Address", "SellerProfile", "JewelerDirectorySettings", "Product",
+  "ProductVariant", "Certificate", "Cart", "CartItem", "Order", "SellerOrder", "Payment",
+  "Refund", "Payout", "Shipment", "ReturnRequest", "Review", "Dispute", "Offer",
+  "Conversation", "CustomRequest", "CustomRequestQuote", "ServiceRequest", "PlatformSettings",
+  "CommissionRule", "SubscriptionPlan", "SellerSubscription", "InventoryIntegration",
+  "JewelryVisibility", "JewelerReview",
+]);
+
 export const SCHEMA_META: Record<string, ModelMeta> = {
   User: {
     table: "User",

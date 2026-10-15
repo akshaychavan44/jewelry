@@ -26,7 +26,7 @@ The public jewelry catalog, homepage and existing registration flow were not red
 - `src/server/actions/account.ts`, `src/components/account/custom-request-form.tsx`, custom-orders page/view and account/custom-requests page: selected-jeweler routing and customer status display.
 - `src/server/services/after-sales.ts`: restrict legacy quote access to the addressed jeweler.
 - `src/components/auth/login-page.tsx`: jeweler login wording.
-- `prisma/schema.prisma`, additive migration, migration scripts: directory settings and inquiry status storage. New fields use typed parameterized SQL through the existing database adapter rather than hand-editing generated Prisma files.
+- `database/migrations`, migration scripts, and app-owned database types: directory settings and inquiry status storage. New fields use typed parameterized SQL through the Neon database adapter.
 
 ## Migration and validation
 

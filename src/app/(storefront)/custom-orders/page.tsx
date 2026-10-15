@@ -1,3 +1,4 @@
+import { listedJewelerWhere } from "@/lib/jeweler-listing";
 import { getPausedSellerIds } from "@/server/services/jeweler-directory";
 import type { Metadata } from "next";
 import { CustomOrdersView } from "@/components/custom-orders/custom-orders-view";
@@ -9,7 +10,7 @@ import { getDisplayCurrency } from "@/server/services/currency";
 export const metadata: Metadata = {
   title: "Custom Orders & Commissions | Loupe",
   description:
-    "A piece that begins with you. Commission a bespoke piece from verified independent jewelers.",
+    "A piece that begins with you. Commission a bespoke piece from independent jewelers.",
 };
 
 export default async function CustomOrdersPage({
@@ -34,7 +35,7 @@ export default async function CustomOrdersPage({
         })
       : null,
     db.sellerProfile.findMany({
-      where: { verificationStatus: "APPROVED", acceptsCustomOrders: true, id: { notIn: paused } },
+      where: { ...listedJewelerWhere, acceptsCustomOrders: true, id: { notIn: paused } },
       orderBy: { storeName: "asc" },
       select: { id: true, storeName: true, slug: true, city: true },
     }),

@@ -135,12 +135,8 @@ export function createNeonDbClient(connectionString?: string) {
       },
 
       $transaction: async <T>(
-        fnOrArray: ((tx: any) => Promise<T>) | Promise<unknown>[]
+        callback: (tx: any) => Promise<T>
       ): Promise<T> => {
-        if (Array.isArray(fnOrArray)) {
-          return Promise.all(fnOrArray) as unknown as T;
-        }
-
         const p = getPool();
         const client = await p.connect();
         try {
@@ -154,7 +150,7 @@ export function createNeonDbClient(connectionString?: string) {
           };
 
           const txDb = buildDbInstance(txExecutor);
-          const result = await fnOrArray(txDb);
+          const result = await callback(txDb);
           await client.query("COMMIT");
           return result;
         } catch (err) {

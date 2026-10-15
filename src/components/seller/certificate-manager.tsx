@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/display";
 import { Field } from "@/components/ui/field";
 import { Input, NativeSelect } from "@/components/ui/input";
-import type { CertificateLab, CertificateStatus } from "@/generated/prisma/enums";
+import type { CertificateLab, CertificateStatus } from "@/lib/domain-enums";
 import { CLARITY_SCALE, CUT_GRADES, GEMSTONES, LABS, STONE_SHAPES } from "@/lib/jewelry";
 import { cn } from "@/lib/utils";
 import { addCertificateAction, removeCertificateAction } from "@/server/actions/seller";

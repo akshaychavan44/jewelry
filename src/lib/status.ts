@@ -17,7 +17,7 @@ import type {
   ServiceStatus,
   UserStatus,
   VerificationStatus,
-} from "@/generated/prisma/enums";
+} from "@/lib/domain-enums";
 
 export type Tone = "neutral" | "sage" | "gold" | "success" | "warning" | "danger" | "info";
 

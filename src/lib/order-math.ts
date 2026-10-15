@@ -1,6 +1,6 @@
 // Per-vendor order totals. Shared by checkout and the seed so historical and
 // live orders are computed identically.
-import type { DutiesMode } from "@/generated/prisma/enums";
+import type { DutiesMode } from "@/lib/domain-enums";
 
 export type AddressSnapshot = {
   fullName: string;

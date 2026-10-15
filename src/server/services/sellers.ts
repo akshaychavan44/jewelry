@@ -1,6 +1,7 @@
+import { isListedJeweler, listedJewelerWhere } from "@/lib/jeweler-listing";
 import "server-only";
 
-import type { Prisma } from "@/generated/prisma/client";
+import type { DbQueryTypes } from "@/server/db/query-types";
 import { db } from "@/server/db";
 import { cardSelect, publicProductWhere, toCard } from "./catalog";
 import type { PriceContext } from "./currency";
@@ -28,8 +29,8 @@ export async function listJewelers(opts: { q?: string; country?: string; city?: 
     }) : [];
     categorySellerIds = [...new Set(products.map((product) => product.sellerId))];
   }
-  const where: Prisma.SellerProfileWhereInput = {
-    verificationStatus: "APPROVED",
+  const where: DbQueryTypes.SellerProfileWhereInput = {
+    ...listedJewelerWhere,
     id: { notIn: await getPausedSellerIds() },
     ...(opts.country ? { country: opts.country } : {}),
     ...(opts.city ? { city: { equals: opts.city, mode: "insensitive" } } : {}),
@@ -50,11 +51,11 @@ export async function listJewelers(opts: { q?: string; country?: string; city?: 
         }
       : {}),
   };
-  const orderBy: Prisma.SellerProfileOrderByWithRelationInput[] =
+  const orderBy: DbQueryTypes.SellerProfileOrderByWithRelationInput[] =
     opts.sort === "reviews"
       ? [{ ratingCount: "desc" }]
       : opts.sort === "newest"
-        ? [{ approvedAt: "desc" }]
+        ? [{ submittedAt: "desc" }, { createdAt: "desc" }]
         : opts.sort === "name"
           ? [{ storeName: "asc" }]
           : [{ isTopRated: "desc" }, { ratingAverage: "desc" }, { ratingCount: "desc" }];
@@ -66,6 +67,7 @@ export async function listJewelers(opts: { q?: string; country?: string; city?: 
       select: {
         id: true,
         slug: true,
+        verificationStatus: true,
         storeName: true,
         tagline: true,
         city: true,
@@ -83,8 +85,8 @@ export async function listJewelers(opts: { q?: string; country?: string; city?: 
         locations: { select: { city: true, appointmentOnly: true, latitude: true, longitude: true } },
       },
     }),
-    db.sellerProfile.groupBy({ by: ["country"], where: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } }, _count: { _all: true } }),
-    db.sellerProfile.findMany({ where: { verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() }, ...(opts.country ? { country: opts.country } : {}) }, select: { city: true, specialties: true } }),
+    db.sellerProfile.groupBy({ by: ["country"], where: { ...listedJewelerWhere, id: { notIn: await getPausedSellerIds() } }, _count: { _all: true } }),
+    db.sellerProfile.findMany({ where: { ...listedJewelerWhere, id: { notIn: await getPausedSellerIds() }, ...(opts.country ? { country: opts.country } : {}) }, select: { city: true, specialties: true } }),
   ]);
   const located = sellers.map(seller => ({ ...seller, distanceKm: opts.near ? nearestDistance(opts.near, seller.locations) : null }))
     .filter(seller => !opts.near || (seller.distanceKm !== null && seller.distanceKm <= (opts.radiusKm ?? 50)));
@@ -108,12 +110,12 @@ export async function getStorefront(slug: string, ctx: PriceContext, categorySlu
   const seller = await db.sellerProfile.findUnique({
     where: { slug },
     include: {
-      locations: true,
+      locations: { orderBy: { id: "asc" } },
       shippingRates: { where: { isActive: true }, select: { zone: true } },
       returnAddress: true,
     },
   });
-  if (!seller || seller.verificationStatus !== "APPROVED") return null;
+  if (!seller || !isListedJeweler(seller.verificationStatus)) return null;
   if ((await getDirectorySettings(seller.id)).isPaused) return null;
 
   const categoryFilter = categorySlug ? { category: { OR: [{ slug: categorySlug }, { parent: { slug: categorySlug } }] } } : {};

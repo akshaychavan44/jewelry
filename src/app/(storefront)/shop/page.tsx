@@ -1,3 +1,4 @@
+import { listedJewelerWhere } from "@/lib/jeweler-listing";
 import type { Metadata } from "next";
 import { ListingPage } from "@/components/catalog/listing-page";
 import { firstParam, type SearchParams } from "@/lib/utils";
@@ -7,13 +8,13 @@ import { getPausedSellerIds } from "@/server/services/jeweler-directory";
 
 export const metadata: Metadata = {
   title: "Shop fine jewelry",
-  description: "Rings, necklaces, earrings, bracelets, high jewelry and vintage pieces from verified independent jewelers.",
+  description: "Rings, necklaces, earrings, bracelets, high jewelry and vintage pieces from independent jewelers.",
 };
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
   const slug = firstParam(sp.seller);
-  const seller = slug ? await db.sellerProfile.findFirst({ where: { slug, verificationStatus: "APPROVED", id: { notIn: await getPausedSellerIds() } }, select: { id: true, storeName: true } }) : null;
+  const seller = slug ? await db.sellerProfile.findFirst({ where: { slug, ...listedJewelerWhere, id: { notIn: await getPausedSellerIds() } }, select: { id: true, storeName: true } }) : null;
   if (slug && !seller) notFound();
   return (
     <ListingPage

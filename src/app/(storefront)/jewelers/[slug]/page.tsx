@@ -47,9 +47,14 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
 
   return (
     <div className="pb-20">
-      <div className="relative h-[240px] bg-sand md:h-[340px]">
+      <div className="relative h-[271px] bg-sand md:h-[385px]">
         {seller.bannerUrl && <Image src={seller.bannerUrl} alt="" fill priority sizes="100vw" className="object-cover" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/35 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/65 via-ink/20 to-transparent" />
+        <div className="shell absolute inset-x-0 bottom-5 z-10">
+          <h1 className="display-lg text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.65)] ml-[132px] max-w-[calc(100%_-_132px)]">
+            {seller.storeName}
+          </h1>
+        </div>
       </div>
 
       <div className="shell">
@@ -57,24 +62,23 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
           <div className="flex items-end gap-5">
             <Monogram name={seller.storeName} src={seller.logoUrl} size={112} className="border-4 border-ivory bg-ivory shadow-soft" />
             <div className="pb-1">
-              <h1 className="display-lg text-ink">{seller.storeName}</h1>
               <p className="mt-1 text-[14px] text-ink-soft">
                 {seller.city}, {countryName(seller.country)}
                 {seller.foundedYear && ` · Est. ${seller.foundedYear}`}
               </p>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                <VerifiedJeweler />
-                {seller.isTopRated && <TopRated />}
+                {seller.verificationStatus === "APPROVED" && <VerifiedJeweler />}
+                {seller.verificationStatus === "APPROVED" && seller.isTopRated && <TopRated />}
               </div>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Link
+            {seller.acceptsCustomOrders && <Link
               href={`/custom-orders?jeweler=${seller.slug}`}
               className="inline-flex h-10 items-center gap-2 rounded-[2px] border border-ink bg-ink px-4 text-[12.5px] font-medium text-ivory transition-colors hover:bg-ink/85"
             >
               <MessageSquare className="size-4" /> Commission piece
-            </Link>
+            </Link>}
             <FollowStoreButton sellerId={seller.id} following={!!following} />
           </div>
         </div>
@@ -85,7 +89,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
             ["Reviews", seller.ratingCount],
             ["Showcase", `${listings.length} pieces`],
             ["Replies", formatResponseTime(seller.responseTimeMinutes)],
-            ["On Loupe since", formatDate(seller.approvedAt, "monthYear")],
+            ["On Loupe since", formatDate(seller.submittedAt ?? seller.approvedAt ?? seller.createdAt, "monthYear")],
           ].map(([label, value]) => (
             <div key={String(label)}>
               <dt className="text-[11px] tracking-[0.1em] text-muted uppercase">{label}</dt>
@@ -98,7 +102,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
           <div>
             <p className="eyebrow mb-3">About the atelier</p>
             <p className="font-display text-[24px] leading-snug text-ink">{seller.tagline}</p>
-            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-ink-soft">{seller.bio}</p>
+            <p className="mt-4 max-w-2xl whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink-soft">{seller.bio}</p>
             <div className="mt-6 flex flex-wrap gap-2">
               {seller.specialties.map((s) => (
                 <span key={s} className="rounded-full border border-line bg-porcelain px-3 py-1 text-[12.5px] text-ink-soft">
@@ -111,12 +115,12 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
             </div>
           </div>
           <div className="space-y-5">
-            {seller.locations.map((l) => (
+            {seller.locations.slice(0, 1).map((l) => (
               <div key={l.id} className="rounded-[3px] border border-line bg-porcelain p-5">
                 <p className="caps text-ink">{l.name}</p>
                 <p className="mt-3 flex items-start gap-2 text-[14px] text-ink-soft">
                   <MapPin className="mt-0.5 size-4 shrink-0" strokeWidth={1.5} />
-                  {l.line1}, {l.city}
+                  {[l.line1, l.line2 ?? seller.returnAddress?.line2, l.city, l.region ?? seller.returnAddress?.region].filter(Boolean).join(", ")}
                   {l.postalCode && ` ${l.postalCode}`}
                 </p>
                 {l.hours && (

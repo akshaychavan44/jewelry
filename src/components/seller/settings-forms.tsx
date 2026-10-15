@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/controls";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type { Carrier, ShippingMethod, ShippingZone } from "@/generated/prisma/enums";
+import type { Carrier, ShippingMethod, ShippingZone } from "@/lib/domain-enums";
 import { ZONE_LABELS } from "@/lib/regions";
 import { CARRIERS, METHOD_LABELS } from "@/lib/shipping";
 import { cn } from "@/lib/utils";

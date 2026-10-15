@@ -1,4 +1,5 @@
 "use server";
+import { isListedJeweler } from "@/lib/jeweler-listing";
 import { after } from "next/server";
 import { sendInquiryEmail } from "@/server/services/inquiry-notifications";
 
@@ -7,7 +8,7 @@ import { saveUpload, UploadError } from "@/server/services/storage";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { DisputeReason, ReturnReason, ServiceType, Gemstone, MetalType } from "@/generated/prisma/enums";
+import { DisputeReason, ReturnReason, ServiceType, Gemstone, MetalType } from "@/lib/domain-enums";
 import { isCurrency, toMinor } from "@/lib/money";
 import { randomCode } from "@/lib/utils";
 import { assertUser, getSellerForUser } from "@/server/auth/session";
@@ -101,7 +102,7 @@ export async function createCustomRequestAction(_: CustomRequestState, formData:
   if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors };
   const d = parsed.data;
   const seller = d.sellerSlug ? await db.sellerProfile.findUnique({ where: { slug: d.sellerSlug }, select: { id: true, userId: true, storeName: true, acceptsCustomOrders: true, verificationStatus: true, user: { select: { email: true } } } }) : null;
-  if (!seller || !seller.acceptsCustomOrders || seller.verificationStatus !== "APPROVED" || (await getDirectorySettings(seller.id)).isPaused) return { message: "Choose a jeweler who is currently accepting custom requests." };
+  if (!seller || !seller.acceptsCustomOrders || !isListedJeweler(seller.verificationStatus) || (await getDirectorySettings(seller.id)).isPaused) return { message: "Choose a jeweler who is currently accepting custom requests." };
   if (seller.userId === user.id) return { message: "You cannot send a request to your own business." };
   if (d.categoryId && !await db.category.findFirst({ where: { id: d.categoryId, isActive: true }, select: { id: true } })) return { fieldErrors: { categoryId: ["Choose an available category."] } };
   if (d.budgetMin !== undefined && d.budgetMin > d.budgetMax) return { fieldErrors: { budgetMax: ["Maximum budget must be at least the minimum."] } };
@@ -204,10 +205,10 @@ export async function changePasswordAction(input: { current: string; next: strin
 export async function setDefaultCardAction(id: string) {
   const user = await assertUser();
   return run(async () => {
-    await db.$transaction([
-      db.paymentMethod.updateMany({ where: { userId: user.id }, data: { isDefault: false } }),
-      db.paymentMethod.updateMany({ where: { id, userId: user.id }, data: { isDefault: true } }),
-    ]);
+    await db.$transaction(async (tx) => {
+      await tx.paymentMethod.updateMany({ where: { userId: user.id }, data: { isDefault: false } });
+      await tx.paymentMethod.updateMany({ where: { id, userId: user.id }, data: { isDefault: true } });
+    });
     return { ok: true, message: "Default card updated." };
   }, ["/account/payment-methods"]);
 }

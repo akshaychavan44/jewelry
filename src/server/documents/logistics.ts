@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma } from "@/generated/prisma/client";
+import type { DbQueryTypes } from "@/server/db/query-types";
 import type { AddressSnapshot } from "@/lib/order-math";
 import { countryName } from "@/lib/regions";
 import { CARRIERS } from "@/lib/shipping";
@@ -10,7 +10,7 @@ function block(a: AddressSnapshot) {
   return [a.fullName, a.company, a.line1, a.line2, `${a.city}${a.region ? `, ${a.region}` : ""} ${a.postalCode}`, countryName(a.country).toUpperCase(), a.phone].filter(Boolean) as string[];
 }
 
-type LabelShipment = Prisma.ShipmentGetPayload<{ include: { sellerOrder: { select: { reference: true } }; returnRequest: { select: { rmaNumber: true } } } }>;
+type LabelShipment = DbQueryTypes.ShipmentGetPayload<{ include: { sellerOrder: { select: { reference: true } }; returnRequest: { select: { rmaNumber: true } } } }>;
 
 /**
  * 4×6" thermal label. Deliberately plain: no brand name and no mention of
@@ -49,7 +49,7 @@ export async function renderShippingLabel(s: LabelShipment) {
   return pdf.save();
 }
 
-type SlipOrder = Prisma.SellerOrderGetPayload<{
+type SlipOrder = DbQueryTypes.SellerOrderGetPayload<{
   include: { order: { select: { orderNumber: true; shippingAddress: true; placedAt: true; createdAt: true } }; items: true; seller: { select: { storeName: true; returnWindowDays: true } } };
 }>;
 

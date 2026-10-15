@@ -1,23 +1,24 @@
-import "server-only";
+﻿import "server-only";
 
 import { createNeonDbClient } from "./db/neon-client";
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { NeonDbClient } from "@/server/db/db-types";
 
 // One client per server process. In development, Next.js re-evaluates modules
 // on every change, so the instance is cached on globalThis to avoid exhausting
 // the connection pool.
-const globalForNeon = globalThis as unknown as { neonDb?: PrismaClient };
+const globalForNeon = globalThis as unknown as { neonDb?: NeonDbClient };
 
-function createClient(): PrismaClient {
-  return createNeonDbClient() as unknown as PrismaClient;
+function createClient(): NeonDbClient {
+  return createNeonDbClient() as unknown as NeonDbClient;
 }
 
-export const db: PrismaClient = globalForNeon.neonDb ?? createClient();
+export const db: NeonDbClient = globalForNeon.neonDb ?? createClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForNeon.neonDb = db;
 }
 
 export type Db = typeof db;
-export type Tx = Parameters<Parameters<Db["$transaction"]>[0]>[0];
+export type Tx = NeonDbClient;
 export { neon, Pool } from "@neondatabase/serverless";
+

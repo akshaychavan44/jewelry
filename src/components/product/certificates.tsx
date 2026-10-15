@@ -4,7 +4,7 @@ import { ExternalLink, FileText, ShieldCheck } from "lucide-react";
 import { Hallmark, LabMark } from "@/components/brand/hallmark";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import type { MetalType } from "@/generated/prisma/enums";
+import type { MetalType } from "@/lib/domain-enums";
 import { formatDate } from "@/lib/format";
 import { CLARITY_SCALE, CUT_GRADES, GEMSTONES, LABS, STONE_SHAPES } from "@/lib/jewelry";
 import type { CertificateView } from "@/server/services/product";

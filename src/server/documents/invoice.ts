@@ -1,13 +1,13 @@
 import "server-only";
 
-import type { Prisma } from "@/generated/prisma/client";
+import type { DbQueryTypes } from "@/server/db/query-types";
 import type { AddressSnapshot } from "@/lib/order-math";
 import { formatMoney } from "@/lib/money";
 import { countryName } from "@/lib/regions";
 import { num } from "@/lib/utils";
 import { createDoc, INK, LINE, MUTED, rule, SAGE, text, wordmark } from "./pdf";
 
-type InvoiceOrder = Prisma.OrderGetPayload<{
+type InvoiceOrder = DbQueryTypes.OrderGetPayload<{
   include: { payments: true; sellerOrders: { include: { items: true; seller: { select: { storeName: true; legalBusinessName: true; city: true; country: true; taxIdLast4: true } } } } };
 }>;
 

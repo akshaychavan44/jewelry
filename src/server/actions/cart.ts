@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { EngravingStyle } from "@/generated/prisma/enums";
+import type { EngravingStyle } from "@/lib/domain-enums";
 import { getCurrentUser } from "@/server/auth/session";
 import { db } from "@/server/db";
 import { track } from "@/server/services/analytics";

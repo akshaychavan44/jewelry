@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { Globe } from "lucide-react";
 import { Facebook, Instagram, Youtube } from "@/components/brand/social-icons";
 import { Field } from "@/components/ui/field";
-import { Input, Textarea } from "@/components/ui/input";
+import { Input, NativeSelect, Textarea } from "@/components/ui/input";
+import { COUNTRY_CODES, countryName } from "@/lib/regions";
+import { CURRENCIES, SUPPORTED_CURRENCIES } from "@/lib/money";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Button } from "@/components/ui/button";
 import type { DirectoryProfileInput } from "@/lib/jeweler-profile";
@@ -39,10 +41,15 @@ export function BusinessProfileForm({ initial }: { initial: DirectoryProfileInpu
         {fields([{ key: "storeName", label: "Business name" }, { key: "city", label: "City" }])}
         <p className="text-xs text-muted sm:col-span-2">Use Change business name below to request admin approval.</p>
         <Field label="Business logo" htmlFor="logo" optional hint="JPG, PNG or WebP, up to 6 MB."><Input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/webp" className="py-2 text-sm" /></Field>
+        <Field label="Profile banner" htmlFor="banner" optional hint="JPG, PNG or WebP, up to 6 MB. Choose a file to replace your banner."><Input id="banner" name="banner" type="file" accept="image/jpeg,image/png,image/webp" className="py-2 text-sm" /></Field>
+        <Field label="Operating country" htmlFor="country" error={err("country")}><NativeSelect id="country" name="country" defaultValue={initial.country}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{countryName(c)}</option>)}</NativeSelect></Field>
+        <Field label="Default currency" htmlFor="defaultCurrency" error={err("defaultCurrency")} hint="Used for new showcase prices. Existing prices keep their currency."><NativeSelect id="defaultCurrency" name="defaultCurrency" defaultValue={initial.defaultCurrency}>{SUPPORTED_CURRENCIES.map(c => <option key={c} value={c}>{c} — {CURRENCIES[c].name}</option>)}</NativeSelect></Field>
+        {fields([{ key: "foundedYear", label: "Founded year", optional: true }])}
         {fields([{ key: "specialties", label: "Specialties", optional: true, placeholder: "Gold, Diamond, Bridal" }])}
         <Field label="Short introduction" htmlFor="tagline" optional error={err("tagline")} className="sm:col-span-2"><Input id="tagline" name="tagline" defaultValue={initial.tagline} maxLength={120} placeholder="A sentence about your business" /></Field>
         <Field label="About your business" htmlFor="bio" optional error={err("bio")} className="sm:col-span-2"><Textarea id="bio" name="bio" defaultValue={initial.bio} maxLength={1500} /></Field>
         {fields([{ key: "address", label: "Business address" }, { key: "hours", label: "Opening hours", optional: true, placeholder: "Mon–Sat, 10am–7pm" }])}
+        {fields([{ key: "addressLine2", label: "Suite / floor", optional: true }, { key: "addressCity", label: "Showroom city" }, { key: "region", label: "State / region", optional: true }, { key: "postalCode", label: "Postal code", optional: true }])}
         <p className="text-xs leading-relaxed text-muted sm:col-span-2">Help nearby customers find your boutique. In Google Maps, right-click your boutique’s pin to copy its latitude and longitude. Add both below, or leave both empty.</p>
         {fields([{ key: "latitude", label: "Boutique latitude", optional: true, placeholder: "19.0760" }, { key: "longitude", label: "Boutique longitude", optional: true, placeholder: "72.8777" }])}
       </div>

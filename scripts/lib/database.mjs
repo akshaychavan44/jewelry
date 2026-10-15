@@ -125,19 +125,3 @@ export function run(command, args = [], options = {}) {
   });
 }
 
-/** True when the schema has been migrated and at least one user exists. */
-export async function databaseState() {
-  const { default: pg } = await import("pg");
-  const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
-  await client.connect();
-  try {
-    const migrated = await client.query(
-      "SELECT to_regclass('public._prisma_migrations') IS NOT NULL AS ok",
-    );
-    if (!migrated.rows[0].ok) return { migrated: false, seeded: false };
-    const users = await client.query('SELECT count(*)::int AS n FROM "User"').catch(() => ({ rows: [{ n: 0 }] }));
-    return { migrated: true, seeded: users.rows[0].n > 0 };
-  } finally {
-    await client.end();
-  }
-}

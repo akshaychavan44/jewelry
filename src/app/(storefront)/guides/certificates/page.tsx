@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LabMark } from "@/components/brand/hallmark";
 import { GuideLayout, GuideQuote, GuideSection, GuideTakeaway } from "@/components/guides/guide-layout";
 import { guideBySlug } from "@/config/guides";
-import type { CertificateLab } from "@/generated/prisma/enums";
+import type { CertificateLab } from "@/lib/domain-enums";
 import { LABS } from "@/lib/jewelry";
 import { CheckCircle2, ExternalLink, FileCheck, FileText, Gem, ShieldCheck, Sparkles } from "lucide-react";
 

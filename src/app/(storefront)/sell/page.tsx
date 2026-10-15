@@ -60,7 +60,7 @@ export default async function SellPage() {
       href={user ? "/seller/onboarding" : "/register?intent=seller"}
       className="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-[3px] border border-[#896435] btn-gold px-8 py-3.5 text-[16px] font-medium tracking-[0.03em] shadow-sm transition-all duration-300 hover:shadow-md active:scale-[0.98]"
     >
-      List Your Business <ArrowRight className="size-5" />
+      List Your Business <ArrowRight className="size-4" />
     </Link>
   );
 

@@ -8,7 +8,7 @@ import type {
   MetalType,
   SpotMetal,
   StoneShape,
-} from "@/generated/prisma/enums";
+} from "@/lib/domain-enums";
 
 // ── Metals ────────────────────────────────────────────────────────────────────
 

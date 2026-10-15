@@ -22,8 +22,8 @@ async function runMigrations() {
   const client = await pool.connect();
   try {
     const migrationFiles = [
-      "prisma/migrations/20260930092701_init/migration.sql",
-      "prisma/migrations/20260930092708_integrity_checks/migration.sql",
+      "database/migrations/20260930092701_init/migration.sql",
+      "database/migrations/20260930092708_integrity_checks/migration.sql",
     ];
 
     // Check if initial tables already exist
@@ -47,11 +47,11 @@ async function runMigrations() {
     }
 
     // Additive dashboard migration is safe to re-run for existing databases.
-    const dashboardMigration = path.resolve(process.cwd(), "prisma/migrations/202610100001_jeweler_dashboard/migration.sql");
+    const dashboardMigration = path.resolve(process.cwd(), "database/migrations/202610100001_jeweler_dashboard/migration.sql");
     await client.query(readFileSync(dashboardMigration, "utf8"));
-    await client.query(readFileSync(path.resolve(process.cwd(), "prisma/migrations/202610100002_directory_features/migration.sql"), "utf8"));
+    await client.query(readFileSync(path.resolve(process.cwd(), "database/migrations/202610100002_directory_features/migration.sql"), "utf8"));
 
-    await client.query(readFileSync(path.resolve(process.cwd(), "prisma/migrations/202610120001_discovery_experience/migration.sql"), "utf8"));
+    await client.query(readFileSync(path.resolve(process.cwd(), "database/migrations/202610120001_discovery_experience/migration.sql"), "utf8"));
 
     console.log("Setting default timestamps on all updatedAt and createdAt columns...");
     await client.query(`

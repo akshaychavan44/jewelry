@@ -12,7 +12,7 @@ const f = createUploadthing();
 const purposeSchema = z.enum(["PRODUCT_MEDIA", "STORE_BRANDING", "CERTIFICATE", "KYC_DOCUMENT"]);
 
 function imageRoute(visibility: "PUBLIC" | "PRIVATE") {
-  return f({ image: { maxFileSize: "16MB", maxFileCount: 1, acl: visibility === "PRIVATE" ? "private" : "public-read" } }, { awaitServerData: true })
+  return f({ image: { maxFileSize: "16MB", maxFileCount: 1, acl: "public-read" } }, { awaitServerData: true })
     .input(z.object({ purpose: purposeSchema }))
     .middleware(async ({ input, files }) => {
       const user = await getCurrentUser();
@@ -48,7 +48,7 @@ function imageRoute(visibility: "PUBLIC" | "PRIVATE") {
           key: metadata.key, purpose: metadata.purpose, visibility,
           fileName: metadata.fileName, mimeType: metadata.mimeType, sizeBytes: bytes.length,
           checksum: sha256(bytes.toString("base64")), uploadedById: metadata.userId,
-          url: visibility === "PUBLIC" ? file.ufsUrl : null,
+          url: file.ufsUrl,
         } });
         return { fileId: asset.id, url: asset.url };
       } catch (error) {

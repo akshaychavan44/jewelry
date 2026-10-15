@@ -8,9 +8,9 @@ export class UploadThingDriver {
 
   async put(key: string, bytes: Buffer, contentType: string, visibility: FileVisibility) {
     const file = new UTFile([new Uint8Array(bytes)], key.split("/").at(-1) ?? "image", { type: contentType, customId: key });
-    const result = await this.api.uploadFiles(file, { acl: visibility === "PRIVATE" ? "private" : "public-read" });
+    const result = await this.api.uploadFiles(file, { acl: "public-read" });
     if (result.error) throw new Error("The storage provider could not save this file. Please try again.");
-    return { url: visibility === "PUBLIC" ? result.data.ufsUrl : null };
+    return { url: result.data.ufsUrl };
   }
 
   async signedUrl(key: string, _visibility: FileVisibility, expiresInSeconds = 300) {

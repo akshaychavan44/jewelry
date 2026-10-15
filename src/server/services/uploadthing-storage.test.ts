@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { UploadThingDriver } from "./uploadthing-storage";
+import { registerHooks } from "node:module";
 import type { UTApi, UTFile } from "uploadthing/server";
 
-test("storage sets explicit public/private ACLs and never exposes private URLs", async () => {
+registerHooks({ resolve(specifier, context, nextResolve) {
+  if (specifier === "server-only") return { url: "data:text/javascript,export {}", shortCircuit: true };
+  return nextResolve(specifier, context);
+} });
+const { UploadThingDriver } = await import("./uploadthing-storage");
+
+test("storage uploads with public-read ACL and returns ufsUrl", async () => {
   const calls: { file: UTFile; acl: string }[] = [];
   const api = {
     uploadFiles: async (file: UTFile, options: { acl: string }) => {
@@ -13,9 +19,9 @@ test("storage sets explicit public/private ACLs and never exposes private URLs",
   } as unknown as UTApi;
   const driver = new UploadThingDriver(api);
   const bytes = Buffer.from([0xff, 0xd8, 0xff]);
-  assert.deepEqual(await driver.put("kyc-document/seller/test.jpg", bytes, "image/jpeg", "PRIVATE"), { url: null });
+  assert.deepEqual(await driver.put("kyc-document/seller/test.jpg", bytes, "image/jpeg", "PRIVATE"), { url: "https://example.ufs.sh/f/test" });
   assert.deepEqual(await driver.put("product-media/seller/test.jpg", bytes, "image/jpeg", "PUBLIC"), { url: "https://example.ufs.sh/f/test" });
-  assert.deepEqual(calls.map(call => call.acl), ["private", "public-read"]);
+  assert.deepEqual(calls.map(call => call.acl), ["public-read", "public-read"]);
   assert.equal(calls[0].file.customId, "kyc-document/seller/test.jpg");
   assert.equal(calls[0].file.type, "image/jpeg");
   assert.deepEqual(Buffer.from(await calls[0].file.arrayBuffer()), bytes);

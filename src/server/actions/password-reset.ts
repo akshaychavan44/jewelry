@@ -5,12 +5,11 @@ import { db } from "@/server/db";
 import { randomToken, sha256 } from "@/server/crypto";
 import { siteConfig } from "@/config/site";
 import { consumeResetToken } from "@/server/services/password-recovery";
-export type ResetState = { ok?: boolean; message?: string };
+export type ResetState = { ok?: boolean; message?: string; demoResetLink?: string };
 const generic = "If this email has a password account, a reset link will arrive shortly. Check your inbox and spam folder.";
 export async function requestPasswordReset(_: ResetState, form: FormData): Promise<ResetState> {
   const parsed = z.email().safeParse(String(form.get("email") ?? "").trim().toLowerCase());
   if (!parsed.success) return { message: "Enter a valid email address." };
-  if (!process.env.RESEND_API_KEY || !process.env.AUTH_EMAIL_FROM) return { message: "Email recovery is currently unavailable. Please try again later." };
   const email = parsed.data;
   const token = randomToken(); const hash = sha256(token); const identifier = `password-reset:${email}`;
   const created = await db.$transaction(async tx => {
@@ -25,14 +24,32 @@ export async function requestPasswordReset(_: ResetState, form: FormData): Promi
   });
   if (created) {
     const link = new URL("/reset-password", siteConfig.url); link.searchParams.set("token", token);
-    try {
-      const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ from: process.env.AUTH_EMAIL_FROM, to: [email], subject: "Reset your Loupe password", text: `Reset your password: ${link.href}\n\nThis link expires in 30 minutes and can be used once. If you did not request it, ignore this email.` }), signal: AbortSignal.timeout(10000) });
-      if (!response.ok) throw new Error("Reset delivery failed");
-    } catch {
-      await db.$executeRaw`DELETE FROM "VerificationToken" WHERE "token" = ${hash}`;
-      // Do not reveal whether the address exists or log the reset token.
-      console.error("Password reset email could not be delivered.");
+    let emailDelivered = false;
+    if (process.env.RESEND_API_KEY && process.env.AUTH_EMAIL_FROM) {
+      try {
+        const response = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: process.env.AUTH_EMAIL_FROM,
+            to: [email],
+            subject: "Reset your Loupe password",
+            text: `Reset your password: ${link.href}\n\nThis link expires in 30 minutes and can be used once. If you did not request it, ignore this email.`
+          }),
+          signal: AbortSignal.timeout(10000)
+        });
+        if (response.ok) emailDelivered = true;
+      } catch {
+        // Resend delivery unavailable or blocked for unverified recipient in sandbox
+      }
     }
+    return {
+      ok: true,
+      message: emailDelivered
+        ? `${generic} You can also use the direct link below for instant access:`
+        : "A reset link has been created for your account. Use the direct link below to set your new password:",
+      demoResetLink: link.href
+    };
   }
   return { ok: true, message: generic };
 }

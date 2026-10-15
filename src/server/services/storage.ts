@@ -2,23 +2,19 @@ import "server-only";
 
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { FilePurpose, FileVisibility } from "@/lib/domain-enums";
 import { randomToken, sha256 } from "@/server/crypto";
 import { db } from "@/server/db";
 import { UPLOAD_RULES as RULES, validImageContent } from "@/lib/upload-rules";
 import { UploadThingDriver } from "./uploadthing-storage";
-import { resolveStorageConfig, type CloudStorageConfig } from "./storage-config";
 
-// UploadThing is preferred when configured. Existing S3 deployments remain
-// supported; local disk is only available in development.
+// UploadThing is the primary cloud storage provider; local disk is available in development.
 
 interface StorageDriver {
   put(key: string, bytes: Buffer, contentType: string, visibility: FileVisibility): Promise<{ url: string | null }>;
   get(key: string, visibility: FileVisibility): Promise<Buffer | null>;
   remove(key: string, visibility: FileVisibility): Promise<void>;
-  /** A short-lived URL for direct browser access (S3) or null (local). */
+  /** A short-lived URL for direct browser access or null (local). */
   signedUrl(key: string, visibility: FileVisibility, expiresInSeconds?: number): Promise<string | null>;
   presignUpload?(key: string, contentType: string, visibility: FileVisibility, sizeBytes: number): Promise<string>;
 }
@@ -54,39 +50,6 @@ class LocalDriver implements StorageDriver {
   }
 }
 
-class S3Driver implements StorageDriver {
-  private client: S3Client;
-  constructor(private config: CloudStorageConfig) {
-    this.client = new S3Client({
-      region: config.region, endpoint: config.endpoint,
-      credentials: { accessKeyId: config.accessKeyId, secretAccessKey: config.secretAccessKey },
-      requestChecksumCalculation: "WHEN_REQUIRED",
-    });
-  }
-  private bucket(visibility: FileVisibility) {
-    return visibility === "PUBLIC" ? this.config.bucket : this.config.privateBucket;
-  }
-  async put(key: string, bytes: Buffer, contentType: string, visibility: FileVisibility) {
-    await this.client.send(new PutObjectCommand({ Bucket: this.bucket(visibility), Key: key, Body: bytes, ContentType: contentType, CacheControl: visibility === "PUBLIC" ? "public, max-age=31536000, immutable" : "private, no-store" }));
-    const base = this.config.publicBaseUrl;
-    return { url: visibility === "PUBLIC" ? `${base}/${key}` : null };
-  }
-  async get(key: string, visibility: FileVisibility) {
-    const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket(visibility), Key: key })).catch(() => null);
-    if (!res?.Body) return null;
-    return Buffer.from(await res.Body.transformToByteArray());
-  }
-  async remove(key: string, visibility: FileVisibility) {
-    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket(visibility), Key: key }));
-  }
-  async signedUrl(key: string, visibility: FileVisibility, expiresInSeconds = 300) {
-    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket(visibility), Key: key, ResponseCacheControl: visibility === "PRIVATE" ? "private, no-store" : undefined }), { expiresIn: expiresInSeconds });
-  }
-  async presignUpload(key: string, contentType: string, visibility: FileVisibility, sizeBytes: number) {
-    return getSignedUrl(this.client, new PutObjectCommand({ Bucket: this.bucket(visibility), Key: key, ContentType: contentType, ContentLength: sizeBytes, IfNoneMatch: "*" }), { expiresIn: 600, signableHeaders: new Set(["content-type", "if-none-match"]) });
-  }
-}
-
 let driver: StorageDriver | undefined;
 export function storage(): StorageDriver {
   if (!driver) {
@@ -94,13 +57,11 @@ export function storage(): StorageDriver {
       driver = new UploadThingDriver();
       return driver;
     }
-    let config: CloudStorageConfig | null;
-    try { config = resolveStorageConfig(process.env); }
-    catch (error) {
-      console.error("Upload storage configuration:", error instanceof Error ? error.message : "Invalid settings");
-      throw new UploadError("File uploads are temporarily unavailable. Please contact support.");
+    if (process.env.NODE_ENV === "development") {
+      driver = new LocalDriver();
+      return driver;
     }
-    driver = config ? new S3Driver(config) : new LocalDriver();
+    throw new UploadError("File uploads are temporarily unavailable. Please configure UPLOADTHING_TOKEN.");
   }
   return driver;
 }

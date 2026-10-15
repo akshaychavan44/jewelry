@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      // Certificate PDFs and KYC documents are uploaded through server actions.
+      // Local-development uploads use server actions; UploadThing uploads go directly from the browser.
       bodySizeLimit: "26mb",
     },
   },

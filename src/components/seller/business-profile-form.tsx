@@ -13,6 +13,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { Button } from "@/components/ui/button";
 import type { DirectoryProfileInput } from "@/lib/jeweler-profile";
 import type { StepState } from "@/server/actions/onboarding";
+import { uploadFormImages } from "@/lib/image-upload-client";
 import { saveDirectoryProfileAction, setDirectoryPausedAction } from "@/server/actions/jeweler-profile";
 
 export function ListingVisibility({ paused }: { paused: boolean }) {
@@ -28,7 +29,12 @@ export function ListingVisibility({ paused }: { paused: boolean }) {
 }
 
 export function BusinessProfileForm({ initial }: { initial: DirectoryProfileInput }) {
-  const [state, action, pending] = useActionState<StepState, FormData>(saveDirectoryProfileAction, {});
+  const [state, action, pending] = useActionState<StepState, FormData>(async (previous, form) => {
+    try {
+      await uploadFormImages(form, { logo: "STORE_BRANDING", banner: "STORE_BRANDING" });
+      return await saveDirectoryProfileAction(previous, form);
+    } catch (error) { return { message: error instanceof Error ? error.message : "Unable to upload your images." }; }
+  }, {});
   const err = (key: string) => state.fieldErrors?.[key];
   const fields = (items: { key: keyof DirectoryProfileInput; label: string; optional?: boolean; placeholder?: string; type?: string }[]) => items.map(({ key, label, optional, placeholder, type }) => <Field key={key} label={label} htmlFor={key} optional={optional} error={err(key)}>
     <Input id={key} name={key} type={type} defaultValue={String(initial[key] ?? "")} placeholder={placeholder} aria-invalid={!!err(key)} aria-describedby={err(key) ? `${key}-error` : undefined} readOnly={key === "storeName"} />

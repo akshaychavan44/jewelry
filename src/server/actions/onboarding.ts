@@ -76,8 +76,8 @@ export async function saveStoreProfileAction(_: StepState, formData: FormData): 
       foundedYear: d.foundedYear,
       specialties: (d.specialties ?? "").split(",").map((s) => s.trim()).filter(Boolean),
       returnAddress: { fullName: d.storeName, line1: d.ra_line1, line2: d.ra_line2, city: d.ra_city, region: d.ra_region, postalCode: d.ra_postalCode, country: d.country, phone: d.ra_phone },
-      logo: file(formData.get("logo")),
-      banner: file(formData.get("banner")),
+      logo: file(formData.get("logo")) ?? (typeof formData.get("logo_fileId") === "string" ? formData.get("logo_fileId") as string : null),
+      banner: file(formData.get("banner")) ?? (typeof formData.get("banner_fileId") === "string" ? formData.get("banner_fileId") as string : null),
     });
   } catch (error) {
     const res = fail(error);
@@ -111,8 +111,8 @@ export async function updateStoreProfileAction(_: StepState, formData: FormData)
       foundedYear: d.foundedYear,
       specialties: (d.specialties ?? "").split(",").map((s) => s.trim()).filter(Boolean),
       returnAddress: { fullName: d.storeName, line1: d.ra_line1, line2: d.ra_line2, city: d.ra_city, region: d.ra_region, postalCode: d.ra_postalCode, country: d.country, phone: d.ra_phone },
-      logo: file(formData.get("logo")),
-      banner: file(formData.get("banner")),
+      logo: file(formData.get("logo")) ?? (typeof formData.get("logo_fileId") === "string" ? formData.get("logo_fileId") as string : null),
+      banner: file(formData.get("banner")) ?? (typeof formData.get("banner_fileId") === "string" ? formData.get("banner_fileId") as string : null),
     });
   } catch (error) {
     const res = fail(error);
@@ -151,10 +151,14 @@ export async function saveBusinessAction(_: StepState, formData: FormData): Prom
       return { ok: false, fieldErrors: { taxId: ["Enter your tax ID (VAT, GST, EIN…)."] }, values: raw };
     }
 
-    const docTax = file(formData.get("doc_TAX_REGISTRATION"));
-    const docBiz = file(formData.get("doc_BUSINESS_LICENSE"));
-    const docId = file(formData.get("doc_GOVERNMENT_ID"));
-    const docProof = file(formData.get("doc_PROOF_OF_ADDRESS"));
+    const document = (name: string) => {
+      const id = formData.get(`${name}_fileId`);
+      return file(formData.get(name)) ?? (typeof id === "string" && id.length <= 128 && id.trim() ? id.trim() : null);
+    };
+    const docTax = document("doc_TAX_REGISTRATION");
+    const docBiz = document("doc_BUSINESS_LICENSE");
+    const docId = document("doc_GOVERNMENT_ID");
+    const docProof = document("doc_PROOF_OF_ADDRESS");
 
     const hasTaxDoc = !!docTax || (existing?.kycDocuments.some((d) => d.type === "TAX_REGISTRATION") ?? false);
     const hasBizDoc = !!docBiz || (existing?.kycDocuments.some((d) => d.type === "BUSINESS_LICENSE") ?? false);

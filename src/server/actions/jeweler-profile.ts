@@ -7,7 +7,7 @@ import { z } from "zod";
 import { directoryProfileSchema } from "@/lib/jeweler-profile";
 import { AccessDenied, assertSeller } from "@/server/auth/session";
 import { db } from "@/server/db";
-import { saveUpload, UploadError } from "@/server/services/storage";
+import { ownedUpload, saveUpload, UploadError } from "@/server/services/storage";
 import { setInquiryStatus } from "@/server/services/jeweler-directory";
 import type { StepState } from "./onboarding";
 import { notify } from "@/server/services/messaging";
@@ -31,9 +31,9 @@ export async function saveDirectoryProfileAction(_: StepState, form: FormData): 
     // Business identity is approved by the admin; do not silently replace it.
     if (d.storeName !== seller.storeName) return { fieldErrors: { storeName: ["Use Change business name to request admin approval."] } };
     const file = form.get("logo");
-    const logo = file instanceof File && file.size ? await saveUpload(file, "STORE_BRANDING", seller.id, user.id) : null;
+    const logo = typeof form.get("logo_fileId") === "string" ? await ownedUpload(form.get("logo_fileId") as string, "STORE_BRANDING", user.id) : file instanceof File && file.size ? await saveUpload(file, "STORE_BRANDING", seller.id, user.id) : null;
     const bannerFile = form.get("banner");
-    const banner = bannerFile instanceof File && bannerFile.size ? await saveUpload(bannerFile, "STORE_BRANDING", seller.id, user.id) : null;
+    const banner = typeof form.get("banner_fileId") === "string" ? await ownedUpload(form.get("banner_fileId") as string, "STORE_BRANDING", user.id) : bannerFile instanceof File && bannerFile.size ? await saveUpload(bannerFile, "STORE_BRANDING", seller.id, user.id) : null;
     await db.$transaction(async (tx) => {
       const addressData = { fullName: seller.storeName, line1: d.address, line2: d.addressLine2 || null, city: d.addressCity, region: d.region || null, postalCode: d.postalCode, country: d.country, phone: d.phone || null };
       const address = seller.returnAddressId

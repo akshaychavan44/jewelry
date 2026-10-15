@@ -7,10 +7,12 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { FilePurpose, FileVisibility } from "@/lib/domain-enums";
 import { randomToken, sha256 } from "@/server/crypto";
 import { db } from "@/server/db";
+import { UPLOAD_RULES as RULES, validImageContent } from "@/lib/upload-rules";
+import { UploadThingDriver } from "./uploadthing-storage";
+import { resolveStorageConfig, type CloudStorageConfig } from "./storage-config";
 
-// Storage abstraction. Production: S3 (public bucket behind a CDN for product
-// media, private bucket for KYC documents & certificates, served through
-// short-lived signed URLs). Development: local disk.
+// UploadThing is preferred when configured. Existing S3 deployments remain
+// supported; local disk is only available in development.
 
 interface StorageDriver {
   put(key: string, bytes: Buffer, contentType: string, visibility: FileVisibility): Promise<{ url: string | null }>;
@@ -18,7 +20,7 @@ interface StorageDriver {
   remove(key: string, visibility: FileVisibility): Promise<void>;
   /** A short-lived URL for direct browser access (S3) or null (local). */
   signedUrl(key: string, visibility: FileVisibility, expiresInSeconds?: number): Promise<string | null>;
-  presignUpload?(key: string, contentType: string, visibility: FileVisibility): Promise<string>;
+  presignUpload?(key: string, contentType: string, visibility: FileVisibility, sizeBytes: number): Promise<string>;
 }
 
 class LocalDriver implements StorageDriver {
@@ -28,7 +30,7 @@ class LocalDriver implements StorageDriver {
   private file(key: string, visibility: FileVisibility) {
     const root = this.root(visibility);
     const full = path.resolve(root, key);
-    if (!full.startsWith(root)) throw new Error("Invalid storage key");
+    if (!full.startsWith(root + path.sep)) throw new Error("Invalid storage key");
     return full;
   }
   async put(key: string, bytes: Buffer, _type: string, visibility: FileVisibility) {
@@ -53,18 +55,20 @@ class LocalDriver implements StorageDriver {
 }
 
 class S3Driver implements StorageDriver {
-  private client = new S3Client({
-    region: process.env.S3_REGION,
-    credentials: process.env.S3_ACCESS_KEY_ID
-      ? { accessKeyId: process.env.S3_ACCESS_KEY_ID, secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "" }
-      : undefined,
-  });
+  private client: S3Client;
+  constructor(private config: CloudStorageConfig) {
+    this.client = new S3Client({
+      region: config.region, endpoint: config.endpoint,
+      credentials: { accessKeyId: config.accessKeyId, secretAccessKey: config.secretAccessKey },
+      requestChecksumCalculation: "WHEN_REQUIRED",
+    });
+  }
   private bucket(visibility: FileVisibility) {
-    return visibility === "PUBLIC" ? process.env.S3_BUCKET! : (process.env.S3_PRIVATE_BUCKET ?? process.env.S3_BUCKET!);
+    return visibility === "PUBLIC" ? this.config.bucket : this.config.privateBucket;
   }
   async put(key: string, bytes: Buffer, contentType: string, visibility: FileVisibility) {
     await this.client.send(new PutObjectCommand({ Bucket: this.bucket(visibility), Key: key, Body: bytes, ContentType: contentType, CacheControl: visibility === "PUBLIC" ? "public, max-age=31536000, immutable" : "private, no-store" }));
-    const base = process.env.S3_PUBLIC_BASE_URL ?? `https://${this.bucket("PUBLIC")}.s3.${process.env.S3_REGION}.amazonaws.com`;
+    const base = this.config.publicBaseUrl;
     return { url: visibility === "PUBLIC" ? `${base}/${key}` : null };
   }
   async get(key: string, visibility: FileVisibility) {
@@ -76,31 +80,32 @@ class S3Driver implements StorageDriver {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket(visibility), Key: key }));
   }
   async signedUrl(key: string, visibility: FileVisibility, expiresInSeconds = 300) {
-    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket(visibility), Key: key }), { expiresIn: expiresInSeconds });
+    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket(visibility), Key: key, ResponseCacheControl: visibility === "PRIVATE" ? "private, no-store" : undefined }), { expiresIn: expiresInSeconds });
   }
-  async presignUpload(key: string, contentType: string, visibility: FileVisibility) {
-    return getSignedUrl(this.client, new PutObjectCommand({ Bucket: this.bucket(visibility), Key: key, ContentType: contentType }), { expiresIn: 600 });
+  async presignUpload(key: string, contentType: string, visibility: FileVisibility, sizeBytes: number) {
+    return getSignedUrl(this.client, new PutObjectCommand({ Bucket: this.bucket(visibility), Key: key, ContentType: contentType, ContentLength: sizeBytes, IfNoneMatch: "*" }), { expiresIn: 600, signableHeaders: new Set(["content-type", "if-none-match"]) });
   }
 }
 
 let driver: StorageDriver | undefined;
 export function storage(): StorageDriver {
-  driver ??= process.env.S3_BUCKET ? new S3Driver() : new LocalDriver();
+  if (!driver) {
+    if (process.env.UPLOADTHING_TOKEN?.trim()) {
+      driver = new UploadThingDriver();
+      return driver;
+    }
+    let config: CloudStorageConfig | null;
+    try { config = resolveStorageConfig(process.env); }
+    catch (error) {
+      console.error("Upload storage configuration:", error instanceof Error ? error.message : "Invalid settings");
+      throw new UploadError("File uploads are temporarily unavailable. Please contact support.");
+    }
+    driver = config ? new S3Driver(config) : new LocalDriver();
+  }
   return driver;
 }
 
 // ── Validated uploads ─────────────────────────────────────────────────────────
-
-const RULES: Record<FilePurpose, { types: string[]; maxBytes: number; visibility: FileVisibility }> = {
-  PRODUCT_MEDIA: { types: ["image/jpeg", "image/png", "image/webp", "image/avif"], maxBytes: 12 * 1024 * 1024, visibility: "PUBLIC" },
-  STORE_BRANDING: { types: ["image/jpeg", "image/png", "image/webp", "image/svg+xml"], maxBytes: 6 * 1024 * 1024, visibility: "PUBLIC" },
-  REVIEW_MEDIA: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 8 * 1024 * 1024, visibility: "PUBLIC" },
-  CERTIFICATE: { types: ["application/pdf", "image/jpeg", "image/png"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
-  KYC_DOCUMENT: { types: ["application/pdf", "image/jpeg", "image/png"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
-  MESSAGE_ATTACHMENT: { types: ["application/pdf", "image/jpeg", "image/png", "image/webp"], maxBytes: 8 * 1024 * 1024, visibility: "PRIVATE" },
-  CUSTOM_REQUEST_REFERENCE: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 3 * 1024 * 1024, visibility: "PRIVATE" },
-  GENERATED_DOCUMENT: { types: ["application/pdf"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
-};
 
 export class UploadError extends Error {}
 
@@ -111,13 +116,8 @@ export async function saveUpload(file: File, purpose: FilePurpose, ownerId: stri
   if (file.size === 0) throw new UploadError(`${file.name} is empty.`);
 
   const bytes = Buffer.from(await file.arrayBuffer());
-  if (purpose === "CUSTOM_REQUEST_REFERENCE" || purpose === "PRODUCT_MEDIA") {
-    const valid = file.type === "image/jpeg" ? bytes.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))
-      : file.type === "image/png" ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
-      : file.type === "image/webp" ? bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP"
-      : file.type === "image/avif" ? bytes.toString("ascii", 4, 8) === "ftyp" && /avif|avis/.test(bytes.toString("ascii", 8, 32))
-      : false;
-    if (!valid) throw new UploadError(`${file.name}: the file content does not match the image type.`);
+  if (file.type.startsWith("image/") && !validImageContent(bytes, file.type)) {
+    throw new UploadError(`${file.name}: the file content does not match the image type.`);
   }
   const safeName = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-").slice(-80);
   const key = `${purpose.toLowerCase().replace(/_/g, "-")}/${ownerId}/${randomToken(9)}-${safeName}`;
@@ -135,4 +135,11 @@ export async function saveUpload(file: File, purpose: FilePurpose, ownerId: stri
       uploadedById,
     },
   });
+}
+
+/** Resolve direct-upload references without trusting client-supplied URLs. */
+export async function ownedUpload(id: string, purpose: FilePurpose, userId: string) {
+  const asset = await db.fileAsset.findFirst({ where: { id, purpose, uploadedById: userId, visibility: RULES[purpose].visibility } });
+  if (!asset) throw new UploadError("This upload does not belong to your account. Please upload it again.");
+  return asset;
 }

@@ -12,6 +12,7 @@ import { Input, NativeSelect } from "@/components/ui/input";
 import type { CertificateLab, CertificateStatus } from "@/lib/domain-enums";
 import { CLARITY_SCALE, CUT_GRADES, GEMSTONES, LABS, STONE_SHAPES } from "@/lib/jewelry";
 import { cn } from "@/lib/utils";
+import { uploadFormImages } from "@/lib/image-upload-client";
 import { addCertificateAction, removeCertificateAction } from "@/server/actions/seller";
 
 type Cert = { id: string; lab: CertificateLab; reportNumber: string; status: CertificateStatus; variantSku: string | null; hasFile: boolean };
@@ -28,7 +29,7 @@ export function CertificateManager({ productId, certificates, variants }: { prod
 
   return (
     <Card>
-      <CardHeader title="Certificates & hallmarks" description="Attach the laboratory PDF to the exact SKU it grades. Loupe checks every report before it shows as verified." />
+      <CardHeader title="Certificates & hallmarks" description="Attach an image of the laboratory report to the exact SKU it grades. Loupe checks every report before it shows as verified." />
       {certificates.length > 0 && (
         <ul className="divide-y divide-line border-b border-line">
           {certificates.map((c) => (
@@ -36,7 +37,7 @@ export function CertificateManager({ productId, certificates, variants }: { prod
               <LabMark lab={c.lab} />
               <span className="font-mono text-ink">{c.reportNumber}</span>
               <span className="text-muted">{c.variantSku ? `SKU ${c.variantSku}` : "Whole listing"}</span>
-              {c.hasFile && <FileText className="size-4 text-ink-soft" aria-label="PDF attached" />}
+              {c.hasFile && <FileText className="size-4 text-ink-soft" aria-label="Certificate image attached" />}
               <span className={cn("ml-auto rounded-full px-2.5 py-0.5 text-[11.5px]", c.status === "VERIFIED" ? "bg-moss-mist text-moss" : c.status === "REJECTED" ? "bg-rosewood-mist text-rosewood" : "bg-amber-mist text-amber")}>
                 {c.status === "PENDING_REVIEW" ? "Awaiting Loupe check" : c.status.toLowerCase()}
               </span>
@@ -65,13 +66,16 @@ export function CertificateManager({ productId, certificates, variants }: { prod
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
           start(async () => {
-            const res = await addCertificateAction(productId, fd);
-            if (res.ok) {
-              toast.success(res.message);
-              form.current?.reset();
-              setFileName(null);
-              router.refresh();
-            } else toast.error(res.message);
+            try {
+              await uploadFormImages(fd, { file: "CERTIFICATE" });
+              const res = await addCertificateAction(productId, fd);
+              if (res.ok) {
+                toast.success(res.message);
+                form.current?.reset();
+                setFileName(null);
+                router.refresh();
+              } else toast.error(res.message);
+            } catch (error) { toast.error(error instanceof Error ? error.message : "Unable to upload the certificate image."); }
           });
         }}
       >
@@ -95,8 +99,8 @@ export function CertificateManager({ productId, certificates, variants }: { prod
           className={cn("flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[3px] border border-dashed px-4 py-6 text-center text-[13px] md:col-span-4", dragging ? "border-sage bg-sage-mist" : "border-line-strong bg-ivory text-ink-soft")}
         >
           <UploadCloud className="size-6" strokeWidth={1.3} />
-          {fileName ? <span className="text-ink">{fileName}</span> : <span>Drop the report PDF here, or click to choose</span>}
-          <input ref={fileInput} type="file" name="file" accept="application/pdf,image/jpeg,image/png" className="sr-only" onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)} />
+          {fileName ? <span className="text-ink">{fileName}</span> : <span>Choose a report image (JPG, PNG or WebP, up to 12 MB)</span>}
+          <input ref={fileInput} type="file" name="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)} />
         </label>
         <Field label="Laboratory" htmlFor="c-lab">
           <NativeSelect id="c-lab" name="lab" value={lab} onChange={(e) => setLab(e.target.value as CertificateLab)}>

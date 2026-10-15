@@ -16,6 +16,7 @@ import { formatMoney, toMinor, type FxRates } from "@/lib/money";
 import { computeSpotPrice, type SpotRatesUsd } from "@/lib/pricing";
 import { REGION_LABELS } from "@/lib/regions";
 import { cn } from "@/lib/utils";
+import { uploadImage } from "@/lib/image-upload-client";
 import { saveListingAction, uploadProductImageAction } from "@/server/actions/seller";
 import { blankVariant, type EditorState, type VariantRow } from "./editor-model";
 
@@ -96,14 +97,24 @@ export function ProductEditor({
   const upload = async (files: FileList | null) => {
     if (!files?.length) return;
     setUploading(true);
-    for (const file of Array.from(files)) {
-      const fd = new FormData();
-      fd.set("file", file);
-      const res = await uploadProductImageAction(fd);
-      if (res.ok && "url" in res && res.url) setS((prev) => ({ ...prev, images: [...prev.images, { url: res.url!, alt: prev.title, angle: "" }] }));
-      else toast.error(res.message);
+    try {
+      for (const file of Array.from(files)) {
+        const asset = await uploadImage(file, "PRODUCT_MEDIA");
+        if (asset?.url) {
+          setS((prev) => ({ ...prev, images: [...prev.images, { url: asset.url!, alt: prev.title, angle: "" }] }));
+          continue;
+        }
+        const fd = new FormData();
+        fd.set("file", file);
+        const res = await uploadProductImageAction(fd);
+        if (res.ok && "url" in res && res.url) setS((prev) => ({ ...prev, images: [...prev.images, { url: res.url!, alt: prev.title, angle: "" }] }));
+        else toast.error(res.message);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to upload this image.");
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const moveImage = (i: number, d: -1 | 1) =>

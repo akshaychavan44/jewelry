@@ -22,7 +22,7 @@ import { computeSpotPrice } from "@/lib/pricing";
 import { num, slugify } from "@/lib/utils";
 import { db, type Tx } from "@/server/db";
 import { getFxRates, getSpotRates } from "./market";
-import { saveUpload } from "./storage";
+import { ownedUpload, saveUpload } from "./storage";
 
 export class ListingError extends Error {}
 
@@ -292,7 +292,7 @@ export const certificateSchema = z.object({
   hallmarkPurity: z.string().trim().max(30).optional(),
 });
 
-export async function addCertificate(sellerId: string, userId: string, productId: string, input: z.infer<typeof certificateSchema>, file: File | null) {
+export async function addCertificate(sellerId: string, userId: string, productId: string, input: z.infer<typeof certificateSchema>, file: File | string | null) {
   const product = await db.product.findFirst({ where: { id: productId, sellerId } });
   if (!product) throw new ListingError("Listing not found.");
   if (input.variantId) {
@@ -301,7 +301,7 @@ export async function addCertificate(sellerId: string, userId: string, productId
   }
   const duplicate = await db.certificate.findUnique({ where: { lab_reportNumber: { lab: input.lab, reportNumber: input.reportNumber } } });
   if (duplicate) throw new ListingError("That report number is already attached to a listing. Each report can back only one piece.");
-  const asset = file?.size ? await saveUpload(file, "CERTIFICATE", sellerId, userId) : null;
+  const asset = typeof file === "string" ? await ownedUpload(file, "CERTIFICATE", userId) : file?.size ? await saveUpload(file, "CERTIFICATE", sellerId, userId) : null;
   // Seller-added reports are reviewed by Loupe before they carry the "checked" mark.
   return db.certificate.create({
     data: {

@@ -8,7 +8,7 @@ export function safeCallback(value: unknown): string | undefined {
 }
 
 export function homeFor(role: Role) {
-  return role === "ADMIN" ? "/admin" : role === "SELLER" ? "/seller" : "/account";
+  return role === "ADMIN" ? "/admin" : role === "SELLER" ? "/" : "/account";
 }
 
 export function loginHref(intent: LoginIntent, callback?: string) {

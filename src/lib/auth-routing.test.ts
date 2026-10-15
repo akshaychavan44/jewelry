@@ -26,9 +26,9 @@ test("external and malformed callback URLs cannot become redirect destinations",
   assert.equal(loginHref("buyer", "//example.com"), "/login");
 });
 
-test("default destinations follow the stored account role", () => {
+test("jewelers land on the platform while buyer and admin defaults stay unchanged", () => {
   assert.equal(homeFor("BUYER"), "/account");
-  assert.equal(homeFor("SELLER"), "/seller");
+  assert.equal(homeFor("SELLER"), "/");
   assert.equal(homeFor("ADMIN"), "/admin");
 });
 

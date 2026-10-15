@@ -11,6 +11,8 @@ import type { KycDocumentType } from "@/lib/domain-enums";
 import { CURRENCIES, SUPPORTED_CURRENCIES } from "@/lib/money";
 import { COUNTRY_CODES, countryName } from "@/lib/regions";
 import { cn } from "@/lib/utils";
+import { uploadFormImages } from "@/lib/image-upload-client";
+import { uploadKycDocuments } from "@/lib/kyc-upload-client";
 import {
   saveBusinessAction,
   saveStoreProfileAction,
@@ -155,6 +157,7 @@ export function StoreProfileForm({
 
     startTransition(async () => {
       try {
+        await uploadFormImages(formData, { logo: "STORE_BRANDING", banner: "STORE_BRANDING" });
         const res = await submit({}, formData);
         setState(res);
         if (res.ok) {
@@ -198,7 +201,7 @@ export function StoreProfileForm({
         <Textarea id="bio" name="bio" value={values.bio} onChange={handleChange} className="min-h-32" />
       </Field>
       <Field label="Logo" htmlFor="logo" optional hint={store.logoUrl ? "Uploaded — choose a file to replace it." : "Square PNG, JPG or SVG."}>
-        <Input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="h-auto py-2 file:mr-3 file:border-0 file:bg-parchment file:px-3 file:py-1.5" />
+        <Input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" className="h-auto py-2 file:mr-3 file:border-0 file:bg-parchment file:px-3 file:py-1.5" />
       </Field>
       <Field label="Banner" htmlFor="banner" optional hint={store.bannerUrl ? "Uploaded — choose a file to replace it." : "Wide image of your work or workshop."}>
         <Input id="banner" name="banner" type="file" accept="image/png,image/jpeg,image/webp" className="h-auto py-2 file:mr-3 file:border-0 file:bg-parchment file:px-3 file:py-1.5" />
@@ -373,6 +376,7 @@ export function BusinessForm({
 
     startTransition(async () => {
       try {
+        await uploadKycDocuments(formData);
         const res = await saveBusinessAction({}, formData);
         setState(res);
         if (res.ok) {
@@ -450,12 +454,12 @@ export function BusinessForm({
                 </span>
                 <span className="block text-[12.5px] text-muted">{uploaded[d.type] ? `Uploaded: ${uploaded[d.type]}` : d.hint}</span>
               </span>
-              <input type="file" name={`doc_${d.type}`} accept="application/pdf,image/jpeg,image/png" className="max-w-56 text-[12.5px] file:mr-3 file:rounded-[2px] file:border-0 file:bg-parchment file:px-3 file:py-1.5" />
+              <input type="file" name={`doc_${d.type}`} accept="image/jpeg,image/png,image/webp" className="max-w-56 text-[12.5px] file:mr-3 file:rounded-[2px] file:border-0 file:bg-parchment file:px-3 file:py-1.5" />
             </label>
             {err(`doc_${d.type}`) && <p className="text-[12px] text-rosewood">{err(`doc_${d.type}`)?.[0]}</p>}
           </div>
         ))}
-        <p className="text-[12.5px] text-muted">PDF, JPG or PNG up to 12 MB. Documents are stored privately and seen only by Loupe&rsquo;s verification team.</p>
+        <p className="text-[12.5px] text-muted">JPG, PNG or WebP images up to 12 MB. Documents are stored privately and seen only by Loupe&rsquo;s verification team.</p>
       </fieldset>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <Link

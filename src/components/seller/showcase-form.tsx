@@ -1,6 +1,7 @@
 "use client";
 import { useActionState } from "react";
 import Link from "next/link";
+import { uploadFormImages } from "@/lib/image-upload-client";
 import { saveShowcaseAction, type ShowcaseState } from "@/server/actions/showcase";
 import { Field, FormError } from "@/components/ui/field";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
@@ -9,7 +10,14 @@ import { METALS, GEMSTONES } from "@/lib/jewelry";
 import type { Gemstone, MetalType } from "@/lib/domain-enums";
 type Piece = { id: string; title: string; description: string; categoryId: string; primaryMetal: MetalType; primaryGemstone: Gemstone; price: number; status: string; images: { url: string }[]; showOnProfile: boolean; showOnWebsite: boolean };
 export function ShowcaseForm({ piece, categories, currency }: { piece?: Piece; categories: { id: string; name: string }[]; currency: string }) {
-  const [state, action] = useActionState<ShowcaseState, FormData>(saveShowcaseAction, {});
+  const [state, action] = useActionState<ShowcaseState, FormData>(async (previous, form) => {
+    try {
+      const files = form.getAll("images").filter((file): file is File => file instanceof File && file.size > 0);
+      if (files.length > 6 || files.reduce((sum, file) => sum + file.size, 0) > 24 * 1024 * 1024) return { message: "Choose up to six images, totaling no more than 24 MB." };
+      await uploadFormImages(form, { images: "PRODUCT_MEDIA" });
+      return await saveShowcaseAction(previous, form);
+    } catch (error) { return { message: error instanceof Error ? error.message : "Unable to upload your images." }; }
+  }, {});
   return <form action={action} className="space-y-8 rounded-[3px] border border-line bg-porcelain p-8">
     <FormError message={!state.ok ? state.message : undefined} />
     {state.ok && <div role="status" className="rounded border border-sage/30 bg-sage-mist p-4 text-sm text-sage-deep">{state.message} <Link href="/seller/products" className="ml-2 underline">Back to My Jewelry</Link></div>}

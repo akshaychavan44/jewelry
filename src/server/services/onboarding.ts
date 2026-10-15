@@ -5,7 +5,7 @@ import { slugify } from "@/lib/utils";
 import { encrypt, lastFour } from "@/server/crypto";
 import { db } from "@/server/db";
 import { notify } from "./messaging";
-import { saveUpload } from "./storage";
+import { ownedUpload, saveUpload } from "./storage";
 import type { z } from "zod";
 import { socialEnrollmentSchema } from "@/lib/jeweler-profile";
 
@@ -34,8 +34,8 @@ export type StoreProfileInput = {
   foundedYear?: number;
   specialties: string[];
   returnAddress: { fullName: string; line1: string; line2?: string; city: string; region?: string; postalCode: string; country: string; phone?: string };
-  logo?: File | null;
-  banner?: File | null;
+  logo?: File | string | null;
+  banner?: File | string | null;
 };
 
 /** Step 1 — creates the SellerProfile on first save. */
@@ -45,8 +45,8 @@ export async function saveStoreProfile(userId: string, input: StoreProfileInput)
     throw new OnboardingError("Your application is under review — changes are locked until a decision is made.");
   }
   if (existing?.verificationStatus === "APPROVED" && existing.storeName !== input.storeName) throw new OnboardingError("Request a business name change from My Business for admin review.");
-  const logo = input.logo?.size ? await saveUpload(input.logo, "STORE_BRANDING", userId, userId) : null;
-  const banner = input.banner?.size ? await saveUpload(input.banner, "STORE_BRANDING", userId, userId) : null;
+  const logo = typeof input.logo === "string" ? await ownedUpload(input.logo, "STORE_BRANDING", userId) : input.logo?.size ? await saveUpload(input.logo, "STORE_BRANDING", userId, userId) : null;
+  const banner = typeof input.banner === "string" ? await ownedUpload(input.banner, "STORE_BRANDING", userId) : input.banner?.size ? await saveUpload(input.banner, "STORE_BRANDING", userId, userId) : null;
 
   return db.$transaction(async (tx) => {
     const addressData = { ...input.returnAddress, type: "RETURN" as const, label: "Returns", userId, isDefault: true };
@@ -87,7 +87,7 @@ export type BusinessInput = {
   registrationNumber: string;
   taxId?: string;
   website?: string;
-  documents: Partial<Record<KycDocumentType, File | null>>;
+  documents: Partial<Record<KycDocumentType, File | string | null>>;
 };
 
 /** Step 2 — business details (tax ID encrypted at rest) and KYC documents. */
@@ -96,25 +96,33 @@ export async function saveBusinessVerification(userId: string, input: BusinessIn
   if (!seller) throw new OnboardingError("Set up your store profile first.");
   if (!EDITABLE.includes(seller.verificationStatus as (typeof EDITABLE)[number])) throw new OnboardingError("Verification details are locked while your application is reviewed.");
 
-  for (const [type, file] of Object.entries(input.documents) as [KycDocumentType, File | null][]) {
-    if (!file?.size) continue;
-    const asset = await saveUpload(file, "KYC_DOCUMENT", seller.id, userId);
-    // Replace any unsubmitted document of the same type.
-    const previous = seller.kycDocuments.find((d) => d.type === type);
-    if (previous) await db.kycDocument.delete({ where: { id: previous.id } });
-    await db.kycDocument.create({ data: { sellerId: seller.id, type, fileId: asset.id } });
+  const documents: { type: KycDocumentType; fileId: string }[] = [];
+  for (const [type, file] of Object.entries(input.documents) as [KycDocumentType, File | string | null][]) {
+    if (!file || (file instanceof File && !file.size)) continue;
+    const asset = typeof file === "string"
+      ? await db.fileAsset.findFirst({ where: { id: file, purpose: "KYC_DOCUMENT", visibility: "PRIVATE", uploadedById: userId } })
+      : await saveUpload(file, "KYC_DOCUMENT", seller.id, userId);
+    if (!asset || !asset.key.startsWith(`kyc-document/${seller.id}/`)) throw new OnboardingError("The uploaded document does not belong to your business. Please upload it again.");
+    documents.push({ type, fileId: asset.id });
   }
 
-  return db.sellerProfile.update({
-    where: { id: seller.id },
-    data: {
-      legalBusinessName: input.legalBusinessName,
-      businessType: input.businessType,
-      registrationNumber: input.registrationNumber,
-      website: input.website || null,
-      ...(input.taxId ? { taxIdEncrypted: encrypt(input.taxId.trim()), taxIdLast4: lastFour(input.taxId) } : {}),
-      onboardingStep: Math.max(seller.onboardingStep, 3),
-    },
+  return db.$transaction(async tx => {
+    for (const document of documents) {
+      const previous = seller.kycDocuments.find(d => d.type === document.type);
+      if (previous) await tx.kycDocument.delete({ where: { id: previous.id } });
+      await tx.kycDocument.create({ data: { sellerId: seller.id, ...document } });
+    }
+    return tx.sellerProfile.update({
+      where: { id: seller.id },
+      data: {
+        legalBusinessName: input.legalBusinessName,
+        businessType: input.businessType,
+        registrationNumber: input.registrationNumber,
+        website: input.website || null,
+        ...(input.taxId ? { taxIdEncrypted: encrypt(input.taxId.trim()), taxIdLast4: lastFour(input.taxId) } : {}),
+        onboardingStep: Math.max(seller.onboardingStep, 3),
+      },
+    });
   });
 }
 

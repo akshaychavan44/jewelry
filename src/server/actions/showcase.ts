@@ -7,7 +7,7 @@ import { db } from "@/server/db";
 import { randomCode, slugify } from "@/lib/utils";
 import { toMinor, toUsdMinor } from "@/lib/money";
 import { getFxRates } from "@/server/services/market";
-import { saveUpload, UploadError } from "@/server/services/storage";
+import { ownedUpload, saveUpload, UploadError } from "@/server/services/storage";
 export type ShowcaseState = { ok?: boolean; message?: string; productId?: string };
 const schema = z.object({
   id: z.string().optional(), title: z.string().trim().min(3).max(150),
@@ -28,8 +28,10 @@ export async function saveShowcaseAction(_: ShowcaseState, form: FormData): Prom
     const category = await db.category.findFirst({ where: { id: d.categoryId, isActive: true } });
     if (!category) return { message: "Choose an available category." };
     const files = form.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
-    if (files.length > 6 || files.reduce((n, f) => n + f.size, 0) > 24 * 1024 * 1024) return { message: "Choose up to six images, totaling no more than 24 MB." };
-    if (!existing?.images.length && !files.length) return { message: "Add at least one photo." };
+    const ids = z.array(z.string().min(1).max(128)).max(6).parse(form.getAll("images_fileId"));
+    const directAssets = await Promise.all(ids.map(id => ownedUpload(id, "PRODUCT_MEDIA", user.id)));
+    if (directAssets.length + files.length > 6 || directAssets.reduce((sum, asset) => sum + asset.sizeBytes, 0) + files.reduce((sum, file) => sum + file.size, 0) > 24 * 1024 * 1024) return { message: "Choose up to six images, totaling no more than 24 MB." };
+    if (!existing?.images.length && !files.length && !directAssets.length) return { message: "Add at least one photo." };
     const showOnProfile = form.get("showOnProfile") === "on";
     const showOnWebsite = form.get("showOnWebsite") === "on";
     const draft = form.get("draft") === "on";
@@ -37,7 +39,7 @@ export async function saveShowcaseAction(_: ShowcaseState, form: FormData): Prom
     const amount = toMinor(d.price, currency);
     if (amount < 1) return { message: "Enter a guide price of at least one minor currency unit." };
     const normalized = toUsdMinor(amount, currency, await getFxRates());
-    const assets: Awaited<ReturnType<typeof saveUpload>>[] = [];
+    const assets: Awaited<ReturnType<typeof saveUpload>>[] = [...directAssets];
     for (const file of files) assets.push(await saveUpload(file, "PRODUCT_MEDIA", seller.id, user.id));
     const product = await db.$transaction(async tx => {
       const data = { title: d.title, description: d.description, categoryId: d.categoryId, primaryMetal: d.metal, primaryGemstone: d.gemstone, basePriceMinor: amount, normalizedPriceUsd: normalized, pricingMode: "FIXED" as const, acceptsOffers: false, status: draft ? "DRAFT" as const : "ACTIVE" as const, publishedAt: draft ? existing?.publishedAt : existing?.publishedAt ?? new Date() };

@@ -15,11 +15,11 @@ test("jeweler credentials work in both portals while customer and admin restrict
 });
 
 test("login destination follows the selected view and preserves shopping callbacks", () => {
-  assert.equal(loginDestination("SELLER", "buyer"), "/account");
+  assert.equal(loginDestination("SELLER", "buyer"), "/");
   assert.equal(loginDestination("SELLER", "seller"), "/seller");
   assert.equal(loginDestination("SELLER", "buyer", "/checkout?step=address"), "/checkout?step=address");
   assert.equal(loginDestination("SELLER", "buyer", "/jewelers/another-shop"), "/jewelers/another-shop");
-  assert.equal(loginDestination("SELLER", "buyer", "https://example.com"), "/account");
+  assert.equal(loginDestination("SELLER", "buyer", "https://example.com"), "/");
   assert.equal(loginDestination("BUYER", "buyer"), "/account");
   assert.equal(loginDestination("ADMIN", "admin"), "/admin");
 });

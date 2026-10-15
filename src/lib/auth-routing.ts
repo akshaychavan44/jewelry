@@ -12,7 +12,9 @@ export function loginDestination(role: Role, intent: LoginIntent, callback?: unk
   const destination = safeCallback(callback);
   if (destination) return destination;
   if (role === "ADMIN") return "/admin";
-  return intent === "seller" && role === "SELLER" ? "/seller" : "/account";
+  if (intent === "seller" && role === "SELLER") return "/seller";
+  if (role === "SELLER" && intent === "buyer") return "/";
+  return "/account";
 }
 
 export function safeCallback(value: unknown): string | undefined {

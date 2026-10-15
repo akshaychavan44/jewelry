@@ -17,12 +17,12 @@ function refresh(slug?: string) {
 export async function saveJewelerReview(_: ReviewState, form: FormData): Promise<ReviewState> {
   try {
     const user = await assertUser();
-    if (user.role !== "BUYER" && user.role !== "SELLER") return { message: "Use your customer account to review a jeweler." };
+    if (user.role !== "BUYER") return { message: "Only customer accounts can submit reviews." };
     const d = z.object({ sellerId: z.string().min(1), rating: z.coerce.number().int().min(1).max(5), body: z.string().trim().min(1, "Please write a review.").max(2000) }).parse(Object.fromEntries(form));
     if (form.get("experienced") !== "on") return { message: "Confirm this review reflects your own experience." };
     const seller = await db.sellerProfile.findFirst({ where: { id: d.sellerId, ...listedJewelerWhere } });
     if (!seller || (await getDirectorySettings(seller.id)).isPaused) return { message: "This jeweler is unavailable." };
-    if (!canReviewJeweler(user.role, user.id, seller.userId)) return { message: "You cannot review your own business." };
+    if (!canReviewJeweler(user.role, user.id, seller.userId)) return { message: "Only customer accounts can submit reviews." };
     await db.$transaction(async tx => {
       await tx.$executeRaw`INSERT INTO "JewelerReview" ("id", "sellerId", "authorId", "rating", "body") VALUES (${randomUUID()}, ${seller.id}, ${user.id}, ${d.rating}, ${d.body})`;
       await refreshJewelerRating(tx, seller.id);

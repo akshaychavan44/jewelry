@@ -17,8 +17,8 @@ test("a view preference cannot turn customers or guests into jewelers", () => {
   assert.equal(accountViewFor("SELLER", "invalid"), "seller");
 });
 
-test("jewelers may review other stores while self-reviews remain blocked", () => {
-  assert.equal(canReviewJeweler("SELLER", "jeweler-a", "jeweler-b"), true);
+test("only buyers may review stores; jewelers and admins are blocked", () => {
+  assert.equal(canReviewJeweler("SELLER", "jeweler-a", "jeweler-b"), false);
   assert.equal(canReviewJeweler("BUYER", "buyer", "jeweler-b"), true);
   assert.equal(canReviewJeweler("SELLER", "jeweler-a", "jeweler-a"), false);
   assert.equal(canReviewJeweler("ADMIN", "admin", "jeweler-b"), false);

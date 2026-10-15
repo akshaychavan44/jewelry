@@ -9,5 +9,5 @@ export function accountViewFor(role: Role | undefined, preference?: string): Acc
 }
 
 export function canReviewJeweler(role: Role, authorId: string, sellerUserId: string) {
-  return (role === "BUYER" || role === "SELLER") && authorId !== sellerUserId;
+  return role === "BUYER" && authorId !== sellerUserId;
 }

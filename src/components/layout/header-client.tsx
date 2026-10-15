@@ -31,6 +31,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/menus";
 import type { Role } from "@/lib/domain-enums";
+import type { AccountView } from "@/lib/account-view";
+import { AccountViewSwitch } from "./account-view-switch";
 import { CURRENCIES, type CurrencyCode, SUPPORTED_CURRENCIES } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { setCurrency } from "@/server/actions/preferences";
@@ -44,12 +46,15 @@ type Props = {
   currency: CurrencyCode;
   user: { name: string | null; email: string; role: Role } | null;
   isApprovedJeweler?: boolean;
+  sellerSlug?: string;
+  accountView?: AccountView;
 };
 
 const navLink = "caps text-[12px] md:text-[12.5px] font-semibold tracking-[0.14em] text-ink transition-colors hover:text-[#86683a] " + styles.navItem;
 
-export function HeaderClient({ categories, currency, user, isApprovedJeweler }: Props) {
+export function HeaderClient({ categories, currency, user, isApprovedJeweler, sellerSlug, accountView = "seller" }: Props) {
   const pathname = usePathname();
+  const sellerView = user?.role === "SELLER" && accountView === "seller";
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -113,8 +118,12 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler }: 
                 Jewelry <ChevronDown className={cn("size-3.5 transition-transform", megaOpen && "rotate-180")} />
               </button>
             </div>
-            <Link href="/jewelers" className={cn(navLink, isJewelersActive && styles.activeNavItem)} data-active={isJewelersActive ? "true" : undefined}>
-              Jewelers
+            <Link
+              href={sellerView && sellerSlug ? `/jewelers/${sellerSlug}` : "/jewelers"}
+              className={cn(navLink, isJewelersActive && styles.activeNavItem)}
+              data-active={isJewelersActive ? "true" : undefined}
+            >
+              {sellerView ? "My Shop" : "Jewelers"}
             </Link>
             <Link href="/custom-orders" className={cn(navLink, isCustomOrdersActive && styles.activeNavItem)} data-active={isCustomOrdersActive ? "true" : undefined}>
               Custom orders
@@ -122,7 +131,7 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler }: 
             <Link href="/guides" className={cn(navLink, isGuidesActive && styles.activeNavItem)} data-active={isGuidesActive ? "true" : undefined}>
               Guides
             </Link>
-            {!isApprovedJeweler && (
+            {(!isApprovedJeweler || !sellerView) && (
               <Link href="/sell" className={cn(navLink, isSellActive && styles.activeNavItem)} data-active={isSellActive ? "true" : undefined}>
                 For jewelers
               </Link>
@@ -142,13 +151,13 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler }: 
             <span className="hidden xl:inline">Search jewelry</span>
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
-          {user?.role !== "BUYER" && <Link
+          {user?.role !== "BUYER" && !(user?.role === "SELLER" && !sellerView) && <Link
             href={user?.role === "SELLER" ? "/seller" : user ? "/seller/onboarding" : "/register?intent=seller"}
             className={cn(styles.listBusinessButton, "caps hidden md:inline-flex")}
           >
             {user?.role === "SELLER" ? "My Dashboard" : "List Your Business"}
           </Link>}
-          <AccountMenu user={user} />
+          <AccountMenu user={user} accountView={accountView} />
         </div>
       </div>
 
@@ -222,11 +231,11 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler }: 
             <ul className="mt-6 space-y-4">
               {[
                 ["/shop", "All jewelry"],
-                ["/jewelers", "Our jewelers"],
+                [sellerView && sellerSlug ? `/jewelers/${sellerSlug}` : "/jewelers", sellerView ? "My Shop" : "Our jewelers"],
                 ["/custom-orders", "Custom orders"],
                 ["/guides", "Guides"],
                 ["/styling", "Styling inspiration"],
-                [user?.role === "SELLER" ? "/seller" : "/sell", user?.role === "SELLER" ? "My Dashboard" : "List your business"],
+                [sellerView ? "/seller" : "/sell", sellerView ? "My Dashboard" : "List your business"],
                 [user ? "/account" : "/login", user ? "My account" : "Customer login"],
                 ...(!user ? [["/jeweler/login", "Jeweler login"]] : []),
               ].map(([href, label]) => (
@@ -237,6 +246,7 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler }: 
                 </li>
               ))}
             </ul>
+            {user?.role === "SELLER" && <AccountViewSwitch view={sellerView ? "customer" : "seller"} className="mt-5 w-full" />}
           </nav>
           <div className="border-t border-line px-5 py-4">
             <CurrencyMenu currency={currency} />
@@ -277,7 +287,7 @@ function CurrencyMenu({ currency, className }: { currency: CurrencyCode; classNa
   );
 }
 
-function AccountMenu({ user }: { user: Props["user"] }) {
+function AccountMenu({ user, accountView }: { user: Props["user"]; accountView: AccountView }) {
   const pathname = usePathname();
   if (!user) {
     return (
@@ -317,7 +327,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
       <DropdownMenuContent
         align="end"
         sideOffset={16}
-        className="relative w-[360px] rounded-2xl border-[#e5d8c3] bg-ivory p-4 shadow-[0_16px_40px_rgba(50,37,20,0.14)] before:absolute before:-top-[9px] before:right-7 before:size-4 before:rotate-45 before:border-l before:border-t before:border-[#e5d8c3] before:bg-ivory"
+        className="relative w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border-[#e5d8c3] bg-ivory p-4 shadow-[0_16px_40px_rgba(50,37,20,0.14)] before:absolute before:-top-[9px] before:right-7 before:size-4 before:rotate-45 before:border-l before:border-t before:border-[#e5d8c3] before:bg-ivory"
       >
         <DropdownMenuLabel className="border-0 bg-transparent px-2 py-1">
           <div className="flex items-center gap-3">
@@ -332,7 +342,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
                 <p className="truncate font-display text-[22px] font-normal text-ink">{displayName}</p>
                 {user.role !== "BUYER" && (
                   <span className="shrink-0 text-[10px] font-semibold tracking-wider uppercase text-[#9e743e] px-1.5 py-0.5 rounded-full bg-white border border-[#e2d5c2]">
-                    {user.role === "ADMIN" ? "Admin" : "Jeweler"}
+                    {user.role === "ADMIN" ? "Admin" : accountView === "customer" ? "Customer view" : "Jeweler"}
                   </span>
                 )}
               </div>
@@ -344,7 +354,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div className="space-y-0.5 py-1">
-          {(user.role === "BUYER"
+          {(user.role === "BUYER" || (user.role === "SELLER" && accountView === "customer")
             ? [
                 { href: "/account/settings", label: "My Profile", icon: User },
                 { href: "/account/custom-requests", label: "Custom Requests", icon: Sparkles },
@@ -358,8 +368,7 @@ function AccountMenu({ user }: { user: Props["user"] }) {
                 { href: "/account", label: "My account", icon: LayoutDashboard },
               ]
             : [
-                { href: "/seller", label: "Jeweler dashboard", icon: Store },
-                { href: "/seller/account", label: "My account", icon: LayoutDashboard },
+                { href: "/seller", label: "My account", icon: LayoutDashboard },
               ]
           ).map(({ href, label, icon: Icon }) => (
             <DropdownMenuItem
@@ -380,6 +389,10 @@ function AccountMenu({ user }: { user: Props["user"] }) {
             </DropdownMenuItem>
           ))}
         </div>
+        {user.role === "SELLER" && <>
+          <DropdownMenuSeparator />
+          <AccountViewSwitch view={accountView === "customer" ? "seller" : "customer"} className="w-full px-2 py-2" />
+        </>}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={() => signOutAction()}

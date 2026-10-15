@@ -1,8 +1,10 @@
+import { getAccountView } from "@/server/account-view";
+import { canReviewJeweler } from "@/lib/account-view";
 import { ArrowRight, Clock, Globe, MapPin, MessageSquare, Phone } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { jewelerReviews } from "@/server/services/discovery";
 import { JewelerReviewForm } from "@/components/account/jeweler-review-form";
 import { JewelerSocialLinks } from "@/components/catalog/jeweler-social-links";
@@ -15,7 +17,7 @@ import { EmptyState, Monogram, Stars } from "@/components/ui/display";
 import { formatDate, formatResponseTime } from "@/lib/format";
 import { countryName } from "@/lib/regions";
 import { cn, firstParam, pluralize, type SearchParams } from "@/lib/utils";
-import { getCurrentUser } from "@/server/auth/session";
+import { getCurrentUser, getSellerForUser } from "@/server/auth/session";
 import { db } from "@/server/db";
 import { track } from "@/server/services/analytics";
 import { getWishlistProductIds } from "@/server/services/catalog";
@@ -37,6 +39,14 @@ export async function JewelerProfilePage({ params, searchParams, details = false
   const data = await getStorefront(slug, ctx, category);
   if (!data) notFound();
   const { seller, listings, sold, reviews, categories } = data;
+
+  if (user?.role === "SELLER" && await getAccountView(user.role) === "seller" && user.id !== seller.userId) {
+    const mySeller = await getSellerForUser(user.id);
+    if (mySeller?.slug) {
+      redirect(details ? `/jewelers/${mySeller.slug}/about` : `/jewelers/${mySeller.slug}`);
+    }
+    redirect("/seller");
+  }
   const feedback = details ? await jewelerReviews(seller.id) : [];
   const settings = details ? await getDirectorySettings(seller.id) : null;
   const [saved, following] = await Promise.all([
@@ -197,7 +207,7 @@ export async function JewelerProfilePage({ params, searchParams, details = false
           </section>
         )}
 
-        <section className="mt-16 border-t border-line pt-10" aria-labelledby="customer-feedback"><h2 id="customer-feedback" className="mb-6 font-display text-3xl">Customer reviews</h2><div className="grid grid-cols-2 gap-5">{feedback.map(r => <article key={r.id} className="rounded border border-line bg-porcelain p-6"><Stars rating={r.rating} /><p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed">{r.body}</p><p className="mt-3 text-xs text-muted">{r.authorName?.split(" ")[0] ?? "Customer"} · Customer experience</p>{r.sellerReply && <div className="mt-4 border-t border-line pt-3 text-sm"><strong>Jeweler’s reply</strong><p className="mt-2 whitespace-pre-wrap">{r.sellerReply}</p></div>}</article>)}</div>{!feedback.length && <p className="mb-5 text-sm text-muted">No customer experience reviews yet.</p>}<div className="mt-6 max-w-xl">{user?.role === "BUYER" ? <JewelerReviewForm sellerId={seller.id} /> : !user ? <Link href={`/login?callbackUrl=${encodeURIComponent(`${detailPath}#customer-feedback`)}`} className="text-sm underline">Sign in to share your experience</Link> : null}</div></section>
+        <section className="mt-16 border-t border-line pt-10" aria-labelledby="customer-feedback"><h2 id="customer-feedback" className="mb-6 font-display text-3xl">Customer reviews</h2><div className="grid grid-cols-2 gap-5">{feedback.map(r => <article key={r.id} className="rounded border border-line bg-porcelain p-6"><Stars rating={r.rating} /><p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed">{r.body}</p><p className="mt-3 text-xs text-muted">{r.authorName?.split(" ")[0] ?? "Customer"} · Customer experience</p>{r.sellerReply && <div className="mt-4 border-t border-line pt-3 text-sm"><strong>Jeweler’s reply</strong><p className="mt-2 whitespace-pre-wrap">{r.sellerReply}</p></div>}</article>)}</div>{!feedback.length && <p className="mb-5 text-sm text-muted">No customer experience reviews yet.</p>}<div className="mt-6 max-w-xl">{user && canReviewJeweler(user.role, user.id, seller.userId) ? <JewelerReviewForm sellerId={seller.id} /> : !user ? <Link href={`/login?callbackUrl=${encodeURIComponent(`${detailPath}#customer-feedback`)}`} className="text-sm underline">Sign in to share your experience</Link> : null}</div></section>
         {reviews.length > 0 && (
           <section aria-labelledby="store-reviews" className="mt-20 border-t border-line pt-12">
             <h2 id="store-reviews" className="display-md mb-8 text-ink">

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/forms";
-import { homeFor, loginHref, safeCallback, type LoginIntent } from "@/lib/auth-routing";
+import { loginDestination, loginHref, safeCallback, type LoginIntent } from "@/lib/auth-routing";
 import { firstParam, type SearchParams } from "@/lib/utils";
 import { getCurrentUser } from "@/server/auth/session";
+import { switchAccountView } from "@/server/actions/account-view";
+import { buttonVariants } from "@/components/ui/button";
 
 const ERRORS: Record<string, string> = {
   suspended: "This account has been suspended. Contact concierge@loupe.example for help.",
@@ -15,7 +17,17 @@ export async function LoginPageContent({ intent, searchParams }: { intent: Login
   const sp = await searchParams;
   const callbackUrl = safeCallback(firstParam(sp.callbackUrl));
   const user = await getCurrentUser();
-  if (user) redirect(callbackUrl ?? homeFor(user.role));
+  if (user?.role === "SELLER") {
+    const view = intent === "seller" ? "seller" : "customer";
+    return <div className="space-y-5">
+      <h1 className="font-display text-[32px] text-ink">You’re already signed in</h1>
+      <p className="text-sm text-ink-soft">Continue with your existing account. Your customer activity and jeweler business stay separate.</p>
+      <form action={switchAccountView.bind(null, view, callbackUrl ?? (view === "customer" ? "/account" : "/seller"))}>
+        <button type="submit" className={buttonVariants({ className: "w-full" })}>{view === "customer" ? "Continue as a customer" : "Continue to jeweler dashboard"}</button>
+      </form>
+    </div>;
+  }
+  if (user) redirect(loginDestination(user.role, intent, callbackUrl));
   const error = firstParam(sp.error);
   const seller = intent === "seller";
   const registration = new URLSearchParams({ intent });

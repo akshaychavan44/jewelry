@@ -2,7 +2,35 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { NextRequest } from "next/server";
 import { authConfig } from "../server/auth/config";
-import { homeFor, loginForDestination, loginHref, safeCallback } from "./auth-routing";
+import { canUseLogin, homeFor, loginDestination, loginForDestination, loginHref, safeCallback } from "./auth-routing";
+
+test("jeweler credentials work in both portals while customer and admin restrictions stay intact", () => {
+  assert.equal(canUseLogin("SELLER", "buyer"), true);
+  assert.equal(canUseLogin("SELLER", "seller"), true);
+  assert.equal(canUseLogin("BUYER", "buyer"), true);
+  assert.equal(canUseLogin("BUYER", "seller"), false);
+  assert.equal(canUseLogin("SELLER", "admin"), false);
+  assert.equal(canUseLogin("BUYER", "admin"), false);
+  assert.equal(canUseLogin("ADMIN", "admin"), true);
+});
+
+test("login destination follows the selected view and preserves shopping callbacks", () => {
+  assert.equal(loginDestination("SELLER", "buyer"), "/account");
+  assert.equal(loginDestination("SELLER", "seller"), "/seller");
+  assert.equal(loginDestination("SELLER", "buyer", "/checkout?step=address"), "/checkout?step=address");
+  assert.equal(loginDestination("SELLER", "buyer", "/jewelers/another-shop"), "/jewelers/another-shop");
+  assert.equal(loginDestination("SELLER", "buyer", "https://example.com"), "/account");
+  assert.equal(loginDestination("BUYER", "buyer"), "/account");
+  assert.equal(loginDestination("ADMIN", "admin"), "/admin");
+});
+
+test("a jeweler session can use customer pages and still manage its business", () => {
+  const auth = { expires: "2099-01-01", user: { id: "test-seller", role: "SELLER" as const, email: "seller@example.com" } };
+  for (const path of ["/account", "/account/wishlist", "/checkout", "/seller", "/seller/products"]) {
+    assert.equal(authConfig.callbacks.authorized({ auth, request: new NextRequest(`http://localhost:3000${path}`) }), true);
+  }
+  assert.ok(authConfig.callbacks.authorized({ auth, request: new NextRequest("http://localhost:3000/admin") }) instanceof Response);
+});
 
 test("login destinations preserve checkout and inquiry return paths", () => {
   for (const path of ["/checkout", "/account/messages?thread=123", "/product/ring?inquiry=true"]) {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
+import { AccountViewSwitch } from "@/components/layout/account-view-switch";
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,6 +14,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
           <p className="text-right text-[12px] tracking-[0.12em] text-muted uppercase">Jeweler application</p>
         </div>
       </header>
+      <div className="shell-narrow pt-4"><AccountViewSwitch view="customer" /></div>
       <main className="shell-narrow py-12">{children}</main>
     </div>
   );

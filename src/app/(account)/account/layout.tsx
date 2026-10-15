@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser("/account");
-  if (user.role === "BUYER") {
+  if (user.role !== "ADMIN") {
     return (
       <div className="storefront min-h-dvh">
         <a href="#account-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-ivory">

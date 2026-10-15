@@ -7,10 +7,11 @@ import { footerNav, siteConfig } from "@/config/site";
 import { NewsletterForm } from "./newsletter-form";
 import { FooterBackToTop } from "./footer-back-to-top";
 import styles from "./footer.module.css";
+import { getAccountView } from "@/server/account-view";
 
 export async function SiteFooter({ staticNavigation = false }: { staticNavigation?: boolean } = {}) {
   const user = staticNavigation ? null : await getCurrentUser();
-  const isJeweler = user?.role === "SELLER";
+  const isJeweler = user?.role === "SELLER" && await getAccountView(user.role) === "seller";
   return (
     <footer id="site-footer" className={styles.footer}>
       <Image src="/media/footer-jewelry.webp" alt="" fill sizes="100vw" className={styles.background} />

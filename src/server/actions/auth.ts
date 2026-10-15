@@ -5,7 +5,10 @@ import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { homeFor, safeCallback, type LoginIntent } from "@/lib/auth-routing";
+import { loginDestination, safeCallback, type LoginIntent } from "@/lib/auth-routing";
+import { ACCOUNT_VIEW_COOKIE } from "@/lib/account-view";
+import { cookies } from "next/headers";
+import { setAccountView } from "@/server/account-view";
 import { DATABASE_UNAVAILABLE_MESSAGE, isDatabaseUnavailable } from "@/lib/database-errors";
 import { signIn, signOut, unstable_update } from "@/server/auth";
 import { requireUser } from "@/server/auth/session";
@@ -54,8 +57,9 @@ export async function loginAction(_: AuthFormState, formData: FormData): Promise
   if (parsed.data.intent === "admin") redirect(safeCallback(formData.get("callbackUrl")) ?? "/admin");
 
   const user = await db.user.findFirst({ where: { email: { equals: parsed.data.email, mode: "insensitive" } }, select: { id: true, role: true } });
-  if (user?.role === "BUYER") await mergeGuestCart(user.id);
-  redirect(safeCallback(formData.get("callbackUrl")) ?? homeFor(user?.role ?? "BUYER"));
+  if (user?.role === "BUYER" || user?.role === "SELLER") await mergeGuestCart(user.id);
+  await setAccountView(parsed.data.intent === "seller" ? "seller" : "customer");
+  redirect(loginDestination(user?.role ?? "BUYER", parsed.data.intent, formData.get("callbackUrl")));
 }
 
 const registerSchema = z.object({
@@ -97,11 +101,13 @@ export async function registerAction(_: AuthFormState, formData: FormData): Prom
   const error = await signInWithPassword(email, password, intent);
   if (error) return { error };
   await mergeGuestCart(user.id);
+  await setAccountView(intent === "seller" ? "seller" : "customer");
   redirect(intent === "seller" ? "/seller/onboarding" : (safeCallback(formData.get("callbackUrl")) ?? "/account"));
 }
 
 export async function signOutAction() {
   await signOut({ redirect: false });
+  (await cookies()).delete(ACCOUNT_VIEW_COOKIE);
   revalidatePath("/", "layout");
   redirect("/");
 }

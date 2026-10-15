@@ -3,6 +3,7 @@ import { getCurrentUser, getSellerForUser } from "@/server/auth/session";
 import { getCategoryTree } from "@/server/services/catalog";
 import { getDisplayCurrency } from "@/server/services/currency";
 import { HeaderClient } from "./header-client";
+import { getAccountView } from "@/server/account-view";
 
 export async function SiteHeader({ staticNavigation = false }: { staticNavigation?: boolean } = {}) {
   // The root 404 fallback is part of Next's route tree, including login. It
@@ -35,6 +36,8 @@ export async function SiteHeader({ staticNavigation = false }: { staticNavigatio
       currency={currency}
       user={user ? { name: user.name, email: user.email, role: user.role } : null}
       isApprovedJeweler={isApprovedJeweler}
+      sellerSlug={seller?.slug}
+      accountView={await getAccountView(user?.role)}
     />
   );
 }

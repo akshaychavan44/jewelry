@@ -2,6 +2,19 @@ import type { Role } from "@/lib/domain-enums";
 
 export type LoginIntent = "buyer" | "seller" | "admin";
 
+export function canUseLogin(role: Role, intent: LoginIntent) {
+  if (intent === "admin") return role === "ADMIN";
+  if (intent === "seller") return role === "SELLER" || role === "ADMIN";
+  return true;
+}
+
+export function loginDestination(role: Role, intent: LoginIntent, callback?: unknown) {
+  const destination = safeCallback(callback);
+  if (destination) return destination;
+  if (role === "ADMIN") return "/admin";
+  return intent === "seller" && role === "SELLER" ? "/seller" : "/account";
+}
+
 export function safeCallback(value: unknown): string | undefined {
   if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u0020]/.test(value)) return undefined;
   return value;

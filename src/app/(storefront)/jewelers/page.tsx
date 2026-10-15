@@ -1,7 +1,9 @@
+import { getAccountView } from "@/server/account-view";
 import { ArrowRight, ArrowUpRight, BadgeCheck, Gem, MessageSquare, Search, ShieldCheck, Star, Tag } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { DirectorySelect } from "@/components/catalog/directory-select";
 import { NearbyJewelers } from "@/components/catalog/nearby-jewelers";
 import { coordinates } from "@/lib/jeweler-location";
@@ -10,7 +12,7 @@ import styles from "@/components/catalog/jewelers-directory.module.css";
 import { EmptyState, Monogram } from "@/components/ui/display";
 import { countryName } from "@/lib/regions";
 import { firstParam, pluralize, type SearchParams } from "@/lib/utils";
-import { getCurrentUser } from "@/server/auth/session";
+import { getCurrentUser, getSellerForUser } from "@/server/auth/session";
 import { db } from "@/server/db";
 import { DIRECTORY_SORTS, type DirectorySort, listJewelers } from "@/server/services/sellers";
 
@@ -31,6 +33,13 @@ export default async function JewelersPage({ searchParams }: { searchParams: Pro
   const sortParam = firstParam(sp.sort) as DirectorySort | undefined;
   const sort = sortParam && sortParam in DIRECTORY_SORTS ? sortParam : "rating";
   const [{ sellers, countries, cities, specialties }, user] = await Promise.all([listJewelers({ q, country, city, specialty, near, radiusKm, sort }), getCurrentUser()]);
+  if (user?.role === "SELLER" && await getAccountView(user.role) === "seller") {
+    const mySeller = await getSellerForUser(user.id);
+    if (mySeller?.slug) {
+      redirect(`/jewelers/${mySeller.slug}`);
+    }
+    redirect("/seller");
+  }
   const favorites = user ? await db.favoriteStore.findMany({ where: { userId: user.id }, select: { sellerId: true } }) : [];
   const savedSellerIds = new Set(favorites.map((favorite) => favorite.sellerId));
 

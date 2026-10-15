@@ -7,6 +7,7 @@ import { requireSeller } from "@/server/auth/session";
 import { DashboardAccountMenu } from "@/components/layout/dashboard-account-menu";
 import { getDirectorySettings, inquiryStatusesForSeller } from "@/server/services/jeweler-directory";
 import { db } from "@/server/db";
+import { AccountViewSwitch } from "@/components/layout/account-view-switch";
 
 export default async function SellerLayout({ children }: { children: React.ReactNode }) {
   const { seller, user } = await requireSeller();
@@ -28,6 +29,7 @@ export default async function SellerLayout({ children }: { children: React.React
       <div className="flex flex-wrap gap-4 border-t border-line px-5 py-5 text-sm lg:flex-col">
         {!settings.isPaused && <Link href={`/jewelers/${seller.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-ink-soft"><ExternalLink size={15} />View public profile</Link>}
         <Link href="/" className="text-ink-soft">Back to Loupe</Link>
+        <AccountViewSwitch view="customer" />
       </div>
       <DashboardAccountMenu name={user.name} email={user.email} image={user.image} label="Jeweler account" settingsHref="/seller/account" />
     </aside>

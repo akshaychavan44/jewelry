@@ -8,6 +8,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
 import { db } from "@/server/db";
+import { canUseLogin } from "@/lib/auth-routing";
 import { authConfig } from "./config";
 
 class SuspendedAccount extends CredentialsSignin {
@@ -45,11 +46,7 @@ const providers: Provider[] = [
       if (!valid) return null;
       if (user.status !== "ACTIVE") throw new SuspendedAccount();
       // Check the stored role after validating the password and before issuing a session.
-      if (parsed.data.intent === "admin") {
-        if (user.role !== "ADMIN") throw new WrongLoginPortal();
-      } else if (user.role !== "ADMIN" && (user.role === "SELLER") !== (parsed.data.intent === "seller")) {
-        throw new WrongLoginPortal();
-      }
+      if (!canUseLogin(user.role, parsed.data.intent)) throw new WrongLoginPortal();
       // Updating the login timestamp does not need the delegate's extra read of
       // an account we have already loaded and validated.
       await db.$executeRaw`UPDATE "User" SET "lastLoginAt" = CURRENT_TIMESTAMP, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = ${user.id}`;

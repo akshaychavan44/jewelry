@@ -66,7 +66,7 @@ export function VideoShowcase() {
       <div ref={stageRef} className={styles.stage}>
         <video ref={videoRef} className={styles.video} src="/media/fine-jewelry-campaign-edited.mp4"
           width={1280} height={720} autoPlay muted playsInline preload="auto"
-          aria-label="Loupe jewelry campaign featuring a diamond necklace, earrings and ring"
+          aria-label="Jewelrex jewelry campaign featuring a diamond necklace, earrings and ring"
           onTimeUpdate={(event) => {
             const video = event.currentTarget;
             // The 5.83s edit skips the source dissolve. Reveal in its closing 2.2s.

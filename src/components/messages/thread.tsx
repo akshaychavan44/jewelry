@@ -67,7 +67,7 @@ export function MessageThread({ conversationId, messages, meId, readOnly }: { co
                     {m.body}
                   </div>
                   <p className="mt-1 px-1 text-[11.5px] text-muted">
-                    {mine ? "You" : m.sender?.role === "ADMIN" ? `${m.sender?.name ?? "Loupe"} · Loupe mediation` : (m.sender?.name ?? "")} · {formatDate(m.createdAt, "time")}
+                    {mine ? "You" : m.sender?.role === "ADMIN" ? `${m.sender?.name ?? "Jewelrex"} · Jewelrex mediation` : (m.sender?.name ?? "")} · {formatDate(m.createdAt, "time")}
                   </p>
                 </div>
               )}

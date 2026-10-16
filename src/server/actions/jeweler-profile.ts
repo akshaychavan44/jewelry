@@ -92,7 +92,7 @@ export async function updateInquiryStatusAction(requestId: string, status: strin
     });
     if (!updated) return { ok: false, message: "Request not found." };
     if (updated === "unchanged") return { ok: true, message: "Request status is already up to date." };
-    after(async () => { await sendInquiryEmail({ to: request.buyer.email, subject: `Your Loupe enquiry: ${INQUIRY_LABELS[value]}`, text: `${seller.storeName} updated “${request.title}” to ${INQUIRY_LABELS[value]}.`, href: "/account/custom-requests", key: `inquiry-update/${updated}` }); });
+    after(async () => { await sendInquiryEmail({ to: request.buyer.email, subject: `Your Jewelrex enquiry: ${INQUIRY_LABELS[value]}`, text: `${seller.storeName} updated “${request.title}” to ${INQUIRY_LABELS[value]}.`, href: "/account/custom-requests", key: `inquiry-update/${updated}` }); });
     revalidatePath("/seller", "layout");
     revalidatePath("/account/custom-requests");
     return { ok: true, message: "Request status updated." };

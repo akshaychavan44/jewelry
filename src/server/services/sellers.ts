@@ -11,7 +11,7 @@ import { nearestDistance, type Coordinates } from "@/lib/jeweler-location";
 export const DIRECTORY_SORTS = {
   rating: "Highest rated",
   reviews: "Most reviewed",
-  newest: "Newest on Loupe",
+  newest: "Newest on Jewelrex",
   name: "A–Z",
 } as const;
 export type DirectorySort = keyof typeof DIRECTORY_SORTS;

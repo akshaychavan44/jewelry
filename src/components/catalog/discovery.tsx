@@ -11,7 +11,7 @@ export function StylingPreview() {
   return (
     <section aria-labelledby="styling-heading" className="border-t border-line pt-12 sm:pt-16">
       <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-        <div><p className="eyebrow mb-3">The Loupe edit</p><h2 id="styling-heading" className="display-md text-ink">A piece for every part of your life.</h2></div>
+        <div><p className="eyebrow mb-3">The Jewelrex edit</p><h2 id="styling-heading" className="display-md text-ink">A piece for every part of your life.</h2></div>
         <Link href="/styling" className="link-quiet inline-flex min-h-11 items-center gap-3 text-[13px]">Explore styling <ArrowRight className="size-4" aria-hidden /></Link>
       </div>
       <div className="grid gap-6 md:grid-cols-3">

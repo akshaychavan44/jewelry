@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Logo } from "@/components/brand/logo";
 import { AuthScrollReset } from "@/components/auth/scroll-reset";
 import { imagery } from "@/config/site";
 
@@ -14,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </p>
       </div>
       <div className="flex h-full flex-col overflow-y-auto px-5 py-4 md:px-12">
-        <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-2 sm:py-4">{children}</main>
+        <main className="mx-auto flex w-full max-w-[420px] flex-1 flex-col justify-center py-2 sm:py-4"><div className="mb-6 flex justify-center"><Logo compact /></div>{children}</main>
       </div>
     </div>
   );

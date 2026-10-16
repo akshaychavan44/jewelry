@@ -156,7 +156,7 @@ export function CinematicHero({ jewelers }: { jewelers: number }) {
   return (
     <section ref={sectionRef} className={styles.hero} aria-labelledby="hero-heading">
       <div ref={sceneRef} className={styles.scene}>
-        <h1 id="hero-heading" className="sr-only">Loupe — fine jewelry, extraordinary stories</h1>
+        <h1 id="hero-heading" className="sr-only">Jewelrex — fine jewelry, extraordinary stories</h1>
         <div className={styles.media} aria-hidden="true">
           <video ref={videoRef} src="/media/loupe-entrance-1080p.mp4" muted playsInline preload="auto" poster="/media/loupe-entrance-poster-1080p.jpg" tabIndex={-1} className={styles.video} onEnded={() => { manualRef.current = false; setPlaying(false); }} />
         </div>

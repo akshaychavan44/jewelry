@@ -8,7 +8,7 @@ import { db } from "@/server/db";
 import { getDisplayCurrency } from "@/server/services/currency";
 
 export const metadata: Metadata = {
-  title: "Custom Orders & Commissions | Loupe",
+  title: "Custom Orders & Commissions | Jewelrex",
   description:
     "A piece that begins with you. Commission a bespoke piece from independent jewelers.",
 };

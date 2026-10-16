@@ -44,7 +44,7 @@ export async function AdminLoginPageContent({ searchParams }: { searchParams: Pr
       />
       <div className="mt-6 flex flex-col items-center gap-2 text-center text-[13px] text-ink-soft">
         <Link href="/" className="text-ink underline underline-offset-4">
-          ← Back to Loupe Storefront
+          ← Back to Jewelrex Storefront
         </Link>
       </div>
       {process.env.NODE_ENV !== "production" && (

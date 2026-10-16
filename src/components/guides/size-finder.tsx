@@ -4,7 +4,7 @@ import { useState } from "react";
 import { RING_SIZES } from "@/lib/jewelry";
 import { cn } from "@/lib/utils";
 
-/** Measurement → nearest ring size across the four scales Loupe sells in. */
+/** Measurement → nearest ring size across the four scales Jewelrex sells in. */
 export function SizeFinder() {
   const [mode, setMode] = useState<"diameter" | "circumference">("circumference");
   const [value, setValue] = useState("");

@@ -8,14 +8,14 @@ import { LABS } from "@/lib/jewelry";
 import { CheckCircle2, ExternalLink, FileCheck, FileText, Gem, ShieldCheck, Sparkles } from "lucide-react";
 
 const guide = guideBySlug("certificates");
-export const metadata: Metadata = { title: `${guide.title} | Loupe Buying Guides`, description: guide.description };
+export const metadata: Metadata = { title: `${guide.title} | Jewelrex Buying Guides`, description: guide.description };
 
 const SECTIONS = [
   { id: "why", label: "Why a report matters" },
   { id: "labs", label: "The laboratories" },
   { id: "reading", label: "Reading a report" },
   { id: "hallmarks", label: "Hallmarks count too" },
-  { id: "loupe", label: "How Loupe checks" },
+  { id: "loupe", label: "How Jewelrex checks" },
 ];
 
 const LAB_NOTES: { lab: CertificateLab; covers: string }[] = [
@@ -50,7 +50,7 @@ export default function CertificatesGuide() {
       </GuideSection>
 
       {/* 02. THE LABORATORIES */}
-      <GuideSection id="labs" title="The laboratories you'll see on Loupe">
+      <GuideSection id="labs" title="The laboratories you'll see on Jewelrex">
         <div className="my-7 grid gap-4 sm:grid-cols-2">
           {LAB_NOTES.map(({ lab, covers }) => (
             <div key={lab} className="rounded-[16px] border border-[#e5d8c3] bg-[#FFFDF8] p-5 shadow-2xs flex flex-col justify-between">
@@ -118,13 +118,13 @@ export default function CertificatesGuide() {
         </p>
       </GuideSection>
 
-      {/* 05. HOW LOUPE CHECKS */}
-      <GuideSection id="loupe" title="How Loupe verifies every certificate">
+      {/* 05. HOW JEWELREX CHECKS */}
+      <GuideSection id="loupe" title="How Jewelrex verifies every certificate">
         <GuideTakeaway
-          title="Loupe Authentication Guarantees"
+          title="Jewelrex Authentication Guarantees"
           points={[
             "Registry Verification: Every attached report is verified directly with the issuing institute (GIA, IGI, SSEF) prior to listing approval.",
-            "Single-Listing Integrity: A certificate number can belong to only one physical piece on Loupe, preventing copycat reuse.",
+            "Single-Listing Integrity: A certificate number can belong to only one physical piece on Jewelrex, preventing copycat reuse.",
             "Complete Transparency: Review full high-resolution report PDFs directly on the piece page before placing an order.",
             "3-Day Inspection Escrow: Your payment remains secure in escrow during your in-person 3-day inspection window.",
           ]}

@@ -1,13 +1,14 @@
 "use client";
 
 import "./globals.css";
+import { Logo } from "@/components/brand/logo";
 
 // Last-resort boundary: replaces the root layout, so it renders its own document.
 export default function GlobalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
     <html lang="en">
       <body className="flex min-h-dvh flex-col items-center justify-center bg-ivory px-6 text-center text-ink">
-        <p className="text-[12px] tracking-[0.2em] text-ink-soft uppercase">Loupe</p>
+        <Logo compact />
         <h1 className="mt-4 text-[32px] leading-tight">We&rsquo;ll be right back.</h1>
         <p className="mt-3 max-w-md text-[15px] text-ink-soft">The marketplace hit an unexpected problem. Your cart and orders are safe.</p>
         <button type="button" onClick={() => retry()} className="mt-8 rounded-[2px] bg-sage px-6 py-3 text-[13px] tracking-[0.12em] text-white uppercase">

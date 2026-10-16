@@ -7,7 +7,7 @@ import { CheckCircle2, Eye, Gem, Search, Sparkles } from "lucide-react";
 
 const guide = guideBySlug("diamond-clarity");
 export const metadata: Metadata = {
-  title: `${guide.title} | Loupe Buying Guides`,
+  title: `${guide.title} | Jewelrex Buying Guides`,
   description: guide.description,
 };
 
@@ -17,7 +17,7 @@ const SECTIONS = [
   { id: "eye-clean", label: "Where eye-clean begins" },
   { id: "four-cs", label: "Clarity and the other Cs" },
   { id: "lab-grown", label: "Lab-grown diamonds" },
-  { id: "buying", label: "Buying on Loupe" },
+  { id: "buying", label: "Buying on Jewelrex" },
 ];
 
 const GROUPS = ["Flawless", "VVS", "VS", "SI", "Included"] as const;
@@ -147,7 +147,7 @@ export default function DiamondClarityGuide() {
         </div>
 
         <p>
-          When a jeweler on Loupe lists an item as &ldquo;eye-clean&rdquo;, you can request an HD macro video directly through the listing — most ateliers respond within hours.
+          When a jeweler on Jewelrex lists an item as &ldquo;eye-clean&rdquo;, you can request an HD macro video directly through the listing — most ateliers respond within hours.
         </p>
       </GuideSection>
 
@@ -163,7 +163,7 @@ export default function DiamondClarityGuide() {
         </p>
 
         <GuideTakeaway
-          title="The Loupe Curator Rule of Thumb"
+          title="The Jewelrex Curator Rule of Thumb"
           points={[
             "Allocate the highest priority to Cut grade — it governs 90% of sparkle and light return.",
             "Choose an eye-clean SI1 or VS2 to get the look of a flawless stone at a fraction of the cost.",
@@ -185,9 +185,9 @@ export default function DiamondClarityGuide() {
       </GuideSection>
 
       {/* ============================================================ */}
-      {/* 06. BUYING ON LOUPE */}
+      {/* 06. BUYING ON JEWELREX */}
       {/* ============================================================ */}
-      <GuideSection id="buying" title="Buying a diamond on Loupe">
+      <GuideSection id="buying" title="Buying a diamond on Jewelrex">
         <div className="rounded-[18px] border border-[#e5d7c3] bg-[#FFFDF8] p-6 sm:p-8 space-y-4 shadow-2xs">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="size-5 shrink-0 text-[#86683a] mt-0.5" />

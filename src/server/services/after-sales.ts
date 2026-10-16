@@ -178,7 +178,7 @@ export async function rejectReturn(sellerId: string, returnId: string, message: 
   await db.$transaction(async (tx) => {
     await tx.returnRequest.update({ where: { id: rma.id }, data: { status: "REJECTED", rejectedAt: new Date(), sellerResponse: message } });
     await tx.payout.updateMany({ where: { sellerOrderId: rma.sellerOrderId, status: "ON_HOLD" }, data: { status: "PENDING", holdReason: null } });
-    await notify(tx, rma.buyerId, "RETURN", "Return declined", `${rma.rmaNumber} — you can escalate to Loupe from your order page.`, `/account/orders/${rma.sellerOrder.order.orderNumber}`);
+    await notify(tx, rma.buyerId, "RETURN", "Return declined", `${rma.rmaNumber} — you can escalate to Jewelrex from your order page.`, `/account/orders/${rma.sellerOrder.order.orderNumber}`);
   });
 }
 
@@ -280,7 +280,7 @@ export async function resolveDispute(args: { adminId: string; disputeId: string;
     if (amount === 0) {
       await tx.payout.updateMany({ where: { sellerOrderId: dispute.sellerOrderId, status: "ON_HOLD" }, data: { status: "PENDING", holdReason: null } });
     }
-    if (dispute.conversation) await postMessage(tx, dispute.conversation.id, null, `Case resolved by Loupe: ${args.resolution.replace(/_/g, " ").toLowerCase()}. ${args.notes}`, { isSystem: true });
+    if (dispute.conversation) await postMessage(tx, dispute.conversation.id, null, `Case resolved by Jewelrex: ${args.resolution.replace(/_/g, " ").toLowerCase()}. ${args.notes}`, { isSystem: true });
     await tx.auditLog.create({ data: { actorId: args.adminId, action: amount ? "dispute.force_refund" : "dispute.resolve", entityType: "Dispute", entityId: dispute.id, metadata: { resolution: args.resolution, refundAmountMinor: amount } } });
     await notify(tx, dispute.openedById, "DISPUTE", "Your case has been resolved", dispute.caseNumber, `/account/messages`);
     await notify(tx, dispute.seller.userId, "DISPUTE", "Dispute resolved", dispute.caseNumber, `/seller/orders/${dispute.sellerOrderId}`);

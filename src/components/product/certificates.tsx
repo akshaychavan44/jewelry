@@ -70,7 +70,7 @@ function CertificateRow({ cert }: { cert: CertificateView }) {
         </div>
         {cert.verified && (
           <span className="inline-flex items-center gap-1 text-[12px] text-sage-deep">
-            <ShieldCheck className="size-3.5" /> Checked by Loupe
+            <ShieldCheck className="size-3.5" /> Checked by Jewelrex
           </span>
         )}
       </div>

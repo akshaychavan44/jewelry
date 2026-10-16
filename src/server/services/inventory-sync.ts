@@ -10,7 +10,7 @@ import { refreshProductFacets } from "./listings";
 //   Inbound  · Shopify  POST /api/integrations/shopify/:id   (X-Shopify-Hmac-Sha256)
 //            · Square   POST /api/integrations/square/:id    (x-square-hmacsha256-signature)
 //            · Custom   PUT  /api/v1/inventory               (Authorization: Bearer lp_live_…)
-//   Outbound · stock changes on Loupe are recorded as OUTBOUND sync events and
+//   Outbound · stock changes on Jewelrex are recorded as OUTBOUND sync events and
 //              pushed to the provider's inventory API (credentials permitting).
 //
 // Every inbound event is stored with its provider event id for idempotency, so

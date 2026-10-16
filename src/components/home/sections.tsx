@@ -27,7 +27,7 @@ export function StorySection({ stats }: { stats: { jewelers: number; certified: 
         <p className="eyebrow mb-4">The art of choosing well</p>
         <h2 id="story-heading" className="display-lg text-ink">Extraordinary pieces.<br />A more personal story.</h2>
         <div className="mt-6 space-y-4 text-[15.5px] leading-relaxed text-ink-soft">
-          <p>Loupe connects discerning collectors with independent jewelers and master ateliers. Look for the verified badge to find jewelers whose business registration and identity have been checked by Loupe.</p>
+          <p>Jewelrex connects discerning collectors with independent jewelers and master ateliers. Look for the verified badge to find jewelers whose business registration and identity have been checked by Jewelrex.</p>
           <p>When you discover a piece or commission bespoke work, you connect with the jeweler directly. Discuss specifications, arrange viewings, and complete your purchase directly with the maker.</p>
         </div>
         <p className="mt-7 font-script text-[34px] leading-none text-gold-deep">Crafted with care</p>
@@ -119,7 +119,7 @@ export function StyledGallery() {
   return (
     <section className="py-20 md:py-24" aria-labelledby="styled-heading">
       <h2 id="styled-heading" className="display-md mb-8 text-center text-ink">
-        Inside the Loupe world.
+        Inside the Jewelrex world.
       </h2>
       <div className="shell grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
         {["/media/necklaces.jpg", "/media/bridal.jpg", "/media/atelier.jpg"].map((src) => (

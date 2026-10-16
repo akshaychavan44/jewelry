@@ -101,7 +101,7 @@ export async function JewelerProfilePage({ params, searchParams, details = false
             ["Showcase", `${listings.length} pieces`],
             ...(details ? [
               ["Replies", formatResponseTime(seller.responseTimeMinutes)],
-              ["On Loupe since", formatDate(seller.submittedAt ?? seller.approvedAt ?? seller.createdAt, "monthYear")],
+              ["On Jewelrex since", formatDate(seller.submittedAt ?? seller.approvedAt ?? seller.createdAt, "monthYear")],
             ] : []),
           ].map(([label, value]) => (
             <div key={String(label)}>

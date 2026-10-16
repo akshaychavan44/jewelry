@@ -95,11 +95,7 @@
   text-align: center;
 }
 
-.wordmark > span:first-child {
-  font-size: 42px;
-  letter-spacing: -.025em;
-  color: #231d17;
-}
+.wordmark > img { width: 170px; height: auto; }
 
 .wordmark > span:last-child {
   margin-top: 5px;
@@ -173,9 +169,7 @@
   .utilities {
     gap: 14px;
   }
-  .wordmark > span:first-child {
-    font-size: 38px;
-  }
+  .wordmark > img { width: 170px; height: auto; }
 }
 
 @media (max-width: 1023px) {
@@ -195,9 +189,7 @@
   .bar {
     padding-inline: 14px;
   }
-  .wordmark > span:first-child {
-    font-size: 32px;
-  }
+  .wordmark > img { width: 170px; height: auto; }
   .wordmark > span:last-child {
     font-size: 6px;
     letter-spacing: .2em;

@@ -4,7 +4,7 @@ import { PolicyLayout } from "@/components/help/policy-layout";
 import { siteConfig } from "@/config/site";
 
 export const metadata: Metadata = {
-  title: "Direct Purchasing & Jeweler Policies | Loupe",
+  title: "Direct Purchasing & Jeweler Policies | Jewelrex",
   description: "How shipping, delivery, payments, returns, and warranties work directly between clients and independent jewelers.",
 };
 
@@ -72,7 +72,7 @@ export default function ShippingReturnsPage() {
 
       <h2>5. Questions &amp; Support</h2>
       <p>
-        If you have questions about a specific piece or order, reach out to the jeweler via your <Link href="/account/messages" className="underline">Loupe messages</Link> or the contact details on their atelier profile.
+        If you have questions about a specific piece or order, reach out to the jeweler via your <Link href="/account/messages" className="underline">Jewelrex messages</Link> or the contact details on their atelier profile.
       </p>
     </PolicyLayout>
   );

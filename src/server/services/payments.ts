@@ -14,7 +14,7 @@ let client: Stripe | null | undefined;
 
 export function stripe(): Stripe | null {
   if (client !== undefined) return client;
-  client = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { appInfo: { name: "Loupe Marketplace" } }) : null;
+  client = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { appInfo: { name: "Jewelrex Marketplace" } }) : null;
   return client;
 }
 
@@ -39,7 +39,7 @@ export async function createPaymentIntent(args: {
       receipt_email: args.email,
       transfer_group: args.transferGroup,
       automatic_payment_methods: { enabled: true },
-      description: `Loupe order ${args.orderNumber}`,
+      description: `Jewelrex order ${args.orderNumber}`,
       metadata: { orderId: args.orderId, orderNumber: args.orderNumber },
     },
     { idempotencyKey: `pi_${args.orderId}` },

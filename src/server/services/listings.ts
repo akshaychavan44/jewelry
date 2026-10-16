@@ -302,7 +302,7 @@ export async function addCertificate(sellerId: string, userId: string, productId
   const duplicate = await db.certificate.findUnique({ where: { lab_reportNumber: { lab: input.lab, reportNumber: input.reportNumber } } });
   if (duplicate) throw new ListingError("That report number is already attached to a listing. Each report can back only one piece.");
   const asset = typeof file === "string" ? await ownedUpload(file, "CERTIFICATE", userId) : file?.size ? await saveUpload(file, "CERTIFICATE", sellerId, userId) : null;
-  // Seller-added reports are reviewed by Loupe before they carry the "checked" mark.
+  // Seller-added reports are reviewed by Jewelrex before they carry the "checked" mark.
   return db.certificate.create({
     data: {
       productId,

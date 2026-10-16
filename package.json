@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Loupe — a multi-vendor marketplace for fine, luxury and handcrafted jewelry.",
+  "description": "Jewelrex — a multi-vendor marketplace for fine, luxury and handcrafted jewelry.",
   "engines": {
     "node": ">=20.19"
   },

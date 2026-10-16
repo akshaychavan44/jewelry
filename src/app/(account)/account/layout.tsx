@@ -9,7 +9,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { TrustBar } from "@/components/layout/bars";
 
 export const metadata: Metadata = {
-  title: { default: "My Account", template: "%s · Loupe" },
+  title: { default: "My Account", template: "%s · Jewelrex" },
   robots: { index: false },
 };
 
@@ -49,7 +49,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
           <DashboardNav items={items} />
         </div>
         <div className="space-y-3 border-t border-line px-5 py-4 text-[13px]">
-          <Link href="/" className="block text-ink-soft hover:text-ink">Back to Loupe</Link>
+          <Link href="/" className="block text-ink-soft hover:text-ink">Back to Jewelrex</Link>
         </div>
         <DashboardAccountMenu name={user.name} email={user.email} image={user.image} label="Customer account" settingsHref="/account/settings" />
       </aside>

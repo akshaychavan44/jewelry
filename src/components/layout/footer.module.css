@@ -8,7 +8,7 @@
 .columns { display: grid; grid-template-columns: 1.55fr repeat(3, minmax(0, 1fr)); max-width: 1130px; margin-top: 48px; }
 .brand { padding-right: 36px; }
 .logo { align-items: start; color: #f8eedc; }
-.logo > span:first-child { font-size: 50px; }
+.logo > img { width: 220px; height: auto; }
 .logo > span:last-child { color: #f8eedc; padding-left: 0; font-size: 10px; letter-spacing: .32em; margin-top: 12px; }
 .brand > p { max-width: 340px; margin-top: 20px; font-family: var(--font-sans); font-size: 15px; line-height: 1.6; color: #d4c8b6; }
 .socials { display: flex; gap: 26px; margin-top: 18px; color: #cfb07a; }

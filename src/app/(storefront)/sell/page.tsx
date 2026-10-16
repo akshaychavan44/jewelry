@@ -14,9 +14,9 @@ import styles from "./sell-hero.module.css";
 import { JewelerHeroVideo } from "./hero-video";
 
 export const metadata: Metadata = {
-  title: "For Jewelers · List Your Atelier for Free | Loupe",
+  title: "For Jewelers · List Your Atelier for Free | Jewelrex",
   description:
-    "List your jewelry atelier for free on Loupe and connect directly with genuine buyers, collectors and jewelry enthusiasts. Grow your brand with 0% sales commission.",
+    "List your jewelry atelier for free on Jewelrex and connect directly with genuine buyers, collectors and jewelry enthusiasts. Grow your brand with 0% sales commission.",
 };
 
 const BENEFITS = [
@@ -83,7 +83,7 @@ export default async function SellPage() {
             </h1>
 
             <p className={styles.description}>
-              List your jewelry atelier for free on Loupe and connect directly with genuine buyers, collectors and jewelry enthusiasts. Grow your brand with no sales commission.
+              List your jewelry atelier for free on Jewelrex and connect directly with genuine buyers, collectors and jewelry enthusiasts. Grow your brand with no sales commission.
             </p>
 
             <div className={styles.action}>
@@ -98,9 +98,9 @@ export default async function SellPage() {
         <div className="shell">
           <div className="max-w-2xl">
             <p className="eyebrow mb-2">Built for craftsmanship</p>
-            <h2 className="display-lg text-ink">Why independent jewelers choose to list on Loupe</h2>
+            <h2 className="display-lg text-ink">Why independent jewelers choose to list on Jewelrex</h2>
             <p className="mt-3 text-[15.5px] text-ink-soft">
-              Unlike generic marketplaces that take high commissions and hide client information, Loupe connects you directly with serious luxury buyers.
+              Unlike generic marketplaces that take high commissions and hide client information, Jewelrex connects you directly with serious luxury buyers.
             </p>
           </div>
 

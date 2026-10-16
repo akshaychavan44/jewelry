@@ -50,13 +50,13 @@ export async function LoginPageContent({ intent, searchParams }: { intent: Login
       </p>
       <LoginForm key={intent} intent={intent} callbackUrl={callbackUrl} initialError={error ? (ERRORS[error] ?? "Sign-in failed. Please try again.") : undefined} />
       <p className="mt-6 text-center text-[14px] text-ink-soft">
-        {seller ? "New to selling on Loupe?" : "New to Loupe?"}{" "}
+        {seller ? "New to selling on Jewelrex?" : "New to Jewelrex?"}{" "}
         <Link href={`/register?${registration}`} className="text-ink underline underline-offset-4">
           {seller ? "Create a jeweler account" : "Create a customer account"}
         </Link>
       </p>
       <Link href={seller ? "/sell" : "/shop"} className="mt-4 text-center text-[13px] text-ink-soft underline underline-offset-4">
-        {seller ? "Learn about selling on Loupe" : "Continue browsing jewelry"}
+        {seller ? "Learn about selling on Jewelrex" : "Continue browsing jewelry"}
       </Link>
       {process.env.NODE_ENV !== "production" && (
         <div className="mt-6 rounded-[3px] border border-dashed border-line-strong bg-porcelain px-3.5 py-2.5 text-[11.5px] text-ink-soft">

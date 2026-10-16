@@ -197,7 +197,7 @@ export function ShowcaseForm({ piece, categories, currency }: { piece?: Piece; c
       <legend className="font-display text-xl">Where should this piece appear?</legend>
       <p className="mb-4 text-sm text-muted">Choose each location independently. Both can be turned off.</p>
       <div className="grid grid-cols-2 gap-4">
-        {[["showOnProfile", "My public profile", "In the showcase on your business profile.", piece?.showOnProfile ?? true], ["showOnWebsite", "Loupe listings & jeweler directory", "In jewelry search, collections and directory previews.", piece?.showOnWebsite ?? true]].map(([name, label, hint, checked]) => (
+        {[["showOnProfile", "My public profile", "In the showcase on your business profile.", piece?.showOnProfile ?? true], ["showOnWebsite", "Jewelrex listings & jeweler directory", "In jewelry search, collections and directory previews.", piece?.showOnWebsite ?? true]].map(([name, label, hint, checked]) => (
           <label key={String(name)} className="flex cursor-pointer gap-3 rounded border border-line p-4">
             <input type="checkbox" name={String(name)} defaultChecked={Boolean(checked)} className="mt-1 accent-[#876038]" />
             <span>

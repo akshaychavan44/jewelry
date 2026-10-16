@@ -362,9 +362,9 @@ export const disputeUpdateSchema = z.object({
 
 const STATUS_NOTES = {
   OPEN: "This case has been reopened.",
-  AWAITING_SELLER: "Loupe has asked the jeweler to respond within 72 hours.",
-  AWAITING_BUYER: "Loupe has asked the buyer for more information within 72 hours.",
-  UNDER_REVIEW: "A Loupe specialist is now reviewing the evidence.",
+  AWAITING_SELLER: "Jewelrex has asked the jeweler to respond within 72 hours.",
+  AWAITING_BUYER: "Jewelrex has asked the buyer for more information within 72 hours.",
+  UNDER_REVIEW: "A Jewelrex specialist is now reviewing the evidence.",
 } as const;
 
 export async function updateDisputeCase(adminId: string, input: z.infer<typeof disputeUpdateSchema>) {
@@ -389,8 +389,8 @@ export async function updateDisputeCase(adminId: string, input: z.infer<typeof d
     }
     if (statusChanged && dispute.conversation) {
       await postMessage(tx, dispute.conversation.id, null, STATUS_NOTES[input.status!], { isSystem: true });
-      if (input.status === "AWAITING_SELLER") await notify(tx, dispute.seller.userId, "DISPUTE", "Loupe needs your response", dispute.caseNumber, `/seller/messages/${dispute.conversation.id}`);
-      if (input.status === "AWAITING_BUYER") await notify(tx, dispute.openedById, "DISPUTE", "Loupe needs more information", dispute.caseNumber, `/account/messages/${dispute.conversation.id}`);
+      if (input.status === "AWAITING_SELLER") await notify(tx, dispute.seller.userId, "DISPUTE", "Jewelrex needs your response", dispute.caseNumber, `/seller/messages/${dispute.conversation.id}`);
+      if (input.status === "AWAITING_BUYER") await notify(tx, dispute.openedById, "DISPUTE", "Jewelrex needs more information", dispute.caseNumber, `/account/messages/${dispute.conversation.id}`);
     }
     await tx.auditLog.create({ data: { actorId: adminId, action: "dispute.update", entityType: "Dispute", entityId: dispute.id, metadata: { status: input.status ?? null, priority: input.priority ?? null, assigned: !!input.assignToMe } } });
   });

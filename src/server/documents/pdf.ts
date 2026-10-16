@@ -53,7 +53,7 @@ export function rule(page: PDFPage, x1: number, x2: number, y: number, color = L
 
 /** Wordmark in the brand's serif-over-caps arrangement. */
 export function wordmark(page: PDFPage, fonts: Fonts, x: number, y: number) {
-  text(page, "Loupe", x, y, fonts.serif, 26);
+  text(page, "Jewelrex", x, y, fonts.serif, 26);
   text(page, "FINE JEWELRY MARKETPLACE", x + 1, y - 13, fonts.sans, 6.5, MUTED);
 }
 

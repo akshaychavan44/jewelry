@@ -57,7 +57,7 @@ export function CardList({ cards, demo }: { cards: Card[]; demo: boolean }) {
           <p className="text-[12.5px] text-muted">Demo mode — real cards are added through Stripe once keys are configured.</p>
         </div>
       ) : (
-        <p className="text-[13px] text-muted">New cards are saved securely by Stripe when you check out. Card numbers never touch Loupe&rsquo;s servers.</p>
+        <p className="text-[13px] text-muted">New cards are saved securely by Stripe when you check out. Card numbers never touch Jewelrex&rsquo;s servers.</p>
       )}
     </div>
   );

@@ -7,7 +7,7 @@ import { StylingPreview } from "@/components/catalog/discovery";
 
 export const metadata: Metadata = {
   title: "Buying guides",
-  description: "Plain-spoken guides to gold purity, diamond clarity, ring sizing and gemological certificates — from the jewelers on Loupe.",
+  description: "Plain-spoken guides to gold purity, diamond clarity, ring sizing and gemological certificates — from the jewelers on Jewelrex.",
 };
 
 const GUIDE_CROPS: Record<string, string> = {

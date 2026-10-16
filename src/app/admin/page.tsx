@@ -85,7 +85,7 @@ export default async function AdminOverview({ searchParams }: { searchParams: Pr
 
       <div className="mt-6">
         <Card>
-          <CardHeader title="Featured & Verified Ateliers" description="Top jeweler listings on Loupe" action={<Link href="/admin/kyc?status=APPROVED" className="text-[13px] text-ink underline underline-offset-4">All jewelers</Link>} />
+          <CardHeader title="Featured & Verified Ateliers" description="Top jeweler listings on Jewelrex" action={<Link href="/admin/kyc?status=APPROVED" className="text-[13px] text-ink underline underline-offset-4">All jewelers</Link>} />
           <Table>
             <thead>
               <tr>

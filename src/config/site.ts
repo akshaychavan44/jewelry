@@ -9,7 +9,7 @@ const appUrl =
   "http://localhost:3000";
 
 export const siteConfig = {
-  name: "Loupe",
+  name: "Jewelrex",
   descriptor: "Independent Jeweler Directory & Showcase",
   description:
     "Discover exceptional fine, high and vintage jewelry from verified independent jewelers — connect directly with master ateliers and artisans.",
@@ -89,13 +89,13 @@ export const imagery = {
 export const testimonials = [
   {
     quote:
-      "I discovered an independent jeweler in Florence through Loupe and contacted them directly. We arranged a video consultation and designed a custom sapphire ring together.",
+      "I discovered an independent jeweler in Florence through Jewelrex and contacted them directly. We arranged a video consultation and designed a custom sapphire ring together.",
     name: "Elena M.",
     detail: "Bespoke sapphire solitaire · Florence",
   },
   {
     quote:
-      "I reached out to the atelier directly through their Loupe showcase. They provided detailed provenance and resized the Art Deco ring perfectly for me.",
+      "I reached out to the atelier directly through their Jewelrex showcase. They provided detailed provenance and resized the Art Deco ring perfectly for me.",
     name: "Hannah W.",
     detail: "1920s Art Deco cluster · London",
   },

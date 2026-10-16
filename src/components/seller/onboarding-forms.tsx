@@ -459,7 +459,7 @@ export function BusinessForm({
             {err(`doc_${d.type}`) && <p className="text-[12px] text-rosewood">{err(`doc_${d.type}`)?.[0]}</p>}
           </div>
         ))}
-        <p className="text-[12.5px] text-muted">JPG, PNG or WebP images up to 12 MB. Documents are stored privately and seen only by Loupe&rsquo;s verification team.</p>
+        <p className="text-[12.5px] text-muted">JPG, PNG or WebP images up to 12 MB. Documents are stored privately and seen only by Jewelrex&rsquo;s verification team.</p>
       </fieldset>
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <Link

@@ -81,6 +81,6 @@ export async function renderInvoice(order: InvoiceOrder, sellerOrderId?: string)
     text(page, money(order.totalMinor), right, y - 4, fonts.serif, 13, INK, { align: "right" });
   }
 
-  text(page, "Loupe acts as the marketplace facilitator and collects and remits applicable taxes and duties. Goods are sold by the named jewelers.", left, 64, fonts.sans, 7.5, MUTED, { maxWidth: right - left });
+  text(page, "Jewelrex acts as the marketplace facilitator and collects and remits applicable taxes and duties. Goods are sold by the named jewelers.", left, 64, fonts.sans, 7.5, MUTED, { maxWidth: right - left });
   return pdf.save();
 }

@@ -12,7 +12,7 @@ export async function sendInquiryEmail(input: { to: string; subject: string; tex
     const link = new URL(input.href, process.env.NEXT_PUBLIC_APP_URL).href;
     const response = await send("https://api.resend.com/emails", {
       method: "POST", headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": input.key },
-      body: JSON.stringify({ from: process.env.AUTH_EMAIL_FROM, to: [input.to], subject: input.subject, text: `${input.text}\n\nView on Loupe: ${link}` }), signal: AbortSignal.timeout(10000),
+      body: JSON.stringify({ from: process.env.AUTH_EMAIL_FROM, to: [input.to], subject: input.subject, text: `${input.text}\n\nView on Jewelrex: ${link}` }), signal: AbortSignal.timeout(10000),
     });
     if (!response.ok) { console.error("Inquiry email delivery failed", response.status); return "failed" as const; }
     return "sent" as const;

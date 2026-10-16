@@ -568,7 +568,7 @@ export function CategoryCarousel({ categories }: CategoryCarouselProps) {
         <div className={styles.expandedShade} />
         <button type="button" className={styles.close} aria-label="Close category preview" onClick={closeExpanded} autoFocus><X size={18} /></button>
         <div className={styles.expandedCopy}>
-          <p className={styles.expandedEyebrow}>The Loupe collection</p>
+          <p className={styles.expandedEyebrow}>The Jewelrex collection</p>
           <h3 id={expandedHeadingId}>{expandedCategory.name}</h3>
           <p>{CATEGORY_DESCRIPTIONS[expandedCategory.slug] ?? "Discover beautifully considered jewelry from independent jewelers."}</p>
           <Link href={`/shop/${expandedCategory.slug}`} className={styles.explore}>Explore {expandedCategory.name} <ArrowRight size={15} aria-hidden="true" /></Link>

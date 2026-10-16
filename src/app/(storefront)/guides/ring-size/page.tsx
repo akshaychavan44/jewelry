@@ -6,7 +6,7 @@ import { RING_SIZES } from "@/lib/jewelry";
 import { CheckCircle2, Ruler, Sparkles, UserCheck } from "lucide-react";
 
 const guide = guideBySlug("ring-size");
-export const metadata: Metadata = { title: `${guide.title} | Loupe Buying Guides`, description: guide.description };
+export const metadata: Metadata = { title: `${guide.title} | Jewelrex Buying Guides`, description: guide.description };
 
 const SECTIONS = [
   { id: "measure", label: "Three ways to measure" },
@@ -60,7 +60,7 @@ export default function RingSizeGuide() {
         <GuideQuote
           quote="A properly sized ring should slide smoothly over the knuckle with slight resistance, resting comfortably without spinning throughout daily activities."
           author="Marcus Vane"
-          role="Loupe Head of Bench Operations"
+          role="Jewelrex Head of Bench Operations"
         />
       </GuideSection>
 
@@ -72,7 +72,7 @@ export default function RingSizeGuide() {
       {/* 03. INTERNATIONAL SIZE CHART */}
       <GuideSection id="chart" title="International ring size chart">
         <p>
-          US sizes serve as Loupe&rsquo;s unified benchmark. Every listing translates measurements across standard scales, and your jeweler receives your precise choice.
+          US sizes serve as Jewelrex&rsquo;s unified benchmark. Every listing translates measurements across standard scales, and your jeweler receives your precise choice.
         </p>
 
         {/* Polished Luxury Scrollable Table */}
@@ -127,7 +127,7 @@ export default function RingSizeGuide() {
             <div>
               <p className="font-semibold text-ink">Made to Size at the Bench</p>
               <p className="text-[14px] text-ink-soft mt-0.5">
-                Many rings on Loupe are crafted custom to your finger circumference before shipment, ensuring pristine metal integrity.
+                Many rings on Jewelrex are crafted custom to your finger circumference before shipment, ensuring pristine metal integrity.
               </p>
             </div>
           </div>

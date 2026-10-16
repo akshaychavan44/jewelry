@@ -44,7 +44,7 @@ export async function openDisputeAction(input: { sellerOrderId: string; reason: 
   return run(async () => {
     const reason = z.enum(DisputeReason).parse(input.reason);
     const dispute = await openDispute({ buyerId: user.id, sellerOrderId: input.sellerOrderId, reason, description: input.description.slice(0, 3000) });
-    return { ok: true, message: `Case ${dispute.caseNumber} opened. Funds are on hold while Loupe mediates.`, href: "/account/messages" };
+    return { ok: true, message: `Case ${dispute.caseNumber} opened. Funds are on hold while Jewelrex mediates.`, href: "/account/messages" };
   }, ["/account/orders", "/account/messages"]);
 }
 
@@ -134,7 +134,7 @@ export async function createCustomRequestAction(_: CustomRequestState, formData:
       return r;
     });
     revalidatePath("/account/custom-requests"); revalidatePath("/seller", "layout");
-    after(async () => { await sendInquiryEmail({ to: seller.user.email, subject: "New custom enquiry on Loupe", text: `${seller.storeName}, you have a new custom enquiry: ${request.title}\nReference: ${request.reference}`, href: "/seller/custom-requests", key: `inquiry-new/${request.id}` }); });
+    after(async () => { await sendInquiryEmail({ to: seller.user.email, subject: "New custom enquiry on Jewelrex", text: `${seller.storeName}, you have a new custom enquiry: ${request.title}\nReference: ${request.reference}`, href: "/seller/custom-requests", key: `inquiry-new/${request.id}` }); });
     return { ok: true, message: `Request ${request.reference} sent to ${seller.storeName}. They will contact you separately. Track it in My Custom Requests.` };
   } catch (error) { if (error instanceof UploadError) return { message: error.message }; throw error; }
 
@@ -176,7 +176,7 @@ export async function sendMessageAction(conversationId: string, body: string): P
     const recipients = convo.participants.filter((p) => p.userId !== user.id);
     for (const r of recipients) {
       const href = r.role === "SELLER" ? `/seller/messages/${conversationId}` : r.role === "ADMIN" ? `/admin/disputes` : `/account/messages/${conversationId}`;
-      await notify(tx, r.userId, "MESSAGE", `New message from ${user.name ?? "Loupe"}`, text.slice(0, 90), href);
+      await notify(tx, r.userId, "MESSAGE", `New message from ${user.name ?? "Jewelrex"}`, text.slice(0, 90), href);
     }
   });
   revalidatePath(`/account/messages/${conversationId}`);

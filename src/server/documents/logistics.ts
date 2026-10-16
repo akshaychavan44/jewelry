@@ -70,7 +70,7 @@ export async function renderPackingSlip(so: SlipOrder) {
   block(to).forEach((l, i) => text(page, l, left, height - 145 - i * 13, fonts.sans, 10));
   text(page, "FROM", left + 280, height - 130, fonts.sansBold, 7.5, MUTED);
   text(page, so.seller.storeName, left + 280, height - 145, fonts.serif, 13);
-  text(page, "via Loupe", left + 280, height - 160, fonts.sans, 9, MUTED);
+  text(page, "via Jewelrex", left + 280, height - 160, fonts.sans, 9, MUTED);
 
   let y = height - 260;
   text(page, "PIECE", left, y, fonts.sansBold, 7.5, MUTED);
@@ -93,7 +93,7 @@ export async function renderPackingSlip(so: SlipOrder) {
   text(page, "Inspect on arrival", left + 16, y - 6, fonts.serif, 13);
   text(
     page,
-    `You have three days after delivery to report anything in your Loupe account before the jeweler is paid, and ${so.seller.returnWindowDays} days to request a return. Keep the original packaging and certificates with the piece.`,
+    `You have three days after delivery to report anything in your Jewelrex account before the jeweler is paid, and ${so.seller.returnWindowDays} days to request a return. Keep the original packaging and certificates with the piece.`,
     left + 16,
     y - 24,
     fonts.sans,

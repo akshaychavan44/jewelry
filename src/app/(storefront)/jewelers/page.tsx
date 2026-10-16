@@ -17,7 +17,7 @@ import { db } from "@/server/db";
 import { DIRECTORY_SORTS, type DirectorySort, listJewelers } from "@/server/services/sellers";
 
 export const metadata: Metadata = {
-  title: "Independent Jewelers Directory | Loupe",
+  title: "Independent Jewelers Directory | Jewelrex",
   description: "Browse independent ateliers, goldsmiths, and heritage jewelry houses — connect directly with the makers.",
 };
 

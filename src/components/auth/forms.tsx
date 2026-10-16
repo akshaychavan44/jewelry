@@ -105,7 +105,7 @@ export function RegisterForm({ intent, callbackUrl }: { intent: "buyer" | "selle
         {intent === "seller" ? "Create jeweler account" : "Create account"}
       </SubmitButton>
       <p className="text-[12.5px] text-muted">
-        By continuing you agree to Loupe&rsquo;s{" "}
+        By continuing you agree to Jewelrex&rsquo;s{" "}
         <Link href="/help/terms" className="underline underline-offset-2">
           terms
         </Link>{" "}

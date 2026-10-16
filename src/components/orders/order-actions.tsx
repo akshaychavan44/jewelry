@@ -140,7 +140,7 @@ function DisputeDialog({ sellerOrderId }: { sellerOrderId: string }) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Open a case with Loupe</DialogTitle>
+          <DialogTitle>Open a case with Jewelrex</DialogTitle>
           <DialogDescription>We&rsquo;ll hold the jeweler&rsquo;s payment and mediate. Most cases are resolved within five working days.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-5">

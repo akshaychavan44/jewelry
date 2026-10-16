@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: { default: `${siteConfig.name} — ${siteConfig.descriptor}`, template: `%s · ${siteConfig.name}` },
   description: siteConfig.description,
+  icons: { icon: [{ url: "/brand/jewelrex-icon.svg", type: "image/svg+xml" }] },
   openGraph: { siteName: siteConfig.name, type: "website" },
 };
 

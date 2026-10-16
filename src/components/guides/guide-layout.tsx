@@ -100,7 +100,7 @@ export function GuideLayout({ slug, sections, children, cta }: GuideLayoutProps)
               {/* Curator Byline */}
               <div className="mt-7 flex items-center gap-2 text-[12.5px] text-[#8c6738] font-medium">
                 <Sparkles className="size-4 stroke-[1.5]" />
-                <span>Curated by Loupe Gemologists & Independent Ateliers</span>
+                <span>Curated by Jewelrex Gemologists & Independent Ateliers</span>
               </div>
             </div>
 
@@ -172,7 +172,7 @@ export function GuideLayout({ slug, sections, children, cta }: GuideLayoutProps)
               {/* Need help box */}
               <div className="mt-8 rounded-[12px] border border-[#e8decb] bg-[#f8f2e7] p-4 text-[12.5px] leading-relaxed text-[#594d3f]">
                 <p className="font-semibold text-ink">Have questions?</p>
-                <p className="mt-1 text-[#6b5d4e]">Every piece on Loupe includes direct messaging with verified master jewelers.</p>
+                <p className="mt-1 text-[#6b5d4e]">Every piece on Jewelrex includes direct messaging with verified master jewelers.</p>
               </div>
             </div>
           </aside>

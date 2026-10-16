@@ -38,7 +38,7 @@ export function CollectionShowcase() {
     <section id="collections" className={styles.section} aria-labelledby="collections-heading">
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>The Loupe edit</p>
+          <p className={styles.eyebrow}>The Jewelrex edit</p>
           <h2 id="collections-heading">Find a little <em>extraordinary.</em></h2>
         </div>
         <Link href="/shop" className={styles.all}>Explore all jewelry <ArrowUpRight size={17} aria-hidden /></Link>

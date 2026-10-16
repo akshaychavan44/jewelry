@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 type Point = { x: number; y: number };
 
 /**
- * The Loupe signature: a jeweler's lens that magnifies the photograph beneath
+ * The Jewelrex signature: a jeweler's lens that magnifies the photograph beneath
  * it. It follows a mouse, rests on a focal point for touch and reduced-motion
  * users, and maps correctly onto `object-cover` crops.
  */

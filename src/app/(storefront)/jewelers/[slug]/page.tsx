@@ -99,7 +99,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
             ["Reviews", seller.ratingCount],
             ["Showcase", `${listings.length} pieces`],
             ["Replies", formatResponseTime(seller.responseTimeMinutes)],
-            ["On Loupe since", formatDate(seller.submittedAt ?? seller.approvedAt ?? seller.createdAt, "monthYear")],
+            ["On Jewelrex since", formatDate(seller.submittedAt ?? seller.approvedAt ?? seller.createdAt, "monthYear")],
           ].map(([label, value]) => (
             <div key={String(label)}>
               <dt className="text-[11px] tracking-[0.1em] text-muted uppercase">{label}</dt>

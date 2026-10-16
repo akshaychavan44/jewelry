@@ -285,7 +285,7 @@ export function CheckoutFlow({ addresses, initialAddressId, initialQuote, initia
             )}
             <p className="flex gap-2.5 text-[12px] leading-relaxed text-muted">
               <ShieldCheck className="size-4 shrink-0 text-sage-deep" strokeWidth={1.5} />
-              Funds are held by Loupe and released to each jeweler three days after you receive your piece.
+              Funds are held by Jewelrex and released to each jeweler three days after you receive your piece.
             </p>
           </div>
         ) : (

@@ -33,7 +33,7 @@ export async function requestPasswordReset(_: ResetState, form: FormData): Promi
           body: JSON.stringify({
             from: process.env.AUTH_EMAIL_FROM,
             to: [email],
-            subject: "Reset your Loupe password",
+            subject: "Reset your Jewelrex password",
             text: `Reset your password: ${link.href}\n\nThis link expires in 30 minutes and can be used once. If you did not request it, ignore this email.`
           }),
           signal: AbortSignal.timeout(10000)

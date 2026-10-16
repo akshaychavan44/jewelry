@@ -28,7 +28,7 @@ export default async function SellerLayout({ children }: { children: React.React
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5"><DashboardNav items={items} /></div>
       <div className="flex flex-wrap gap-4 border-t border-line px-5 py-5 text-sm lg:flex-col">
         {!settings.isPaused && <Link href={`/jewelers/${seller.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-ink-soft"><ExternalLink size={15} />View public profile</Link>}
-        <Link href="/" className="text-ink-soft">Back to Loupe</Link>
+        <Link href="/" className="text-ink-soft">Back to Jewelrex</Link>
         <AccountViewSwitch view="customer" />
       </div>
       <DashboardAccountMenu name={user.name} email={user.email} image={user.image} label="Jeweler account" settingsHref="/seller/account" />

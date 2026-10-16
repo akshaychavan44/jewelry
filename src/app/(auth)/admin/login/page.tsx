@@ -3,7 +3,7 @@ import { AdminLoginPageContent } from "@/components/auth/admin-login-page";
 import type { SearchParams } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Admin Login · Loupe Operations",
+  title: "Admin Login · Jewelrex Operations",
   robots: { index: false },
 };
 

@@ -102,7 +102,7 @@ export function SkuMapper({ integrationId, variants }: { integrationId: string; 
   return (
     <div className="flex flex-wrap items-end gap-2">
       <label className="text-[12px] text-ink-soft">
-        Loupe SKU
+        Jewelrex SKU
         <NativeSelect value={variantId} onChange={(e) => setVariantId(e.target.value)} className="mt-1 h-9 w-64 text-[13px]">
           {variants.map((v) => (
             <option key={v.id} value={v.id}>

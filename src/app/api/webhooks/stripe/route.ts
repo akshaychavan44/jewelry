@@ -3,7 +3,7 @@ import { db } from "@/server/db";
 import { markOrderPaid, markPaymentFailed } from "@/server/services/checkout";
 import { stripe } from "@/server/services/payments";
 
-// Stripe → Loupe. Signature-verified; every handler is idempotent because
+// Stripe → Jewelrex. Signature-verified; every handler is idempotent because
 // Stripe retries deliveries.
 export async function POST(req: Request) {
   const s = stripe();

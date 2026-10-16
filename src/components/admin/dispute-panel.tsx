@@ -18,7 +18,7 @@ const STATUS_OPTIONS: { value: OpenStatus; label: string }[] = [
   { value: "OPEN", label: "Open — not yet triaged" },
   { value: "AWAITING_SELLER", label: "Waiting on the jeweler" },
   { value: "AWAITING_BUYER", label: "Waiting on the buyer" },
-  { value: "UNDER_REVIEW", label: "Under review by Loupe" },
+  { value: "UNDER_REVIEW", label: "Under review by Jewelrex" },
 ];
 
 export function CaseControls({ disputeId, status, priority, internalNotes, assignedToMe }: { disputeId: string; status: OpenStatus; priority: DisputePriority; internalNotes: string; assignedToMe: boolean }) {

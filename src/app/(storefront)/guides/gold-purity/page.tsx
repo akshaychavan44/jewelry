@@ -12,7 +12,7 @@ import { getSpotQuotes, getSpotRates } from "@/server/services/market";
 import { Calculator, ShieldCheck, Sparkles } from "lucide-react";
 
 const guide = guideBySlug("gold-purity");
-export const metadata: Metadata = { title: `${guide.title} | Loupe Buying Guides`, description: guide.description };
+export const metadata: Metadata = { title: `${guide.title} | Jewelrex Buying Guides`, description: guide.description };
 
 const SECTIONS = [
   { id: "karats", label: "Karats & fineness" },
@@ -56,7 +56,7 @@ export default async function GoldPurityGuide() {
         </div>
 
         <p>
-          On Loupe, every listing shows its fineness in that cartouche, exactly as it would be stamped — so a 585 piece from Florence and a 14k piece from Portland are easy to
+          On Jewelrex, every listing shows its fineness in that cartouche, exactly as it would be stamped — so a 585 piece from Florence and a 14k piece from Portland are easy to
           compare.
         </p>
       </GuideSection>
@@ -117,7 +117,7 @@ export default async function GoldPurityGuide() {
           <div className="rounded-[16px] border border-[#e5d8c3] bg-[#FFFDF8] p-5 shadow-2xs">
             <h4 className="font-display text-[18px] text-ink">India — BIS hallmark with HUID</h4>
             <p className="mt-1.5 text-[14px] text-ink-soft">
-              Gold jewelry sold in India carries three marks: the BIS logo, the purity grade (for example <span className="font-mono text-[12.5px] font-bold text-[#86683a]">22K916</span>) and a six-character <strong>HUID</strong> unique to that piece. You can check any HUID in the government&rsquo;s BIS CARE app. Jewelers on Loupe enter the HUID on the listing, and our team verifies it before the piece is marked hallmarked.
+              Gold jewelry sold in India carries three marks: the BIS logo, the purity grade (for example <span className="font-mono text-[12.5px] font-bold text-[#86683a]">22K916</span>) and a six-character <strong>HUID</strong> unique to that piece. You can check any HUID in the government&rsquo;s BIS CARE app. Jewelers on Jewelrex enter the HUID on the listing, and our team verifies it before the piece is marked hallmarked.
             </p>
           </div>
 
@@ -138,7 +138,7 @@ export default async function GoldPurityGuide() {
       </GuideSection>
 
       {/* 05. LIVE PRICING */}
-      <GuideSection id="live-pricing" title="How live gold pricing works on Loupe">
+      <GuideSection id="live-pricing" title="How live gold pricing works on Jewelrex">
         <p>
           Some jewelers — especially for plain gold chains, bangles and 22k bridal pieces — price by weight rather than a fixed tag. Their listings update automatically as the
           gold market moves, using one transparent formula:

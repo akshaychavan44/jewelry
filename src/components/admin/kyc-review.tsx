@@ -90,7 +90,7 @@ export function KycDecisionPanel({ sellerId, storeName, documents }: { sellerId:
       </div>
 
       <Field label="Message to the jeweler" htmlFor="feedback" hint={rejected ? "Required when returning an application. Be specific about what to fix." : "Optional on approval — shown in their notification."}>
-        <Textarea id="feedback" rows={4} value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder={rejected ? "Please upload a current business licence — the one provided expired in March." : `Welcome to Loupe, ${storeName}.`} />
+        <Textarea id="feedback" rows={4} value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder={rejected ? "Please upload a current business licence — the one provided expired in March." : `Welcome to Jewelrex, ${storeName}.`} />
       </Field>
       <Field label="Internal notes" htmlFor="internal" hint="Only visible to the admin team.">
         <Textarea id="internal" rows={3} value={internal} onChange={(e) => setInternal(e.target.value)} placeholder="Registry lookup, sanctions screening result, calls made…" />

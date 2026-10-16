@@ -72,7 +72,7 @@ export async function addCertificateAction(productId: string, formData: FormData
     const input = certificateSchema.parse(raw);
     const file = formData.get("file");
     await addCertificate(seller.id, user.id, productId, input, file instanceof File && file.size ? file : typeof formData.get("file_fileId") === "string" ? formData.get("file_fileId") as string : null);
-    return { ok: true, message: "Report attached. Loupe will check it against the piece before it shows as verified." };
+    return { ok: true, message: "Report attached. Jewelrex will check it against the piece before it shows as verified." };
   }, [`/seller/products/${productId}`]);
 }
 

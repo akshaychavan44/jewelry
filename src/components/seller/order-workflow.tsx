@@ -50,7 +50,7 @@ export function OrderWorkflow({ sellerOrderId, status, defaultCarrier, needsProd
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Ship this order</DialogTitle>
-              <DialogDescription>Leave tracking blank to generate an insured, signature-required label with Loupe&rsquo;s carrier rates.</DialogDescription>
+              <DialogDescription>Leave tracking blank to generate an insured, signature-required label with Jewelrex&rsquo;s carrier rates.</DialogDescription>
             </DialogHeader>
             <DialogBody className="space-y-4">
               <Field label="Carrier" htmlFor="ship-carrier">

@@ -41,7 +41,7 @@ export function ReviewsSection({ detail }: { detail: ProductDetail }) {
               </ul>
             </>
           ) : (
-            <p className="text-[14px] text-ink-soft">No reviews for this piece yet. Reviews on Loupe can only be left by buyers who received the piece.</p>
+            <p className="text-[14px] text-ink-soft">No reviews for this piece yet. Reviews on Jewelrex can only be left by buyers who received the piece.</p>
           )}
 
           {visiblePhotoReviews.length > 0 && (

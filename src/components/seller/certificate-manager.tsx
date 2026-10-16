@@ -29,7 +29,7 @@ export function CertificateManager({ productId, certificates, variants }: { prod
 
   return (
     <Card>
-      <CardHeader title="Certificates & hallmarks" description="Attach an image of the laboratory report to the exact SKU it grades. Loupe checks every report before it shows as verified." />
+      <CardHeader title="Certificates & hallmarks" description="Attach an image of the laboratory report to the exact SKU it grades. Jewelrex checks every report before it shows as verified." />
       {certificates.length > 0 && (
         <ul className="divide-y divide-line border-b border-line">
           {certificates.map((c) => (
@@ -39,7 +39,7 @@ export function CertificateManager({ productId, certificates, variants }: { prod
               <span className="text-muted">{c.variantSku ? `SKU ${c.variantSku}` : "Whole listing"}</span>
               {c.hasFile && <FileText className="size-4 text-ink-soft" aria-label="Certificate image attached" />}
               <span className={cn("ml-auto rounded-full px-2.5 py-0.5 text-[11.5px]", c.status === "VERIFIED" ? "bg-moss-mist text-moss" : c.status === "REJECTED" ? "bg-rosewood-mist text-rosewood" : "bg-amber-mist text-amber")}>
-                {c.status === "PENDING_REVIEW" ? "Awaiting Loupe check" : c.status.toLowerCase()}
+                {c.status === "PENDING_REVIEW" ? "Awaiting Jewelrex check" : c.status.toLowerCase()}
               </span>
               <button
                 type="button"

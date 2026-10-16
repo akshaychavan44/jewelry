@@ -14,7 +14,7 @@ export default async function TermsPage() {
       sample
       intro={`${siteConfig.name} is a software platform and directory connecting clients with independent jewelers. Jewelers subscribe to list their businesses and showcase their jewelry pieces. All transactions, discussions, payments, delivery, warranties, returns, and disputes are handled directly and independently between the jeweler and the customer.`}
     >
-      <h2>1. The Loupe Platform Model</h2>
+      <h2>1. The Jewelrex Platform Model</h2>
       <p>
         {siteConfig.name} operates exclusively as a discovery directory and software service. We provide tools for jewelers to publish their business profiles, display jewelry pieces, and receive direct inquiries from prospective clients. {siteConfig.name} is not a broker, auctioneer, retailer, payment intermediary, or escrow provider.
       </p>

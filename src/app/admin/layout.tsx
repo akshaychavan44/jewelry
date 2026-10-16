@@ -8,7 +8,7 @@ import { requireAdmin } from "@/server/auth/session";
 import { getAdminQueues } from "@/server/services/admin";
 import { isDatabaseUnavailable } from "@/lib/database-errors";
 
-export const metadata: Metadata = { title: { default: "Admin console", template: "%s · Loupe admin" }, robots: { index: false } };
+export const metadata: Metadata = { title: { default: "Admin console", template: "%s · Jewelrex admin" }, robots: { index: false } };
 
 function navItems(q?: { kyc: number; certificates: number }): NavItem[] {
   const items: NavItem[] = [
@@ -49,7 +49,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
         <div className="hidden space-y-2 border-t border-line px-5 py-4 text-[13px] lg:block">
           <Link href="/" className="block text-ink-soft hover:text-ink">
-            Back to Loupe
+            Back to Jewelrex
           </Link>
         </div>
         <DashboardAccountMenu name={admin.name} email={admin.email} image={admin.image} label="Admin account" settingsHref="/account/settings" />

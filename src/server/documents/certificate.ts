@@ -78,6 +78,6 @@ export async function renderCertificateSummary(cert: Certificate, productTitle: 
     { maxWidth: right - left - 32 },
   );
 
-  text(page, "Compiled by Loupe from details supplied by the jeweler and checked against the listing. The laboratory's own report remains the authoritative record.", left, 60, fonts.sans, 7.5, MUTED, { maxWidth: right - left });
+  text(page, "Compiled by Jewelrex from details supplied by the jeweler and checked against the listing. The laboratory's own report remains the authoritative record.", left, 60, fonts.sans, 7.5, MUTED, { maxWidth: right - left });
   return pdf.save();
 }

@@ -1,16 +1,18 @@
 const dateFormats = {
-  short: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }),
-  long: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }),
-  dayMonth: new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" }),
-  dateTime: new Intl.DateTimeFormat("en-GB", {
+  short: new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric" }),
+  long: new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "long", year: "numeric" }),
+  dayMonth: new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short" }),
+  dateTime: new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
     day: "numeric",
     month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true,
   }),
-  time: new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit" }),
-  monthYear: new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }),
+  time: new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true }),
+  monthYear: new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", month: "long", year: "numeric" }),
 };
 
 type DateInput = Date | string | number | null | undefined;

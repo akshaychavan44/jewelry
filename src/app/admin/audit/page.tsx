@@ -54,7 +54,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
         <Table>
           <thead>
             <tr>
-              <Th>When</Th>
+              <Th>When (IST)</Th>
               <Th>Who</Th>
               <Th>Action</Th>
               <Th>Subject</Th>

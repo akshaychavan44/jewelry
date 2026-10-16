@@ -129,6 +129,8 @@ export function syncMetalRatesFromMetalsDev(options: { force?: boolean } = {}): 
   return inFlightSync;
 }
 
+const METAL_RATES_LOCK_ID = 847291;
+
 async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise<{
   success: boolean;
   count: number;
@@ -147,26 +149,47 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
     };
   }
 
-  // 1. Check freshness in database (prevent duplicate calls if fresh within 8h window)
-  if (!options.force) {
-    const latestInrRecord = await db.metalRate.findFirst({
-      where: { currency: "INR" },
-      orderBy: { fetchedAt: "desc" },
-    });
-    if (latestInrRecord) {
-      const ageMs = Date.now() - new Date(latestInrRecord.fetchedAt).getTime();
-      if (ageMs < EIGHT_HOURS_MS) {
+  // 1. Try acquiring PostgreSQL advisory lock so distributed serverless instances never sync concurrently
+  let acquiredLock = false;
+  try {
+    const lockRes = await db.$queryRawUnsafe<Array<{ locked: boolean }>>(
+      `SELECT pg_try_advisory_lock(${METAL_RATES_LOCK_ID}) AS locked`
+    ).catch(() => null);
+    if (lockRes && lockRes.length > 0) {
+      acquiredLock = Boolean(lockRes[0]?.locked);
+      if (!acquiredLock) {
+        console.log("[metals.dev] Another server instance currently holds the sync lock. Skipping concurrent execution.");
         return {
           success: true,
           count: 0,
-          timestamp: new Date(latestInrRecord.fetchedAt),
           alreadyFresh: true,
         };
       }
     }
+  } catch {
+    // If advisory lock fails (e.g. non-Postgres in unit test mock), proceed safely
   }
 
   try {
+    // 2. Check freshness in database (prevent duplicate calls if fresh within 8h window)
+    if (!options.force) {
+      const latestInrRecord = await db.metalRate.findFirst({
+        where: { currency: "INR" },
+        orderBy: { fetchedAt: "desc" },
+      });
+      if (latestInrRecord) {
+        const ageMs = Date.now() - new Date(latestInrRecord.fetchedAt).getTime();
+        if (ageMs < EIGHT_HOURS_MS) {
+          return {
+            success: true,
+            count: 0,
+            timestamp: new Date(latestInrRecord.fetchedAt),
+            alreadyFresh: true,
+          };
+        }
+      }
+    }
+
     const url = `https://api.metals.dev/v1/latest?api_key=${encodeURIComponent(apiKey)}&currency=INR&unit=g`;
     const res = await fetch(url, {
       method: "GET",
@@ -198,12 +221,20 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
       timestamp?: string;
     };
 
-    // 2. Strict validation of provider payload
+    // 3. Strict validation of provider payload
     if (!data.metals || typeof data.metals !== "object") {
       return {
         success: false,
         count: 0,
         error: "Metals.dev response missing metals payload",
+      };
+    }
+
+    if (data.unit && data.unit !== "g") {
+      return {
+        success: false,
+        count: 0,
+        error: `Unexpected provider unit '${data.unit}', expected 'g'`,
       };
     }
 
@@ -223,6 +254,12 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
     }
 
     const fetchedAt = data.timestamp ? new Date(data.timestamp) : new Date();
+    if (data.timestamp) {
+      const tsTime = fetchedAt.getTime();
+      if (isNaN(tsTime) || Math.abs(Date.now() - tsTime) > 24 * 60 * 60 * 1000) {
+        return { success: false, count: 0, error: "Provider returned stale or invalid timestamp" };
+      }
+    }
 
     // Determine USD/INR conversion rate for USD metal rates and foreign currencies
     const existingInrFx = await db.exchangeRate.findFirst({ where: { base: "USD", quote: "INR" } });
@@ -419,6 +456,14 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[metals.dev] Sync exception:", message);
     return { success: false, count: 0, error: message };
+  } finally {
+    if (acquiredLock) {
+      try {
+        await db.$queryRawUnsafe(`SELECT pg_advisory_unlock(${METAL_RATES_LOCK_ID})`);
+      } catch (err) {
+        console.warn("[metals.dev] Failed to release pg advisory lock:", err);
+      }
+    }
   }
 }
 
@@ -469,7 +514,7 @@ export const getPreciousMetalRates = cache(async (): Promise<MetalPricingData> =
   });
   const fallbackFx = inrFx ? Number(inrFx.rate) : 88.2;
 
-  let mostRecentTimestamp = new Date();
+  let mostRecentTimestamp: Date | null = null;
   let primarySource = "metals.dev";
 
   const items: PreciousMetalRateItem[] = await Promise.all(
@@ -484,7 +529,7 @@ export const getPreciousMetalRates = cache(async (): Promise<MetalPricingData> =
         const pricePerGram = Number(inrRate.pricePerGram);
         const displayPrice = pricePerGram * cfg.multiplier;
         const fetchedAt = new Date(inrRate.fetchedAt);
-        if (fetchedAt > mostRecentTimestamp || !latestInrRecord) {
+        if (!mostRecentTimestamp || fetchedAt > mostRecentTimestamp) {
           mostRecentTimestamp = fetchedAt;
         }
         primarySource = inrRate.source;
@@ -514,6 +559,9 @@ export const getPreciousMetalRates = cache(async (): Promise<MetalPricingData> =
       const pricePerGram = usdPrice * fallbackFx;
       const displayPrice = pricePerGram * cfg.multiplier;
       const fetchedAt = usdRate ? new Date(usdRate.fetchedAt) : new Date();
+      if (usdRate && (!mostRecentTimestamp || fetchedAt > mostRecentTimestamp)) {
+        mostRecentTimestamp = fetchedAt;
+      }
 
       return {
         metal: cfg.metal,
@@ -534,7 +582,7 @@ export const getPreciousMetalRates = cache(async (): Promise<MetalPricingData> =
 
   return {
     items,
-    lastUpdatedFormatted: formatIstTimestamp(mostRecentTimestamp),
+    lastUpdatedFormatted: formatIstTimestamp(mostRecentTimestamp ?? new Date()),
     source: primarySource,
   };
 });

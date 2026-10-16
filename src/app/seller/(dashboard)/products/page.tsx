@@ -16,7 +16,10 @@ export default async function MyJewelry() {
   const [pieces, settings, lastUpdate] = await Promise.all([
     db.product.findMany({
       where: { sellerId: seller.id, deletedAt: null },
-      include: { images: { orderBy: { position: "asc" } } },
+      include: {
+        images: { orderBy: { position: "asc" } },
+        variants: { select: { id: true, metalWeightGrams: true } },
+      },
       orderBy: { updatedAt: "desc" },
     }),
     jewelryVisibility(),
@@ -56,6 +59,7 @@ export default async function MyJewelry() {
             const v = settings.find((s) => s.productId === p.id);
             const active = p.status === "ACTIVE";
             const isSpot = p.pricingMode === "METAL_SPOT";
+            const missingWeight = isSpot && (!p.variants[0]?.metalWeightGrams || Number(p.variants[0].metalWeightGrams) <= 0);
             return (
               <article key={p.id} className="flex items-center gap-5 rounded-[3px] border border-line bg-porcelain p-5">
                 {p.images[0] ? (
@@ -67,9 +71,16 @@ export default async function MyJewelry() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-display text-xl">{p.title}</h2>
                     {isSpot ? (
-                      <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-900">
-                        Automatic metal price
-                      </span>
+                      <>
+                        <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-900">
+                          Automatic metal price
+                        </span>
+                        {missingWeight && (
+                          <span className="rounded-full border border-rose-300 bg-rose-50 px-2.5 py-0.5 text-[11px] font-medium text-rose-800">
+                            Missing weight · Auto-repricing paused
+                          </span>
+                        )}
+                      </>
                     ) : (
                       <span className="rounded-full bg-parchment px-2.5 py-0.5 text-[11px] text-muted">
                         Fixed price

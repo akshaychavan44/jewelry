@@ -1,4 +1,3 @@
-import { BusinessNameForm } from "@/components/seller/business-name-form";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { PageHeader } from "@/components/account/page-header";
@@ -8,12 +7,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { Monogram } from "@/components/ui/display";
 import { requireSeller } from "@/server/auth/session";
 import { db } from "@/server/db";
-import { getDirectorySettings, nameChanges } from "@/server/services/jeweler-directory";
+import { getDirectorySettings } from "@/server/services/jeweler-directory";
 
 export default async function MyBusiness() {
   const { seller } = await requireSeller();
   const [settings, locations] = await Promise.all([getDirectorySettings(seller.id), db.storeLocation.findMany({ where: { sellerId: seller.id }, orderBy: { id: "asc" }, take: 1 })]);
-  const [changes, address] = await Promise.all([nameChanges(seller.id), seller.returnAddressId ? db.address.findUnique({ where: { id: seller.returnAddressId } }) : null]);
+  const address = seller.returnAddressId ? await db.address.findUnique({ where: { id: seller.returnAddressId } }) : null;
   const location = locations[0];
   return <>
     <PageHeader title="My Business" description="Keep your business details and social links up to date." />
@@ -22,7 +21,6 @@ export default async function MyBusiness() {
       <div className="flex flex-wrap gap-3"><Link href="/seller/preview" className={buttonVariants({ variant: "subtle", size: "sm" })}>Preview profile</Link>{!settings.isPaused && <Link href={`/jewelers/${seller.slug}`} className={buttonVariants({ variant: "subtle", size: "sm" })}><ExternalLink size={15} />View public profile</Link>}<ListingVisibility paused={settings.isPaused} /></div>
     </section>
     <BusinessProfileForm initial={{ storeName: seller.storeName, country: seller.country, defaultCurrency: seller.defaultCurrency, foundedYear: seller.foundedYear?.toString() ?? "", addressLine2: location?.line2 ?? address?.line2 ?? "", addressCity: location?.city ?? address?.city ?? seller.city ?? "", region: location?.region ?? address?.region ?? "", postalCode: location?.postalCode ?? address?.postalCode ?? "", tagline: seller.tagline ?? "", bio: seller.bio ?? "", city: seller.city ?? "", specialties: seller.specialties.join(", "), address: location?.line1 ?? "", hours: location?.hours ?? "", latitude: location?.latitude?.toString() ?? "", longitude: location?.longitude?.toString() ?? "", phone: location?.phone ?? "", whatsapp: settings.whatsapp, publicEmail: settings.publicEmail, maps: settings.maps, instagram: settings.instagram, facebook: settings.facebook, youtube: settings.youtube, website: seller.website ?? "", acceptsCustomOrders: seller.acceptsCustomOrders }} />
-    <details className="mt-8 rounded border border-line bg-porcelain p-5"><summary className="cursor-pointer font-display text-xl">Change business name</summary><p className="my-4 text-sm text-muted">Admin approval is required. Your profile address stays the same after a name change.</p><BusinessNameForm pending={changes.some((r) => r.status === "PENDING")} /><ul className="mt-5 space-y-3">{changes.map((r) => <li key={r.id} className="border-t border-line pt-3 text-sm"><strong>{r.requestedName}</strong> · {r.status.toLowerCase()}{r.reviewNotes && <p className="mt-1 text-muted">{r.reviewNotes}</p>}</li>)}</ul></details>
     <section className="mt-8 rounded-[3px] border border-line bg-porcelain p-5"><p className="caps mb-4 text-xs text-muted">Saved profile preview</p><div className="mb-4 flex items-center gap-4"><Monogram name={seller.storeName} src={seller.logoUrl} size={48} /><div><p className="font-display text-xl">{seller.storeName}</p><p className="text-sm text-muted">{seller.city}</p></div></div><JewelerSocialLinks settings={settings} website={seller.website} /><p className="mt-4 text-xs text-muted">Save your changes to update this preview and your public profile.</p></section>
   </>;
 }

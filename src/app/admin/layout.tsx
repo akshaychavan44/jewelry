@@ -14,7 +14,6 @@ function navItems(q?: { kyc: number; certificates: number }): NavItem[] {
   const items: NavItem[] = [
     { href: "/admin", label: "Platform overview", icon: "analytics", exact: true },
     { href: "/admin/kyc", label: "Jeweler verification", icon: "kyc", badge: q?.kyc },
-    { href: "/admin/business-names", label: "Business name changes", icon: "kyc" },
     { href: "/admin/certificates", label: "Certificates", icon: "verified", badge: q?.certificates },
     { href: "/admin/reviews", label: "Review moderation", icon: "reviews" },
     { href: "/admin/users", label: "Users", icon: "users" },

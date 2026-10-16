@@ -28,18 +28,17 @@ export async function saveDirectoryProfileAction(_: StepState, form: FormData): 
     if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors, message: "Check the highlighted fields." };
     const d = parsed.data;
     if (!!d.latitude !== !!d.longitude) return { fieldErrors: { latitude: ["Add both coordinates, or leave both empty."], longitude: ["Add both coordinates, or leave both empty."] } };
-    // Business identity is approved by the admin; do not silently replace it.
-    if (d.storeName !== seller.storeName) return { fieldErrors: { storeName: ["Use Change business name to request admin approval."] } };
     const file = form.get("logo");
     const logo = typeof form.get("logo_fileId") === "string" ? await ownedUpload(form.get("logo_fileId") as string, "STORE_BRANDING", user.id) : file instanceof File && file.size ? await saveUpload(file, "STORE_BRANDING", seller.id, user.id) : null;
     const bannerFile = form.get("banner");
     const banner = typeof form.get("banner_fileId") === "string" ? await ownedUpload(form.get("banner_fileId") as string, "STORE_BRANDING", user.id) : bannerFile instanceof File && bannerFile.size ? await saveUpload(bannerFile, "STORE_BRANDING", seller.id, user.id) : null;
     await db.$transaction(async (tx) => {
-      const addressData = { fullName: seller.storeName, line1: d.address, line2: d.addressLine2 || null, city: d.addressCity, region: d.region || null, postalCode: d.postalCode, country: d.country, phone: d.phone || null };
+      const addressData = { fullName: d.storeName, line1: d.address, line2: d.addressLine2 || null, city: d.addressCity, region: d.region || null, postalCode: d.postalCode, country: d.country, phone: d.phone || null };
       const address = seller.returnAddressId
         ? await tx.address.update({ where: { id: seller.returnAddressId }, data: addressData })
         : await tx.address.create({ data: { ...addressData, userId: user.id, type: "RETURN", label: "Business address", isDefault: true } });
       await tx.sellerProfile.update({ where: { id: seller.id }, data: {
+        storeName: d.storeName,
         tagline: d.tagline || null, bio: d.bio || null, city: d.city,
         country: d.country, defaultCurrency: d.defaultCurrency, foundedYear: d.foundedYear ? Number(d.foundedYear) : null, returnAddressId: address.id,
         specialties: d.specialties.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 6),
@@ -48,7 +47,7 @@ export async function saveDirectoryProfileAction(_: StepState, form: FormData): 
         ...(banner?.url ? { bannerUrl: banner.url } : {}),
       } });
       const location = await tx.storeLocation.findFirst({ where: { sellerId: seller.id }, orderBy: { id: "asc" } });
-      const locationData = { name: seller.storeName, line1: d.address, line2: d.addressLine2 || null, region: d.region || null, postalCode: d.postalCode || null, city: d.addressCity, country: d.country, phone: d.phone || null, hours: d.hours || null, latitude: d.latitude ? Number(d.latitude) : null, longitude: d.longitude ? Number(d.longitude) : null };
+      const locationData = { name: d.storeName, line1: d.address, line2: d.addressLine2 || null, region: d.region || null, postalCode: d.postalCode || null, city: d.addressCity, country: d.country, phone: d.phone || null, hours: d.hours || null, latitude: d.latitude ? Number(d.latitude) : null, longitude: d.longitude ? Number(d.longitude) : null };
       if (location) await tx.storeLocation.update({ where: { id: location.id }, data: locationData });
       else await tx.storeLocation.create({ data: { ...locationData, sellerId: seller.id } });
       await tx.$executeRaw`INSERT INTO "JewelerDirectorySettings" ("sellerId", "instagram", "facebook", "youtube", "whatsapp", "publicEmail", "maps")

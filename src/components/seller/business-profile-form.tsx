@@ -37,7 +37,7 @@ export function BusinessProfileForm({ initial }: { initial: DirectoryProfileInpu
   }, {});
   const err = (key: string) => state.fieldErrors?.[key];
   const fields = (items: { key: keyof DirectoryProfileInput; label: string; optional?: boolean; placeholder?: string; type?: string }[]) => items.map(({ key, label, optional, placeholder, type }) => <Field key={key} label={label} htmlFor={key} optional={optional} error={err(key)}>
-    <Input id={key} name={key} type={type} defaultValue={String(initial[key] ?? "")} placeholder={placeholder} aria-invalid={!!err(key)} aria-describedby={err(key) ? `${key}-error` : undefined} readOnly={key === "storeName"} />
+    <Input id={key} name={key} type={type} defaultValue={String(initial[key] ?? "")} placeholder={placeholder} aria-invalid={!!err(key)} aria-describedby={err(key) ? `${key}-error` : undefined} />
   </Field>);
   return <form action={action} className="space-y-6">
     {state.message && <p role={state.ok ? "status" : "alert"} className={`rounded border px-4 py-3 text-sm ${state.ok ? "border-sage/30 bg-sage-mist text-sage-deep" : "border-rosewood/30 text-rosewood"}`}>{state.message}</p>}
@@ -45,7 +45,6 @@ export function BusinessProfileForm({ initial }: { initial: DirectoryProfileInpu
       <legend className="px-2 font-display text-2xl text-ink">Business details</legend>
       <div className="grid gap-5 sm:grid-cols-2">
         {fields([{ key: "storeName", label: "Business name" }, { key: "city", label: "City" }])}
-        <p className="text-xs text-muted sm:col-span-2">Use Change business name below to request admin approval.</p>
         <Field label="Business logo" htmlFor="logo" optional hint="JPG, PNG or WebP, up to 6 MB."><Input id="logo" name="logo" type="file" accept="image/jpeg,image/png,image/webp" className="py-2 text-sm" /></Field>
         <Field label="Profile banner" htmlFor="banner" optional hint="JPG, PNG or WebP, up to 6 MB. Choose a file to replace your banner."><Input id="banner" name="banner" type="file" accept="image/jpeg,image/png,image/webp" className="py-2 text-sm" /></Field>
         <Field label="Operating country" htmlFor="country" error={err("country")}><NativeSelect id="country" name="country" defaultValue={initial.country}>{COUNTRY_CODES.map(c => <option key={c} value={c}>{countryName(c)}</option>)}</NativeSelect></Field>

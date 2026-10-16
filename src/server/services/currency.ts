@@ -19,7 +19,7 @@ export const getDisplayCurrency = cache(async (): Promise<CurrencyCode> => {
   const h = await headers();
   const geo = h.get("x-vercel-ip-country") ?? h.get("cf-ipcountry");
   const guess = currencyForCountry(geo);
-  return isCurrency(guess) ? guess : "USD";
+  return isCurrency(guess) ? guess : "INR";
 });
 
 export type PriceContext = { currency: CurrencyCode; rates: Record<string, number> };

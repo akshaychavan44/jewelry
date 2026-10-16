@@ -58,7 +58,7 @@ export function StoreProfileForm({
     bio: store.bio ?? "",
     country: store.country ?? "US",
     city: store.city ?? "",
-    defaultCurrency: store.defaultCurrency ?? "USD",
+    defaultCurrency: store.defaultCurrency ?? "INR",
     foundedYear: store.foundedYear ? String(store.foundedYear) : "",
     specialties: store.specialties?.join(", ") ?? "",
     ra_line1: ra?.line1 ?? "",

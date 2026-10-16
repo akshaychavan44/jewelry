@@ -341,6 +341,7 @@ export async function repriceSpotListings(sellerId?: string) {
     include: { product: { select: { id: true, currency: true } } },
   });
   const touched = new Set<string>();
+  let repricedVariantsCount = 0;
   for (const v of variants) {
     const b = computeSpotPrice(
       { metalType: v.metalType, metalWeightGrams: v.metalWeightGrams!, makingChargeType: v.makingChargeType!, makingChargeValue: v.makingChargeValue ?? 0, stonePriceMinor: num(v.stonePriceMinor), currency: v.product.currency },
@@ -350,7 +351,34 @@ export async function repriceSpotListings(sellerId?: string) {
     if (!b) continue;
     await db.productVariant.update({ where: { id: v.id }, data: { priceMinor: b.totalMinor, priceComputedAt: new Date() } });
     touched.add(v.product.id);
+    repricedVariantsCount++;
   }
   for (const id of touched) await refreshProductFacets(db, id);
-  return { variants: variants.length, products: touched.size };
+
+  try {
+    await db.auditLog.create({
+      data: {
+        actorId: sellerId ?? null,
+        action: "listings.reprice_spot",
+        entityType: "Listing",
+        entityId: sellerId ?? "all",
+        metadata: { repricedVariants: repricedVariantsCount, repricedProducts: touched.size },
+      },
+    });
+  } catch {
+    // Non-blocking for audit log
+  }
+
+  try {
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/");
+    revalidatePath("/shop");
+    revalidatePath("/catalog");
+    revalidatePath("/product/[slug]", "page");
+    revalidatePath("/seller/products");
+  } catch {
+    // Ignore in non-request test contexts
+  }
+
+  return { variants: repricedVariantsCount, products: touched.size };
 }

@@ -38,6 +38,7 @@ export async function placeOrderAction(input: {
   billingAddressId?: string | null;
   selections: CheckoutSelections;
   paymentMethodId?: string | null;
+  expectedTotalMinor?: number | null;
   note?: string | null;
 }): Promise<PlaceOrderResult> {
   const user = await assertUser();
@@ -49,6 +50,7 @@ export async function placeOrderAction(input: {
       selections: selectionsSchema.parse(input.selections),
       ctx: await getPriceContext(),
       demoPaymentMethodId: input.paymentMethodId,
+      expectedTotalMinor: input.expectedTotalMinor,
       note: input.note?.slice(0, 500),
     });
     revalidatePath("/", "layout");

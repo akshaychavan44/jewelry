@@ -3,7 +3,7 @@ import "server-only";
 import type { Address } from "@/server/db/model-types";
 import type { DutiesMode } from "@/lib/domain-enums";
 import { resolveCommissionBps } from "@/lib/commission";
-import { convertMinor } from "@/lib/money";
+import { convertMinor, formatMoney } from "@/lib/money";
 import {
   type AddressSnapshot,
   computeSellerGroupTotals,
@@ -166,6 +166,7 @@ export async function placeOrder(args: {
   selections: CheckoutSelections;
   ctx: PriceContext;
   demoPaymentMethodId?: string | null;
+  expectedTotalMinor?: number | null;
   note?: string | null;
 }): Promise<PlacementResult> {
   const user = await db.user.findUniqueOrThrow({ where: { id: args.userId } });
@@ -176,6 +177,17 @@ export async function placeOrder(args: {
 
   const { quote } = await buildQuote({ userId: user.id, destination, selections: args.selections, ctx: args.ctx });
   if (!quote.groups.length) throw new CheckoutError("Nothing in your cart can be ordered right now.");
+
+  // Server-side price validation: detect live metal rate price movements and communicate clearly
+  if (args.expectedTotalMinor !== undefined && args.expectedTotalMinor !== null) {
+    if (args.expectedTotalMinor !== quote.totals.totalMinor) {
+      const fromStr = formatMoney(args.expectedTotalMinor, quote.currency);
+      const toStr = formatMoney(quote.totals.totalMinor, quote.currency);
+      throw new CheckoutError(
+        `Live metal prices updated while you were in checkout. Your total was updated from ${fromStr} to ${toStr}. Please review your updated order before confirming.`
+      );
+    }
+  }
   const settings = await getPlatformSettings();
   const orderNumber = formatOrderNumber(randomCode(6));
   const transferGroup = `tg_${orderNumber}`;

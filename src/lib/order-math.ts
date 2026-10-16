@@ -20,6 +20,7 @@ export type SellerGroupInput = {
   shippingMinor: number;
   insuranceMinor: number;
   taxRate: number;
+  taxInclusive?: boolean;
   dutyRate: number;
   dutiesMode: DutiesMode;
   commissionBps: number;
@@ -30,6 +31,7 @@ export type SellerGroupTotals = {
   shippingMinor: number;
   insuranceMinor: number;
   taxMinor: number;
+  taxInclusive?: boolean;
   dutiesMinor: number;
   totalMinor: number;
   commissionRateBps: number;
@@ -39,12 +41,39 @@ export type SellerGroupTotals = {
 
 export function computeSellerGroupTotals(input: SellerGroupInput): SellerGroupTotals {
   const subtotalMinor = input.itemsMinor;
-  const taxMinor = Math.round((subtotalMinor + input.shippingMinor + input.insuranceMinor) * input.taxRate);
+  let taxMinor: number;
+  let totalMinor: number;
+
+  if (input.taxInclusive && input.taxRate > 0) {
+    // When prices already include tax (e.g. 3% GST on Indian retail jewelry),
+    // extract the tax portion from the merchandise value rather than double-adding it.
+    const itemTaxMinor = Math.round(subtotalMinor - subtotalMinor / (1 + input.taxRate));
+    const shippingTaxMinor = Math.round((input.shippingMinor + input.insuranceMinor) * input.taxRate);
+    taxMinor = itemTaxMinor + shippingTaxMinor;
+    const dutiesMinor = input.dutiesMode === "DDP" ? Math.round(subtotalMinor * input.dutyRate) : 0;
+    const commissionMinor = Math.round((subtotalMinor * input.commissionBps) / 10_000);
+    totalMinor = subtotalMinor + input.shippingMinor + input.insuranceMinor + shippingTaxMinor + dutiesMinor;
+
+    return {
+      subtotalMinor,
+      shippingMinor: input.shippingMinor,
+      insuranceMinor: input.insuranceMinor,
+      taxMinor,
+      taxInclusive: true,
+      dutiesMinor,
+      totalMinor,
+      commissionRateBps: input.commissionBps,
+      commissionMinor,
+      sellerNetMinor: subtotalMinor + input.shippingMinor + input.insuranceMinor - commissionMinor,
+    };
+  }
+
+  taxMinor = Math.round((subtotalMinor + input.shippingMinor + input.insuranceMinor) * input.taxRate);
   const dutiesMinor = input.dutiesMode === "DDP" ? Math.round(subtotalMinor * input.dutyRate) : 0;
   // Commission is charged on the merchandise value only — never on shipping,
   // insurance, tax or duties.
   const commissionMinor = Math.round((subtotalMinor * input.commissionBps) / 10_000);
-  const totalMinor = subtotalMinor + input.shippingMinor + input.insuranceMinor + taxMinor + dutiesMinor;
+  totalMinor = subtotalMinor + input.shippingMinor + input.insuranceMinor + taxMinor + dutiesMinor;
   return {
     subtotalMinor,
     shippingMinor: input.shippingMinor,
@@ -59,8 +88,10 @@ export function computeSellerGroupTotals(input: SellerGroupInput): SellerGroupTo
   };
 }
 
+type NumericTotalsKey = "subtotalMinor" | "shippingMinor" | "insuranceMinor" | "taxMinor" | "dutiesMinor" | "totalMinor" | "commissionMinor";
+
 export function sumTotals(groups: SellerGroupTotals[]) {
-  const sum = (key: keyof SellerGroupTotals) => groups.reduce((acc, g) => acc + g[key], 0);
+  const sum = (key: NumericTotalsKey) => groups.reduce((acc, g) => acc + (Number(g[key]) || 0), 0);
   return {
     subtotalMinor: sum("subtotalMinor"),
     shippingMinor: sum("shippingMinor"),

@@ -116,6 +116,7 @@ export async function buildQuote(args: { userId: string; destination: AddressSna
       shippingMinor: option.price.amountMinor,
       insuranceMinor: option.insurance.amountMinor,
       taxRate: tax.rate,
+      taxInclusive: args.ctx.currency === "INR" || tax.label === "GST",
       dutyRate: international ? dutyRateFor(seller.country, args.destination.country) : 0,
       dutiesMode: international ? args.selections.dutiesMode : "DDP",
       commissionBps: effectiveBps,

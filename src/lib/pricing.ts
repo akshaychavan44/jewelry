@@ -28,6 +28,9 @@ export type SpotPriceBreakdown = {
   metalValueMinor: number;
   makingChargeMinor: number;
   stoneMinor: number;
+  subtotalMinor: number;
+  gstRate: number;
+  gstMinor: number;
   totalMinor: number;
 };
 
@@ -59,9 +62,15 @@ export function computeSpotPrice(
   }
 
   const stoneMinor = Math.round(input.stonePriceMinor ?? 0);
+  const subtotalMinor = metalValueMinor + makingChargeMinor + stoneMinor;
+
+  // In India (INR), precious jewelry sales are mandated to include 3% GST in the retail price
+  const gstRate = input.currency === "INR" ? 0.03 : 0;
+  const gstMinor = Math.round(subtotalMinor * gstRate);
+
   const unit = 10 ** currencyExponent(input.currency);
   // Round up to a whole major unit so displayed and charged prices match.
-  const totalMinor = Math.ceil((metalValueMinor + makingChargeMinor + stoneMinor) / unit) * unit;
+  const totalMinor = Math.ceil((subtotalMinor + gstMinor) / unit) * unit;
 
   return {
     currency: input.currency,
@@ -73,6 +82,9 @@ export function computeSpotPrice(
     metalValueMinor,
     makingChargeMinor,
     stoneMinor,
+    subtotalMinor,
+    gstRate,
+    gstMinor,
     totalMinor,
   };
 }

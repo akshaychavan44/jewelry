@@ -150,11 +150,11 @@ test("stone cost defaults to zero and adds accurately when specified", () => {
   assert.equal(withStone.totalMinor, 75000); // 49950 + 25000 = 74950 -> rounded up to unit: 75000
 });
 
-test("currency rounding and separation of taxes and shipping", () => {
+test("currency rounding and 3% GST calculation for Indian jewelry", () => {
   const spotRatesUsd = { GOLD: 100 };
   const fx = { USD: 1, INR: 86.5 };
 
-  // Converted to INR
+  // Converted to INR with 3% GST included
   const inrPrice = computeSpotPrice(
     { metalType: "GOLD_22K", metalWeightGrams: 10, makingChargeType: "PERCENT", makingChargeValue: 10, currency: "INR" },
     spotRatesUsd,
@@ -164,10 +164,12 @@ test("currency rounding and separation of taxes and shipping", () => {
   assert.equal(inrPrice.currency, "INR");
   // Metal value in INR: $916 * 86.5 = ₹79,234.00
   // 10% making charge = ₹7,923.40
-  // Total = ₹87,157.40 rounded up to unit: ₹87,158.00 = 8715800 paise
-  assert.equal(inrPrice.totalMinor > 8700000, true);
-  // Pure jewelry price excludes tax and shipping (which are added separately during checkout calculation)
-  assert.equal(inrPrice.makingChargeMinor > 0, true);
+  // Subtotal = ₹87,157.40 = 8715740 paise
+  // 3% GST = ₹2,614.72 = 261472 paise
+  // Total = ₹89,772.12 -> rounded up to whole unit = ₹89,773.00 = 8977300 paise
+  assert.equal(inrPrice.gstRate, 0.03);
+  assert.equal(inrPrice.gstMinor, Math.round(inrPrice.subtotalMinor * 0.03));
+  assert.equal(inrPrice.totalMinor, Math.ceil((inrPrice.subtotalMinor + inrPrice.gstMinor) / 100) * 100);
 });
 
 test("listing inputs validation: invalid, zero, or negative weight returns null", () => {

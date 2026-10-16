@@ -177,7 +177,7 @@ export function ShowcaseForm({ piece, categories, currency }: { piece?: Piece; c
             </Field>
             <div className="flex flex-col justify-end">
               <p className="text-[11.5px] leading-relaxed text-muted">
-                <strong>Pricing formula:</strong> Pure-metal spot rate/g × purity fraction × net weight + making charge + stone cost. Taxes and shipping are separate.
+                <strong>Pricing formula:</strong> (Pure-metal spot rate/g × purity fraction × net weight + making charge + stone cost) + 3% GST. Indian retail jewelry prices include 3% GST. Shipping is separate.
               </p>
             </div>
           </div>

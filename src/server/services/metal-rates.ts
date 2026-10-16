@@ -216,6 +216,10 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
         silver?: number;
         platinum?: number;
         palladium?: number;
+        ibja_gold?: number;
+        ibja_silver?: number;
+        mcx_gold?: number;
+        mcx_silver?: number;
       };
       currencies?: Record<string, number>;
       timestamp?: string;
@@ -253,6 +257,22 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
       return { success: false, count: 0, error: "Invalid platinum rate received from provider" };
     }
 
+    // For domestic Indian prices (INR), use IBJA (India Bullion and Jewellers Association)
+    // benchmark rates when available, which reflect India's domestic bullion market (including customs duty).
+    // Fall back to international spot rate if IBJA quote is not returned.
+    const goldInr =
+      typeof data.metals.ibja_gold === "number" && data.metals.ibja_gold > 0
+        ? data.metals.ibja_gold
+        : gold;
+
+    const silverInr =
+      typeof data.metals.ibja_silver === "number" && data.metals.ibja_silver > 0
+        ? data.metals.ibja_silver
+        : silver;
+
+    const platinumInr = platinum;
+    const palladiumInr = palladium;
+
     const fetchedAt = data.timestamp ? new Date(data.timestamp) : new Date();
     if (data.timestamp) {
       const tsTime = fetchedAt.getTime();
@@ -275,6 +295,13 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
       SILVER: silver / usdToInr,
       PLATINUM: platinum / usdToInr,
       PALLADIUM: typeof palladium === "number" && palladium > 0 ? palladium / usdToInr : undefined,
+    };
+
+    const ratesInrAsUsd = {
+      GOLD: goldInr / usdToInr,
+      SILVER: silverInr / usdToInr,
+      PLATINUM: platinumInr / usdToInr,
+      PALLADIUM: typeof palladiumInr === "number" && palladiumInr > 0 ? palladiumInr / usdToInr : undefined,
     };
 
     const fx = await getFxRates();
@@ -309,6 +336,9 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
       const weight = Number(v.metalWeightGrams);
       if (!weight || weight <= 0) continue;
 
+      const isDomesticInr = v.product.currency === "INR";
+      const applicableRates = isDomesticInr ? ratesInrAsUsd : ratesUsd;
+
       const breakdown = computeSpotPrice(
         {
           metalType: v.metalType,
@@ -318,7 +348,7 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
           stonePriceMinor: num(v.stonePriceMinor),
           currency: v.product.currency,
         },
-        ratesUsd,
+        applicableRates,
         fx,
       );
 
@@ -342,29 +372,55 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
     const recordedRates = await db.$transaction(async (tx) => {
       let recorded = 0;
 
-      // A. Store INR metal spot rates
-      const inrEntries: Array<{ metal: SpotMetal; price: number | undefined }> = [
-        { metal: "GOLD", price: gold },
-        { metal: "SILVER", price: silver },
-        { metal: "PLATINUM", price: platinum },
-        { metal: "PALLADIUM", price: palladium },
+      // A. Store INR metal spot rates (using domestic benchmark where applicable)
+      const inrEntries: Array<{
+        metal: SpotMetal;
+        price: number | undefined;
+        source: string;
+        internationalPrice: number | undefined;
+      }> = [
+        {
+          metal: "GOLD",
+          price: goldInr,
+          source: typeof data.metals?.ibja_gold === "number" && data.metals.ibja_gold > 0 ? "metals.dev (IBJA)" : "metals.dev",
+          internationalPrice: gold,
+        },
+        {
+          metal: "SILVER",
+          price: silverInr,
+          source: typeof data.metals?.ibja_silver === "number" && data.metals.ibja_silver > 0 ? "metals.dev (IBJA)" : "metals.dev",
+          internationalPrice: silver,
+        },
+        {
+          metal: "PLATINUM",
+          price: platinumInr,
+          source: "metals.dev",
+          internationalPrice: platinum,
+        },
+        {
+          metal: "PALLADIUM",
+          price: palladiumInr,
+          source: "metals.dev",
+          internationalPrice: palladium,
+        },
       ];
 
-      for (const { metal, price } of inrEntries) {
+      for (const { metal, price, source, internationalPrice } of inrEntries) {
         if (typeof price === "number" && price > 0) {
           await tx.metalRate.create({
             data: {
               metal,
               currency: "INR",
               pricePerGram: price,
-              source: "metals.dev",
+              source,
               fetchedAt,
             },
           });
           recorded++;
 
-          // B. Store corresponding USD spot rates for cross-currency calculations
-          const usdPrice = price / usdToInr;
+          // B. Store corresponding international USD spot rates for cross-currency calculations
+          const intlPrice = internationalPrice ?? price;
+          const usdPrice = intlPrice / usdToInr;
           await tx.metalRate.create({
             data: {
               metal,
@@ -412,6 +468,8 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
           Number(latestVariant.makingChargeValue) !== upd.initialMakingVal
         ) {
           if (currentWeight > 0 && latestVariant.makingChargeType) {
+            const isDomesticInr = upd.currency === "INR";
+            const applicableRates = isDomesticInr ? ratesInrAsUsd : ratesUsd;
             const recomputed = computeSpotPrice(
               {
                 metalType: latestVariant.metalType,
@@ -421,7 +479,7 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
                 stonePriceMinor: num(latestVariant.stonePriceMinor),
                 currency: upd.currency,
               },
-              ratesUsd,
+              applicableRates,
               fx
             );
             if (recomputed && recomputed.totalMinor > 0) {
@@ -471,7 +529,13 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
           entityId: "metals.dev",
           metadata: {
             source: "metals.dev",
-            ratesInr: { gold, silver, platinum, palladium },
+            ratesInr: {
+              gold: goldInr,
+              silver: silverInr,
+              platinum: platinumInr,
+              palladium: palladiumInr,
+              benchmark: typeof data.metals?.ibja_gold === "number" && data.metals.ibja_gold > 0 ? "IBJA" : "SPOT",
+            },
             ratesUsd,
             usdToInr,
             repricedVariants: variantUpdates.length,

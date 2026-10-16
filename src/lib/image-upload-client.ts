@@ -1,15 +1,18 @@
 import { genUploader } from "uploadthing/client";
 import type { UploadRouter } from "@/server/uploadthing";
 
-type Purpose = "PRODUCT_MEDIA" | "STORE_BRANDING" | "CERTIFICATE" | "KYC_DOCUMENT";
+type Purpose = "PRODUCT_MEDIA" | "STORE_BRANDING" | "CERTIFICATE" | "KYC_DOCUMENT" | "CUSTOM_REQUEST_REFERENCE";
 const { uploadFiles } = genUploader<UploadRouter>();
 
 export async function uploadImage(file: File, purpose: Purpose) {
   const response = await fetch("/api/uploads/provider", { cache: "no-store" });
   if (!response.ok) throw new Error("Unable to start the image upload. Please try again.");
   const config: { uploadthing: boolean } = await response.json();
-  if (!config.uploadthing) return null;
-  const endpoint = purpose === "KYC_DOCUMENT" || purpose === "CERTIFICATE" ? "privateImage" : "publicImage";
+  if (!config.uploadthing) {
+    if (purpose === "CUSTOM_REQUEST_REFERENCE" && process.env.NODE_ENV === "production") throw new Error("Image uploads are temporarily unavailable. Please try again later.");
+    return null;
+  }
+  const endpoint = purpose === "KYC_DOCUMENT" || purpose === "CERTIFICATE" || purpose === "CUSTOM_REQUEST_REFERENCE" ? "privateImage" : "publicImage";
   const [result] = await uploadFiles(endpoint, { files: [file], input: { purpose } });
   if (!result?.serverData?.fileId) throw new Error("Unable to confirm the image upload. Please try again.");
   return result.serverData;

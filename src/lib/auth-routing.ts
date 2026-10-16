@@ -13,8 +13,11 @@ export function loginDestination(role: Role, intent: LoginIntent, callback?: unk
   if (destination) return destination;
   if (role === "ADMIN") return "/admin";
   if (intent === "seller" && role === "SELLER") return "/seller";
-  if (role === "SELLER" && intent === "buyer") return "/";
-  return "/account";
+  return "/";
+}
+
+export function registrationDestination(intent: "buyer" | "seller", callback?: unknown) {
+  return intent === "seller" ? "/seller/onboarding" : (safeCallback(callback) ?? "/");
 }
 
 export function safeCallback(value: unknown): string | undefined {
@@ -23,7 +26,7 @@ export function safeCallback(value: unknown): string | undefined {
 }
 
 export function homeFor(role: Role) {
-  return role === "ADMIN" ? "/admin" : role === "SELLER" ? "/" : "/account";
+  return role === "ADMIN" ? "/admin" : "/";
 }
 
 export function loginHref(intent: LoginIntent, callback?: string) {

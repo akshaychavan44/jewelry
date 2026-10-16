@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/components/auth/forms";
-import { loginHref, safeCallback } from "@/lib/auth-routing";
+import { loginHref, registrationDestination, safeCallback } from "@/lib/auth-routing";
 import { firstParam, type SearchParams } from "@/lib/utils";
 import { getCurrentUser } from "@/server/auth/session";
 
@@ -13,7 +13,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   const intent = firstParam(sp.intent) === "seller" ? "seller" : "buyer";
   const callbackUrl = safeCallback(firstParam(sp.callbackUrl));
   const user = await getCurrentUser();
-  if (user) redirect(intent === "seller" ? "/seller/onboarding" : "/account");
+  if (user) redirect(registrationDestination(intent, callbackUrl));
 
   return (
     <>

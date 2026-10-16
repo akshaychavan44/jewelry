@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { NextRequest } from "next/server";
 import { authConfig } from "../server/auth/config";
-import { canUseLogin, homeFor, loginDestination, loginForDestination, loginHref, safeCallback } from "./auth-routing";
+import { canUseLogin, homeFor, loginDestination, loginForDestination, loginHref, registrationDestination, safeCallback } from "./auth-routing";
 
 test("jeweler credentials work in both portals while customer and admin restrictions stay intact", () => {
   assert.equal(canUseLogin("SELLER", "buyer"), true);
@@ -20,7 +20,10 @@ test("login destination follows the selected view and preserves shopping callbac
   assert.equal(loginDestination("SELLER", "buyer", "/checkout?step=address"), "/checkout?step=address");
   assert.equal(loginDestination("SELLER", "buyer", "/jewelers/another-shop"), "/jewelers/another-shop");
   assert.equal(loginDestination("SELLER", "buyer", "https://example.com"), "/");
-  assert.equal(loginDestination("BUYER", "buyer"), "/account");
+  assert.equal(loginDestination("BUYER", "buyer"), "/");
+  assert.equal(loginDestination("BUYER", "buyer", "/product/example?inquiry=true"), "/product/example?inquiry=true");
+  assert.equal(loginDestination("BUYER", "buyer", "/account/wishlist"), "/account/wishlist");
+  assert.equal(loginDestination("BUYER", "buyer", "//example.com"), "/");
   assert.equal(loginDestination("ADMIN", "admin"), "/admin");
 });
 
@@ -54,10 +57,18 @@ test("external and malformed callback URLs cannot become redirect destinations",
   assert.equal(loginHref("buyer", "//example.com"), "/login");
 });
 
-test("jewelers land on the platform while buyer and admin defaults stay unchanged", () => {
-  assert.equal(homeFor("BUYER"), "/account");
+test("customers and jewelers land on the platform while admins retain their console", () => {
+  assert.equal(homeFor("BUYER"), "/");
   assert.equal(homeFor("SELLER"), "/");
   assert.equal(homeFor("ADMIN"), "/admin");
+});
+
+test("customer registration lands on the platform and jeweler registration starts onboarding", () => {
+  assert.equal(registrationDestination("buyer"), "/");
+  assert.equal(registrationDestination("buyer", "/jewelers/example"), "/jewelers/example");
+  assert.equal(registrationDestination("buyer", "https://example.com"), "/");
+  assert.equal(registrationDestination("seller"), "/seller/onboarding");
+  assert.equal(registrationDestination("seller", "/"), "/seller/onboarding");
 });
 
 test("protected routes send guests to the correct login portal", () => {

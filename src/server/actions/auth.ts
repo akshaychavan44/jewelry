@@ -5,7 +5,7 @@ import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { loginDestination, safeCallback, type LoginIntent } from "@/lib/auth-routing";
+import { loginDestination, registrationDestination, safeCallback, type LoginIntent } from "@/lib/auth-routing";
 import { ACCOUNT_VIEW_COOKIE } from "@/lib/account-view";
 import { cookies } from "next/headers";
 import { setAccountView } from "@/server/account-view";
@@ -102,7 +102,7 @@ export async function registerAction(_: AuthFormState, formData: FormData): Prom
   if (error) return { error };
   await mergeGuestCart(user.id);
   await setAccountView(intent === "seller" ? "seller" : "customer");
-  redirect(intent === "seller" ? "/seller/onboarding" : (safeCallback(formData.get("callbackUrl")) ?? "/account"));
+  redirect(registrationDestination(intent, formData.get("callbackUrl")));
 }
 
 export async function signOutAction() {

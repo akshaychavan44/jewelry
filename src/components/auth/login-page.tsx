@@ -22,7 +22,7 @@ export async function LoginPageContent({ intent, searchParams }: { intent: Login
     return <div className="space-y-5">
       <h1 className="font-display text-[32px] text-ink">You’re already signed in</h1>
       <p className="text-sm text-ink-soft">Continue with your existing account. Your customer activity and jeweler business stay separate.</p>
-      <form action={switchAccountView.bind(null, view, callbackUrl ?? (view === "customer" ? "/account" : "/seller"))}>
+      <form action={switchAccountView.bind(null, view, loginDestination(user.role, intent, callbackUrl))}>
         <button type="submit" className={buttonVariants({ className: "w-full" })}>{view === "customer" ? "Continue as a customer" : "Continue to jeweler dashboard"}</button>
       </form>
     </div>;

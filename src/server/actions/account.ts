@@ -4,7 +4,8 @@ import { after } from "next/server";
 import { sendInquiryEmail } from "@/server/services/inquiry-notifications";
 
 import { getDirectorySettings } from "@/server/services/jeweler-directory";
-import { saveUpload, UploadError } from "@/server/services/storage";
+import { ownedUpload, saveUpload, UploadError } from "@/server/services/storage";
+import { referenceImagesError, REFERENCE_IMAGE_LIMIT } from "@/lib/reference-images";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -107,9 +108,17 @@ export async function createCustomRequestAction(_: CustomRequestState, formData:
   if (d.categoryId && !await db.category.findFirst({ where: { id: d.categoryId, isActive: true }, select: { id: true } })) return { fieldErrors: { categoryId: ["Choose an available category."] } };
   if (d.budgetMin !== undefined && d.budgetMin > d.budgetMax) return { fieldErrors: { budgetMax: ["Maximum budget must be at least the minimum."] } };
   const files = formData.getAll("references").filter((f): f is File => f instanceof File && f.size > 0);
-  if (files.length > 3 || files.reduce((n, f) => n + f.size, 0) > 24 * 1024 * 1024) return { message: "Attach up to three reference images, totaling no more than 24 MB." };
+  const ids = z.array(z.string().min(1).max(128)).max(REFERENCE_IMAGE_LIMIT).safeParse(formData.getAll("references_fileId"));
+  if (!ids.success || files.length + ids.data.length > REFERENCE_IMAGE_LIMIT) return { message: "Attach up to three reference images." };
+  if (new Set(ids.data).size !== ids.data.length) return { message: "Please choose different reference images." };
+  const fileError = referenceImagesError(files);
+  if (fileError) return { message: fileError };
+  if (process.env.NODE_ENV === "production" && files.length) return { message: "Please reload the form and upload your reference images again." };
   try {
-    const urls: string[] = [];
+    const assets = await Promise.all(ids.data.map(id => ownedUpload(id, "CUSTOM_REQUEST_REFERENCE", user.id)));
+    const assetError = referenceImagesError(assets.map(asset => ({ size: asset.sizeBytes, type: asset.mimeType })));
+    if (assetError) return { message: assetError };
+    const urls = assets.map(asset => `/api/files/${asset.id}`);
     for (const file of files) { const asset = await saveUpload(file, "CUSTOM_REQUEST_REFERENCE", user.id, user.id); urls.push(`/api/files/${asset.id}`); }
     const request = await db.$transaction(async tx => {
       const r = await tx.customRequest.create({ data: {

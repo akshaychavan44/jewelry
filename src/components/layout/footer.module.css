@@ -20,7 +20,7 @@
 .navigation a { display: inline-block; font-family: var(--font-sans); font-size: 15px; line-height: 1.5; padding-block: 2px; color: #eedec7; }
 .footer a { transition: color .2s; }
 .footer a:hover { color: #dfbd79; }
-.wordmark { display: flex; align-items: baseline; justify-content: space-between; gap: 26px; margin: 26px -26px 0; }
+.wordmark { display: flex; align-items: baseline; justify-content: space-between; gap: 26px; margin: 0; }
 .wordmark > span { font-family: var(--font-display); font-size: clamp(150px, 27vw, 470px); line-height: .83; letter-spacing: 0; white-space: nowrap; }
 .wordmark > p { max-width: 350px; font-family: var(--font-sans); font-size: 12px; letter-spacing: .34em; text-transform: uppercase; white-space: nowrap; padding-bottom: 34px; }
 .bottom { display: flex; justify-content: space-between; align-items: center; gap: 24px; border-top: 1px solid #b68a3e; margin-top: 20px; padding-top: 16px; font-family: var(--font-sans); font-size: 13px; line-height: 1.5; color: #c9bcab; }
@@ -43,6 +43,6 @@
 @media (prefers-reduced-motion: reduce) { .footer a, .formRow button { transition: none; } }
 /* Keep navigation readable over silk and balance the oversized signature. */
 .footer::before { background: linear-gradient(90deg, rgb(23 15 9 / 15%) 0%, rgb(23 15 9 / 65%) 60%, transparent 84%), linear-gradient(180deg, transparent, rgb(23 15 9 / 25%) 40%, #170f09 94%); }
-.wordmark > span { font-family: var(--font-display); font-size: clamp(150px, 24vw, 410px); line-height: 1; letter-spacing: 0; padding-bottom: .1em; }
+.wordmark > span { font-family: var(--font-display); font-size: clamp(150px, 24vw, 410px); line-height: .8; letter-spacing: 0; }
 @media (width < 64rem) { .wordmark > span { font-size: 29vw; } }
 @media (width < 40rem) { .background { width: 100% !important; right: 0 !important; } .footer::before { background: linear-gradient(180deg, transparent 0, rgb(23 15 9 / 65%) 170px, #170f09 320px); } }

@@ -7,6 +7,8 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { GEMSTONES, METAL_OPTIONS, METALS } from "@/lib/jewelry";
 import { SUPPORTED_CURRENCIES } from "@/lib/money";
 import { type CustomRequestState, createCustomRequestAction } from "@/server/actions/account";
+import { uploadFormImages } from "@/lib/image-upload-client";
+import { referenceImagesError } from "@/lib/reference-images";
 
 export function CustomRequestForm({
   categories,
@@ -21,7 +23,18 @@ export function CustomRequestForm({
   sellerName?: string;
   jewelers?: { id: string; storeName: string; slug: string; city?: string | null }[];
 }) {
-  const [state, action] = useActionState<CustomRequestState, FormData>(createCustomRequestAction, {});
+  const [state, action] = useActionState<CustomRequestState, FormData>(async (previous, form) => {
+    const files = form.getAll("references").filter((value): value is File => value instanceof File && value.size > 0);
+    const error = referenceImagesError(files);
+    if (error) return { message: error };
+    try {
+      await uploadFormImages(form, { references: "CUSTOM_REQUEST_REFERENCE" });
+      if (!files.length) form.delete("references");
+      return await createCustomRequestAction(previous, form);
+    } catch (error) {
+      return { message: error instanceof Error ? error.message : "Unable to upload your reference images. Please try again." };
+    }
+  }, {});
   if (state.ok) {
     return <div className="rounded-[3px] border border-sage/30 bg-sage-mist px-5 py-4 text-[14.5px] text-sage-deep">{state.message}<a href="/account/custom-requests" className="mt-3 block underline">View my requests</a></div>;
   }
@@ -99,7 +112,7 @@ export function CustomRequestForm({
       </Field>
       <Field label="Contact phone" htmlFor="contactPhone" error={err("contactPhone")} hint="Include country code. Shared only with your selected jeweler."><Input id="contactPhone" name="contactPhone" type="tel" required /></Field>
       <Field label="WhatsApp number" htmlFor="contactWhatsapp" error={err("contactWhatsapp")} optional><Input id="contactWhatsapp" name="contactWhatsapp" type="tel" /></Field>
-      <Field label="Reference images" htmlFor="references" className="sm:col-span-2" hint="Up to three JPEG, PNG or WebP images, 3 MB each. Private to you and your chosen jeweler." optional><Input id="references" name="references" type="file" multiple accept="image/jpeg,image/png,image/webp" /></Field>
+      <Field label="Reference images" htmlFor="references" className="sm:col-span-2" hint="Up to three JPEG, PNG or WebP images, 3 MB each." optional><Input id="references" name="references" type="file" multiple accept="image/jpeg,image/png,image/webp" /></Field>
       <p className="sm:col-span-2 text-sm text-muted">Your account email is shared with the selected jeweler. Discuss quotes, payment and delivery separately.</p>
       <div className="flex items-end sm:col-span-2">
         <SubmitButton size="lg" pendingLabel="Sending…">

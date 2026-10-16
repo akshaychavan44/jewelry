@@ -84,7 +84,8 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler, se
 
   const isShopActive = pathname.startsWith("/shop") || pathname.startsWith("/categories");
   const isJewelersActive = pathname.startsWith("/jewelers");
-  const isCustomOrdersActive = pathname.startsWith("/custom-orders");
+  const requestsHref = sellerView ? "/seller/custom-requests" : "/custom-orders";
+  const isCustomOrdersActive = pathname === requestsHref || pathname.startsWith(`${requestsHref}/`);
   const isGuidesActive = pathname.startsWith("/guides") || pathname.startsWith("/styling");
   const isSellActive = pathname.startsWith("/sell");
 
@@ -125,8 +126,8 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler, se
             >
               {sellerView ? "My Shop" : "Jewelers"}
             </Link>
-            <Link href="/custom-orders" className={cn(navLink, isCustomOrdersActive && styles.activeNavItem)} data-active={isCustomOrdersActive ? "true" : undefined}>
-              Custom orders
+            <Link href={requestsHref} className={cn(navLink, isCustomOrdersActive && styles.activeNavItem)} data-active={isCustomOrdersActive ? "true" : undefined}>
+              {sellerView ? "Customer Requests" : "Custom Orders"}
             </Link>
             <Link href="/guides" className={cn(navLink, isGuidesActive && styles.activeNavItem)} data-active={isGuidesActive ? "true" : undefined}>
               Guides

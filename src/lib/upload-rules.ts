@@ -1,4 +1,5 @@
 import type { FilePurpose, FileVisibility } from "./domain-enums";
+import { REFERENCE_IMAGE_MAX_BYTES, REFERENCE_IMAGE_TYPES } from "./reference-images";
 
 export const UPLOAD_RULES: Record<FilePurpose, { types: string[]; maxBytes: number; visibility: FileVisibility }> = {
   PRODUCT_MEDIA: { types: ["image/jpeg", "image/png", "image/webp", "image/avif"], maxBytes: 12 * 1024 * 1024, visibility: "PUBLIC" },
@@ -7,7 +8,7 @@ export const UPLOAD_RULES: Record<FilePurpose, { types: string[]; maxBytes: numb
   CERTIFICATE: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
   KYC_DOCUMENT: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
   MESSAGE_ATTACHMENT: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 8 * 1024 * 1024, visibility: "PRIVATE" },
-  CUSTOM_REQUEST_REFERENCE: { types: ["image/jpeg", "image/png", "image/webp"], maxBytes: 3 * 1024 * 1024, visibility: "PRIVATE" },
+  CUSTOM_REQUEST_REFERENCE: { types: REFERENCE_IMAGE_TYPES, maxBytes: REFERENCE_IMAGE_MAX_BYTES, visibility: "PRIVATE" },
   // Platform-generated invoices and shipping documents are not user uploads.
   GENERATED_DOCUMENT: { types: ["application/pdf"], maxBytes: 12 * 1024 * 1024, visibility: "PRIVATE" },
 };

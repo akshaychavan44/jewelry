@@ -9,27 +9,29 @@ import { UPLOAD_RULES, validImageContent } from "@/lib/upload-rules";
 import { z } from "zod";
 
 const f = createUploadthing();
-const purposeSchema = z.enum(["PRODUCT_MEDIA", "STORE_BRANDING", "CERTIFICATE", "KYC_DOCUMENT"]);
+const purposeSchema = z.enum(["PRODUCT_MEDIA", "STORE_BRANDING", "CERTIFICATE", "KYC_DOCUMENT", "CUSTOM_REQUEST_REFERENCE"]);
 
 function imageRoute(visibility: "PUBLIC" | "PRIVATE") {
   return f({ image: { maxFileSize: "16MB", maxFileCount: 1, acl: "public-read" } }, { awaitServerData: true })
     .input(z.object({ purpose: purposeSchema }))
     .middleware(async ({ input, files }) => {
       const user = await getCurrentUser();
-      if (!user || !["SELLER", "ADMIN"].includes(user.role)) throw new UploadThingError("Sign in to your jeweler account first.");
+      if (!user) throw new UploadThingError({ code: "FORBIDDEN", message: "Sign in before uploading images." });
+      const reference = input.purpose === "CUSTOM_REQUEST_REFERENCE";
+      if (!reference && !["SELLER", "ADMIN"].includes(user.role)) throw new UploadThingError({ code: "FORBIDDEN", message: "Sign in to your jeweler account first." });
       const rule = UPLOAD_RULES[input.purpose];
       if (rule.visibility !== visibility) throw new UploadThingError("Invalid upload destination.");
       const file = files[0];
       if (!file || !rule.types.includes(file.type) || file.size <= 0 || file.size > rule.maxBytes) {
         throw new UploadThingError(`Choose a JPG, PNG or WebP image up to ${rule.maxBytes / 1024 / 1024} MB${input.purpose === "PRODUCT_MEDIA" ? " (AVIF is also accepted)" : ""}.`);
       }
-      const seller = await db.sellerProfile.findUnique({ where: { userId: user.id } });
-      if (input.purpose !== "STORE_BRANDING" && !seller) throw new UploadThingError("Set up your store profile first.");
+      const seller = reference ? null : await db.sellerProfile.findUnique({ where: { userId: user.id } });
+      if (!reference && input.purpose !== "STORE_BRANDING" && !seller) throw new UploadThingError("Set up your store profile first.");
       if (input.purpose === "KYC_DOCUMENT" && !["NOT_SUBMITTED", "REJECTED"].includes(seller!.verificationStatus)) {
         throw new UploadThingError("Your verification documents cannot be changed right now.");
       }
       if (input.purpose === "CERTIFICATE" && seller!.verificationStatus !== "APPROVED") throw new UploadThingError("Your store must be approved before attaching certificates.");
-      const ownerId = input.purpose === "STORE_BRANDING" ? user.id : seller!.id;
+      const ownerId = reference || input.purpose === "STORE_BRANDING" ? user.id : seller!.id;
       const name = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-").slice(-80);
       const key = `${input.purpose.toLowerCase().replace(/_/g, "-")}/${ownerId}/${randomToken(18)}-${name}`;
       return { userId: user.id, purpose: input.purpose, key, mimeType: file.type, fileName: file.name.slice(0, 200), sizeBytes: file.size, [UTFiles]: [{ ...file, customId: key }] };

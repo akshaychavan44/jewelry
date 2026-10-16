@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { db } from "@/server/db";
-import type { SpotMetal } from "@/lib/domain-enums";
+import type { MakingChargeType, SpotMetal } from "@/lib/domain-enums";
 
 export interface PreciousMetalRateItem {
   metal: SpotMetal;
@@ -293,7 +293,15 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
     });
 
     // 4. Precompute recalculated prices. If calculation fails, abort before database write.
-    const variantUpdates: Array<{ id: string; productId: string; newPriceMinor: number }> = [];
+    const variantUpdates: Array<{
+      id: string;
+      productId: string;
+      currency: string;
+      newPriceMinor: number;
+      initialWeight: number;
+      initialMakingType: MakingChargeType;
+      initialMakingVal: number;
+    }> = [];
     const touchedProductIds = new Set<string>();
 
     for (const v of spotVariants) {
@@ -321,7 +329,11 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
       variantUpdates.push({
         id: v.id,
         productId: v.product.id,
+        currency: v.product.currency,
         newPriceMinor: breakdown.totalMinor,
+        initialWeight: weight,
+        initialMakingType: v.makingChargeType!,
+        initialMakingVal: Number(v.makingChargeValue ?? 0),
       });
       touchedProductIds.add(v.product.id);
     }
@@ -378,12 +390,50 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
         });
       }
 
-      // D. Update all eligible automatic product variants
+      // D. Update all eligible automatic product variants with optimistic concurrency verification
       for (const upd of variantUpdates) {
+        const latestVariant = await tx.productVariant.findUnique({
+          where: { id: upd.id },
+          include: { product: { select: { pricingMode: true } } },
+        });
+
+        // If a seller concurrently deleted the piece or switched it to FIXED mode, respect their decision and skip!
+        if (!latestVariant || latestVariant.product?.pricingMode !== "METAL_SPOT") {
+          continue;
+        }
+
+        let finalPriceMinor = upd.newPriceMinor;
+        const currentWeight = Number(latestVariant.metalWeightGrams);
+
+        // If a seller concurrently modified weight, making charges, or stones, recompute with their latest values
+        if (
+          currentWeight !== upd.initialWeight ||
+          latestVariant.makingChargeType !== upd.initialMakingType ||
+          Number(latestVariant.makingChargeValue) !== upd.initialMakingVal
+        ) {
+          if (currentWeight > 0 && latestVariant.makingChargeType) {
+            const recomputed = computeSpotPrice(
+              {
+                metalType: latestVariant.metalType,
+                metalWeightGrams: currentWeight,
+                makingChargeType: latestVariant.makingChargeType,
+                makingChargeValue: Number(latestVariant.makingChargeValue ?? 0),
+                stonePriceMinor: num(latestVariant.stonePriceMinor),
+                currency: upd.currency,
+              },
+              ratesUsd,
+              fx
+            );
+            if (recomputed && recomputed.totalMinor > 0) {
+              finalPriceMinor = recomputed.totalMinor;
+            }
+          }
+        }
+
         await tx.productVariant.update({
           where: { id: upd.id },
           data: {
-            priceMinor: upd.newPriceMinor,
+            priceMinor: finalPriceMinor,
             priceComputedAt: fetchedAt,
           },
         });

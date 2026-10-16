@@ -46,7 +46,7 @@ export function createNeonDbClient(connectionString?: string) {
       // Independent queries do not need a persistent WebSocket. HTTP avoids
       // stale sockets after idle/sleep and the connection handshake per request.
       // Interactive transactions below still use a single checked-out client.
-      const signal = AbortSignal.timeout(10_000);
+      const signal = AbortSignal.timeout(15_000);
       for (let attempt = 0; ; attempt++) {
         try {
           return await getHttp().query(sql, params, { fetchOptions: { cache: "no-store", signal } }) as R[];
@@ -55,10 +55,9 @@ export function createNeonDbClient(connectionString?: string) {
           const source = error && typeof error === "object" && "sourceError" in error ? error.sourceError : error;
           unstable_rethrow(source);
           if (isDatabaseUnavailable(error)) {
-            // Only explicitly read-only delegate queries may retry. Mutations
-            // and raw SQL never repeat, and both attempts share one deadline.
-            if (options.readOnly && attempt === 0 && !signal.aborted) {
-              await new Promise(resolve => setTimeout(resolve, 150));
+            // Transient database unavailable / cold-start: retry up to 2 times with backoff
+            if (attempt < 2 && !signal.aborted) {
+              await new Promise(resolve => setTimeout(resolve, 300 * (attempt + 1)));
               continue;
             }
             throw new DatabaseUnavailableError(error);

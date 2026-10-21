@@ -132,6 +132,34 @@ export function syncMetalRatesFromMetalsDev(options: { force?: boolean } = {}): 
 
 const METAL_RATES_LOCK_ID = 847291;
 
+/**
+ * Scrapes the domestic benchmark rate for Platinum 999 directly from official IBJA publication.
+ * IBJA publishes rates in INR per 10 grams (e.g. 57845). Returns rate per gram (e.g. 5784.5).
+ */
+export async function fetchIbjaPlatinumRate(): Promise<number | null> {
+  try {
+    const res = await fetch("https://www.ibjarates.com", {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const pmMatch = html.match(/id=["']lblPlatinum999_PM["'][^>]*>(\d+(?:\.\d+)?)</i);
+    const amMatch = html.match(/id=["']lblPlatinum999_AM["'][^>]*>(\d+(?:\.\d+)?)</i);
+    const valStr = (pmMatch && pmMatch[1]) || (amMatch && amMatch[1]);
+    if (valStr) {
+      const val = parseFloat(valStr);
+      if (val > 10000) {
+        return val / 10;
+      }
+    }
+    return null;
+  } catch (err) {
+    console.warn("[IBJA Platinum Direct Fetch]", err);
+    return null;
+  }
+}
+
 async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise<{
   success: boolean;
   count: number;
@@ -192,11 +220,14 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
     }
 
     const url = `https://api.metals.dev/v1/latest?api_key=${encodeURIComponent(apiKey)}&currency=INR&unit=g`;
-    const res = await fetch(url, {
-      method: "GET",
-      headers: { Accept: "application/json" },
-      next: { revalidate: 0 },
-    });
+    const [res, directIbjaPlatinum] = await Promise.all([
+      fetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        next: { revalidate: 0 },
+      }),
+      fetchIbjaPlatinumRate(),
+    ]);
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
@@ -219,6 +250,7 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
         palladium?: number;
         ibja_gold?: number;
         ibja_silver?: number;
+        ibja_platinum?: number;
         mcx_gold?: number;
         mcx_silver?: number;
       };
@@ -271,7 +303,15 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
         ? data.metals.ibja_silver
         : silver;
 
-    const platinumInr = platinum;
+    const platinumInr =
+      directIbjaPlatinum ??
+      (typeof data.metals.ibja_platinum === "number" && data.metals.ibja_platinum > 0
+        ? data.metals.ibja_platinum
+        : platinum * 1.164);
+    const platinumSource =
+      directIbjaPlatinum || (typeof data.metals.ibja_platinum === "number" && data.metals.ibja_platinum > 0)
+        ? "metals.dev (IBJA)"
+        : "metals.dev";
     const palladiumInr = palladium;
 
     const fetchedAt = data.timestamp ? new Date(data.timestamp) : new Date();
@@ -395,7 +435,7 @@ async function executeMetalRatesSync(options: { force?: boolean } = {}): Promise
         {
           metal: "PLATINUM",
           price: platinumInr,
-          source: "metals.dev",
+          source: platinumSource,
           internationalPrice: platinum,
         },
         {

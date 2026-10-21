@@ -156,7 +156,7 @@ export const DOCUMENT_REVIEW_STATUS: StatusMap<DocumentReviewStatus> = {
 export const KYC_DOCUMENT_LABELS: Record<KycDocumentType, string> = {
   TAX_REGISTRATION: "Tax registration",
   BUSINESS_LICENSE: "Business licence",
-  GOVERNMENT_ID: "Identity document",
+  GOVERNMENT_ID: "Aadhaar card",
   PROOF_OF_ADDRESS: "Proof of business address",
   BANK_STATEMENT: "Bank statement",
   OTHER: "Other document",

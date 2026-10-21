@@ -35,7 +35,7 @@ export function MetalPricingStrip({ data }: { data: MetalPricingData }) {
           {data.items.map(item => {
             const styles = METAL_STYLES[item.accent];
             return (
-              <article key={item.metal} className={cn("relative flex h-[200px] min-w-0 flex-col overflow-hidden rounded-md border px-5 py-4", styles.card)} aria-label={`${item.name} spot price`}>
+              <article key={item.metal} className={cn("relative flex min-h-[206px] h-auto min-w-0 flex-col overflow-hidden rounded-md border px-5 pt-4 pb-3.5", styles.card)} aria-label={`${item.name} spot price`}>
                 <div aria-hidden className="pointer-events-none absolute right-[-12px] top-8 h-[112px] w-[155px] opacity-80 [mask-image:linear-gradient(to_bottom,black_65%,transparent)]" style={{ backgroundImage: "url('/media/metal-nuggets.png')", backgroundSize: "300% auto", backgroundPosition: styles.position, backgroundRepeat: "no-repeat" }} />
                 <div className="relative flex items-center justify-between gap-2">
                   <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide", styles.badge)}>
@@ -48,9 +48,17 @@ export function MetalPricingStrip({ data }: { data: MetalPricingData }) {
                   <h3 className="font-display text-[27px] leading-none text-ink">{item.name}</h3>
                   <p className="mt-2 text-[12px] text-ink-soft">{styles.description}</p>
                 </div>
-                <div className="relative mt-auto flex items-baseline justify-between gap-2 border-t border-ink/10 pt-3">
-                  <span className="font-display text-[29px] font-semibold leading-none tabular-nums tracking-tight text-ink">{item.formattedPrice}</span>
-                  <span className="shrink-0 text-[10px] uppercase tracking-wider text-ink-soft">{item.unitLabel}</span>
+                <div className="relative mt-auto border-t border-ink/10 pt-2.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-display text-[26px] font-semibold leading-none tabular-nums tracking-tight text-ink sm:text-[28px]">{item.formattedPrice}</span>
+                    <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wider text-ink-soft">{item.unitLabel}</span>
+                  </div>
+                  {item.formattedPricePerGram && (
+                    <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted">
+                      <span>Rate / gram:</span>
+                      <span className="tabular-nums font-medium text-ink-soft">{item.formattedPricePerGram} / g</span>
+                    </div>
+                  )}
                 </div>
               </article>
             );

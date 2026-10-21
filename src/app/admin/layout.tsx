@@ -25,10 +25,10 @@ function navItems(q?: { kyc: number; certificates: number }): NavItem[] {
 
 async function AdminNavigation() {
   try {
-    return <DashboardNav items={navItems(await getAdminQueues())} showPending />;
+    return <DashboardNav items={navItems(await getAdminQueues())} showPending divided />;
   } catch (error) {
     if (!isDatabaseUnavailable(error)) throw error;
-    return <DashboardNav items={navItems()} showPending />;
+    return <DashboardNav items={navItems()} showPending divided />;
   }
 }
 
@@ -43,7 +43,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <p className="caps text-[10px] text-muted lg:mt-1">Admin console</p>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-          <Suspense fallback={<DashboardNav items={navItems()} showPending />}>
+          <Suspense fallback={<DashboardNav items={navItems()} showPending divided />}>
             <AdminNavigation />
           </Suspense>
         </div>

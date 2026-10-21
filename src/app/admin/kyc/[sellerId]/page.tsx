@@ -16,6 +16,22 @@ export const metadata: Metadata = { title: "Verification file" };
 
 const bytes = (n: number) => (n > 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
+function getDocumentVerificationUrl(type: string): string | null {
+  if (type === "TAX_REGISTRATION") {
+    // Official Indian GST Portal
+    return "https://services.gst.gov.in/services/searchtp";
+  }
+  if (type === "BUSINESS_LICENSE") {
+    // Official Indian Ministry of Corporate Affairs (MCA) Portal
+    return "https://www.mca.gov.in/content/mca/global/en/mca/fo-library/company-master-data.html";
+  }
+  if (type === "GOVERNMENT_ID") {
+    // Official Indian UIDAI Direct Aadhaar Validity Check Portal
+    return "https://myaadhaar.uidai.gov.in/check-aadhaar-validity";
+  }
+  return null;
+}
+
 function Facts({ rows }: { rows: [string, React.ReactNode][] }) {
   return (
     <dl className="grid gap-x-6 gap-y-3 px-5 py-4 text-[13.5px] sm:grid-cols-2">
@@ -206,7 +222,14 @@ export default async function KycReviewPage({ params }: { params: Promise<{ sell
                 <KycDecisionPanel
                   sellerId={seller.id}
                   storeName={seller.storeName}
-                  documents={latest.documents.map((d) => ({ id: d.id, fileId: d.file.id, label: KYC_DOCUMENT_LABELS[d.type], fileName: d.file.fileName, size: bytes(d.file.sizeBytes) }))}
+                  documents={latest.documents.map((d) => ({
+                    id: d.id,
+                    fileId: d.file.id,
+                    label: KYC_DOCUMENT_LABELS[d.type],
+                    fileName: d.file.fileName,
+                    size: bytes(d.file.sizeBytes),
+                    verifyUrl: getDocumentVerificationUrl(d.type),
+                  }))}
                 />
               </div>
             </Card>

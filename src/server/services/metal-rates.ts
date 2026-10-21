@@ -14,6 +14,7 @@ export interface PreciousMetalRateItem {
   displayPrice: number;
   unitLabel: string;
   formattedPrice: string;
+  formattedPricePerGram?: string;
   fetchedAt: Date;
   source: string;
   accent: "gold" | "silver" | "platinum";
@@ -590,9 +591,9 @@ const METAL_CONFIG: Array<{
   multiplier: number;
   accent: "gold" | "silver" | "platinum";
 }> = [
-  { metal: "GOLD", name: "Gold", purity: "24K (999)", symbol: "Au", unitLabel: "per gram", multiplier: 1, accent: "gold" },
-  { metal: "SILVER", name: "Silver", purity: "999 Fine", symbol: "Ag", unitLabel: "per gram", multiplier: 1, accent: "silver" },
-  { metal: "PLATINUM", name: "Platinum", purity: "999 Pure", symbol: "Pt", unitLabel: "per gram", multiplier: 1, accent: "platinum" },
+  { metal: "GOLD", name: "Gold", purity: "24K (999)", symbol: "Au", unitLabel: "per 10g", multiplier: 10, accent: "gold" },
+  { metal: "SILVER", name: "Silver", purity: "999 Fine", symbol: "Ag", unitLabel: "per 1 kg", multiplier: 1000, accent: "silver" },
+  { metal: "PLATINUM", name: "Platinum", purity: "999 Pure", symbol: "Pt", unitLabel: "per 10g", multiplier: 10, accent: "platinum" },
 ];
 
 /**
@@ -657,6 +658,7 @@ export const getPreciousMetalRates = cache(async (): Promise<MetalPricingData> =
           displayPrice,
           unitLabel: cfg.unitLabel,
           formattedPrice: formatInrAmount(displayPrice),
+          formattedPricePerGram: formatInrAmount(pricePerGram),
           fetchedAt,
           source: inrRate.source,
           accent: cfg.accent,
@@ -687,6 +689,7 @@ export const getPreciousMetalRates = cache(async (): Promise<MetalPricingData> =
         displayPrice,
         unitLabel: cfg.unitLabel,
         formattedPrice: formatInrAmount(displayPrice),
+        formattedPricePerGram: formatInrAmount(pricePerGram),
         fetchedAt,
         source: usdRate?.source ?? "market-ref",
         accent: cfg.accent,

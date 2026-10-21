@@ -78,9 +78,9 @@ export default async function HomePage() {
         <div className="shell">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="eyebrow mb-3">Most viewed this fortnight</p>
+              <p className="eyebrow mb-3">Most Viewed This Fortnight</p>
               <h2 id="trending-heading" className="display-lg text-ink">
-                Trending now
+                Trending Now
               </h2>
             </div>
             <Link href="/shop?sort=popular" className="link-quiet text-[14px] text-ink">

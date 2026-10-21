@@ -11,7 +11,14 @@ import { Input, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { reinstateSellerAction, reviewKycAction, suspendSellerAction, updateSellerControlsAction } from "@/server/actions/admin";
 
-export type ReviewDocument = { id: string; fileId: string; label: string; fileName: string; size: string };
+export type ReviewDocument = {
+  id: string;
+  fileId: string;
+  label: string;
+  fileName: string;
+  size: string;
+  verifyUrl?: string | null;
+};
 type DocDecision = { status: "ACCEPTED" | "REJECTED"; reason: string };
 
 /** Per-document checks plus the approve / return decision for a pending application. */
@@ -55,23 +62,36 @@ export function KycDecisionPanel({ sellerId, storeName, documents }: { sellerId:
                       {d.fileName} · {d.size} <ExternalLink className="size-3 shrink-0" />
                     </a>
                   </div>
-                  <div className="flex shrink-0 overflow-hidden rounded-[2px] border border-line" role="group" aria-label={`Decision for ${d.label}`}>
-                    {(["ACCEPTED", "REJECTED"] as const).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        aria-pressed={state.status === s}
-                        onClick={() => setDocs((x) => ({ ...x, [d.id]: { ...x[d.id], status: s } }))}
-                        className={cn(
-                          "grid size-8 place-items-center transition-colors",
-                          state.status === s ? (s === "ACCEPTED" ? "bg-moss text-white" : "bg-rosewood text-white") : "bg-ivory text-muted hover:text-ink",
-                        )}
-                        title={s === "ACCEPTED" ? "Accept" : "Reject"}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {d.verifyUrl && (
+                      <a
+                        href={d.verifyUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-[2px] border border-line bg-ivory px-2 py-1 text-[11.5px] font-medium text-ink-soft shadow-xs transition-colors hover:border-gold hover:text-gold-deep hover:bg-sand/30"
+                        title="Verify on official government website"
                       >
-                        {s === "ACCEPTED" ? <Check className="size-4" /> : <X className="size-4" />}
-                        <span className="sr-only">{s === "ACCEPTED" ? "Accept" : "Reject"}</span>
-                      </button>
-                    ))}
+                        Verify <ExternalLink className="size-3 shrink-0" />
+                      </a>
+                    )}
+                    <div className="flex shrink-0 overflow-hidden rounded-[2px] border border-line" role="group" aria-label={`Decision for ${d.label}`}>
+                      {(["ACCEPTED", "REJECTED"] as const).map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          aria-pressed={state.status === s}
+                          onClick={() => setDocs((x) => ({ ...x, [d.id]: { ...x[d.id], status: s } }))}
+                          className={cn(
+                            "grid size-8 place-items-center transition-colors",
+                            state.status === s ? (s === "ACCEPTED" ? "bg-moss text-white" : "bg-rosewood text-white") : "bg-ivory text-muted hover:text-ink",
+                          )}
+                          title={s === "ACCEPTED" ? "Accept" : "Reject"}
+                        >
+                          {s === "ACCEPTED" ? <Check className="size-4" /> : <X className="size-4" />}
+                          <span className="sr-only">{s === "ACCEPTED" ? "Accept" : "Reject"}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 {state.status === "REJECTED" && (

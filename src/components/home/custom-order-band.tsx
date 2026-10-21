@@ -38,7 +38,7 @@ export function CustomOrderBand() {
       <div className={styles.wash} aria-hidden="true" />
       <div className={styles.copy}>
         <p className={styles.eyebrow}>Bespoke <span /></p>
-        <h2 id="bespoke-heading">Imagined by you.<br />Crafted by them.</h2>
+        <h2 id="bespoke-heading">Imagined By You.<br />Crafted By Them.</h2>
         <p className={styles.description}>From an idea to something entirely yours.<br />Connect with jewelers who bring custom pieces to life.</p>
         <Link href="/custom-orders" className={styles.cta}>Start your piece <ArrowRight size={19} strokeWidth={1.5} /></Link>
       </div>

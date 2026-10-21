@@ -40,29 +40,17 @@ export function ProductCard({
         {/* ── Product Media Frame ── */}
         <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-sand">
           {p.image.url?.trim() ? (
-            <>
-              {/* Extend the photograph's tones behind images with different proportions. */}
-              <Image
-                src={p.image.url}
-                alt=""
-                aria-hidden
-                fill
-                loading={priority ? "eager" : "lazy"}
-                sizes={sizes}
-                className={cn("scale-110 object-cover opacity-70 blur-xl", p.sold && "grayscale-[35%]")}
-              />
-              <Image
-                src={p.image.url}
-                alt={p.image.alt}
-                fill
-                loading={priority ? "eager" : "lazy"}
-                sizes={sizes}
-                className={cn(
-                  "object-contain motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.025]",
-                  p.sold && "grayscale-[35%]",
-                )}
-              />
-            </>
+            <Image
+              src={p.image.url}
+              alt={p.image.alt}
+              fill
+              loading={priority ? "eager" : "lazy"}
+              sizes={sizes}
+              className={cn(
+                "object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]",
+                p.sold && "grayscale-[35%]",
+              )}
+            />
           ) : (
             <span className="absolute inset-0 flex items-center justify-center p-4 text-center text-[13px] text-muted">
               Photograph coming soon

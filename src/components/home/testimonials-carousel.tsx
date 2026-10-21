@@ -59,7 +59,7 @@ export function TestimonialsCarousel({ stories }: { stories?: TestimonialStory[]
   return (
     <section ref={sectionRef} className={styles.section} data-entered={entered} aria-labelledby="kind-words" aria-roledescription="carousel" onFocusCapture={() => setEntered(true)}>
       <div className={styles.heading}>
-        <h2 id="kind-words">Stories worth keeping.</h2>
+        <h2 id="kind-words">Stories Worth Keeping.</h2>
         <div className={styles.arrows}>
           <button type="button" aria-label="Previous story" aria-controls="stories-track" onClick={() => selectCard(active - 1)}><ChevronLeft size={26} strokeWidth={1.25} aria-hidden /></button>
           <button type="button" aria-label="Next story" aria-controls="stories-track" onClick={() => selectCard(active + 1)}><ChevronRight size={26} strokeWidth={1.25} aria-hidden /></button>

@@ -271,7 +271,7 @@ export function StoreProfileForm({
 const DOCS: { type: KycDocumentType; label: string; hint: string; required: boolean }[] = [
   { type: "TAX_REGISTRATION", label: "Tax registration", hint: "VAT, GST, EIN or equivalent certificate", required: true },
   { type: "BUSINESS_LICENSE", label: "Business licence", hint: "Company registration or trade licence", required: true },
-  { type: "GOVERNMENT_ID", label: "Identity document", hint: "Passport or national ID of the owner or director", required: true },
+  { type: "GOVERNMENT_ID", label: "Aadhaar card", hint: "Aadhaar card of the owner or director", required: true },
   { type: "PROOF_OF_ADDRESS", label: "Proof of business address", hint: "Utility bill or bank statement under 3 months old", required: false },
 ];
 

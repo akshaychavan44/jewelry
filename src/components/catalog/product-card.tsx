@@ -12,18 +12,20 @@ export function ProductCard({
   priority,
   className,
   sizes = "(min-width: 1024px) 33vw, 50vw",
+  showPrice = true,
 }: {
   product: ProductCardData;
   saved?: boolean;
   priority?: boolean;
   className?: string;
   sizes?: string;
+  showPrice?: boolean;
 }) {
   const flag = p.sold
     ? "Sold"
     : p.isOneOfAKind
       ? "One of a kind"
-      : p.livePrice
+      : p.livePrice && showPrice
         ? "Live Gold Price"
         : p.condition !== "NEW"
           ? (p.era ?? p.condition.replace("_", "-").toLowerCase())
@@ -81,30 +83,32 @@ export function ProductCard({
           <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-muted sm:text-[12px]">{METALS[p.metal].label} · {p.seller.name}</p>
 
           {/* Price & Discount Bar */}
-          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            {p.sold ? (
-              <span className="text-[12px] text-muted sm:text-[13px]">Sold Out</span>
-            ) : (
-              <>
-                <p className="text-[12px] leading-relaxed text-ink-soft tabular-nums sm:text-[13px]">
-                  {p.livePrice && <span className="text-muted">from </span>}
-                  {formatMoney(p.price.amountMinor, p.price.currency)}
-                </p>
+          {showPrice && (
+            <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              {p.sold ? (
+                <span className="text-[12px] text-muted sm:text-[13px]">Sold Out</span>
+              ) : (
+                <>
+                  <p className="text-[12px] leading-relaxed text-ink-soft tabular-nums sm:text-[13px]">
+                    {p.livePrice && <span className="text-muted">from </span>}
+                    {formatMoney(p.price.amountMinor, p.price.currency)}
+                  </p>
 
-                {p.compareAt && p.compareAt.amountMinor > p.price.amountMinor && (
-                  <s className="text-[11px] text-muted/80 tabular-nums sm:text-[12px]">
-                    {formatMoney(p.compareAt.amountMinor, p.compareAt.currency)}
-                  </s>
-                )}
+                  {p.compareAt && p.compareAt.amountMinor > p.price.amountMinor && (
+                    <s className="text-[11px] text-muted/80 tabular-nums sm:text-[12px]">
+                      {formatMoney(p.compareAt.amountMinor, p.compareAt.currency)}
+                    </s>
+                  )}
 
-                {discountPercent && (
-                  <span className="rounded-[2px] bg-[#f5ebe0] px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-[#96632c]">
-                    {discountPercent}% OFF
-                  </span>
-                )}
-              </>
-            )}
-          </div>
+                  {discountPercent && (
+                    <span className="rounded-[2px] bg-[#f5ebe0] px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-[#96632c]">
+                      {discountPercent}% OFF
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </Link>
 
@@ -125,11 +129,13 @@ export function ProductGrid({
   savedIds,
   className,
   columns = "default",
+  showPrice = true,
 }: {
   products: ProductCardData[];
   savedIds?: Set<string>;
   className?: string;
   columns?: "default" | "six" | "three";
+  showPrice?: boolean;
 }) {
   return (
     <div
@@ -147,6 +153,7 @@ export function ProductGrid({
           product={p}
           saved={savedIds?.has(p.id)}
           priority={i < 4}
+          showPrice={showPrice}
           sizes={columns === "six"
             ? "(min-width: 1280px) 16vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             : columns === "three"

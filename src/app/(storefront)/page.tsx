@@ -87,7 +87,7 @@ export default async function HomePage() {
               See what&rsquo;s popular
             </Link>
           </div>
-          <ProductGrid products={trending} savedIds={saved} />
+          <ProductGrid products={trending.slice(0, 8)} savedIds={saved} showPrice={false} />
         </div>
       </section>}
 

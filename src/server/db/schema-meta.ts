@@ -14,6 +14,7 @@ export interface ModelMeta {
   table: string;
   primaryKey: string;
   autoIncrement?: boolean;
+  compoundKeys?: Record<string, readonly string[]>;
   jsonFields?: Set<string>;
   arrayFields?: Set<string>;
   bigintFields?: Set<string>;
@@ -62,6 +63,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   Account: {
     table: "Account",
+    compoundKeys: {
+      provider_providerAccountId: ["provider", "providerAccountId"],
+    },
     primaryKey: "id",
     relations: {
       user: { type: "one", model: "User", foreignKey: "id", targetKey: "userId" },
@@ -69,6 +73,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   VerificationToken: {
     table: "VerificationToken",
+    compoundKeys: {
+      identifier_token: ["identifier", "token"],
+    },
     primaryKey: "token",
     relations: {},
   },
@@ -183,6 +190,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   ProductVariant: {
     table: "ProductVariant",
+    compoundKeys: {
+      sellerId_sku: ["sellerId", "sku"],
+    },
     primaryKey: "id",
     bigintFields: new Set(["priceMinor", "compareAtPriceMinor", "stonePriceMinor"]),
     relations: {
@@ -199,6 +209,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   Certificate: {
     table: "Certificate",
+    compoundKeys: {
+      lab_reportNumber: ["lab", "reportNumber"],
+    },
     primaryKey: "id",
     relations: {
       product: { type: "one", model: "Product", foreignKey: "id", targetKey: "productId" },
@@ -213,6 +226,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   ExchangeRate: {
     table: "ExchangeRate",
+    compoundKeys: {
+      base_quote: ["base", "quote"],
+    },
     primaryKey: "id",
     relations: {},
   },
@@ -328,6 +344,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   ShippingRate: {
     table: "ShippingRate",
+    compoundKeys: {
+      sellerId_zone_method: ["sellerId", "zone", "method"],
+    },
     primaryKey: "id",
     bigintFields: new Set(["priceMinor", "freeOverMinor"]),
     relations: {
@@ -366,6 +385,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   ReturnItem: {
     table: "ReturnItem",
+    compoundKeys: {
+      returnRequestId_orderItemId: ["returnRequestId", "orderItemId"],
+    },
     primaryKey: "id",
     relations: {
       returnRequest: { type: "one", model: "ReturnRequest", foreignKey: "id", targetKey: "returnRequestId" },
@@ -435,6 +457,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   ConversationParticipant: {
     table: "ConversationParticipant",
+    compoundKeys: {
+      conversationId_userId: ["conversationId", "userId"],
+    },
     primaryKey: "id",
     relations: {
       conversation: { type: "one", model: "Conversation", foreignKey: "id", targetKey: "conversationId" },
@@ -452,6 +477,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   WishlistItem: {
     table: "WishlistItem",
+    compoundKeys: {
+      userId_productId: ["userId", "productId"],
+    },
     primaryKey: "id",
     relations: {
       user: { type: "one", model: "User", foreignKey: "id", targetKey: "userId" },
@@ -461,6 +489,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   FavoriteStore: {
     table: "FavoriteStore",
+    compoundKeys: {
+      userId_sellerId: ["userId", "sellerId"],
+    },
     primaryKey: "id",
     relations: {
       user: { type: "one", model: "User", foreignKey: "id", targetKey: "userId" },
@@ -482,6 +513,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   CustomRequestQuote: {
     table: "CustomRequestQuote",
+    compoundKeys: {
+      customRequestId_sellerId: ["customRequestId", "sellerId"],
+    },
     primaryKey: "id",
     bigintFields: new Set(["priceMinor"]),
     relations: {
@@ -575,6 +609,10 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   ExternalSkuMapping: {
     table: "ExternalSkuMapping",
+    compoundKeys: {
+      integrationId_externalId: ["integrationId", "externalId"],
+      integrationId_variantId: ["integrationId", "variantId"],
+    },
     primaryKey: "id",
     relations: {
       integration: { type: "one", model: "InventoryIntegration", foreignKey: "id", targetKey: "integrationId" },
@@ -583,6 +621,9 @@ export const SCHEMA_META: Record<string, ModelMeta> = {
   },
   InventorySyncEvent: {
     table: "InventorySyncEvent",
+    compoundKeys: {
+      integrationId_externalEventId: ["integrationId", "externalEventId"],
+    },
     primaryKey: "id",
     jsonFields: new Set(["payload"]),
     relations: {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ShopCollectionMosaic, ShopProductGrid } from "./shop-editorial";
 import { EmptyState, Pagination } from "@/components/ui/display";
 import type { Category } from "@/server/db/model-types";
@@ -143,13 +144,28 @@ export async function ListingPage({
 
       {isShop && showEditorial && <ShopCollectionMosaic />}
 
-      {isShop && <div className="mb-8 space-y-5 border-y border-line py-5">
-        <nav aria-label="Jewelry categories" className="flex flex-wrap gap-2">
-          {[['/shop', 'All jewelry'], ['/shop/rings', 'Rings'], ['/shop/necklaces', 'Necklaces'], ['/shop/earrings', 'Earrings'], ['/shop/bracelets', 'Bracelets'], ['/shop/vintage', 'Vintage']].map(([href, label]) => <Link key={href} href={href} aria-current={href === basePath ? "page" : undefined} className={`inline-flex min-h-11 items-center rounded-full border px-5 text-[13px] ${href === basePath ? "border-gold text-gold-deep" : "border-line text-ink-soft hover:border-gold"}`}>{label}</Link>)}
+      {isShop && <div className={styles.discoveryPanel}>
+        <nav aria-label="Jewelry categories" className={styles.categories}>
+          {[
+            { href: "/shop", label: "All jewelry", image: "/media/pieces-to-fall-for.png", mobileImage: "/media/categories/category-high-jewelry.jpg" },
+            { href: "/shop/rings", label: "Rings", image: "/media/categories/category-rings.jpg" },
+            { href: "/shop/necklaces", label: "Necklaces", image: "/media/categories/category-necklaces.jpg" },
+            { href: "/shop/earrings", label: "Earrings", image: "/media/categories/category-earrings.jpg" },
+            { href: "/shop/bracelets", label: "Bracelets", image: "/media/categories/category-bracelets.jpg" },
+            { href: "/shop/vintage", label: "Vintage", image: "/media/story-art-deco.webp", mobileImage: "/media/categories/category-vintage.jpg" },
+          ].map(({ href, label, image, mobileImage }) => (
+            <Link key={href} href={href} aria-current={href === basePath ? "page" : undefined} className={styles.category}>
+              {mobileImage ? <picture>
+                <source media="(min-width: 1024px)" srcSet={image} />
+                <Image src={mobileImage} alt="" width={72} height={72} className={styles.categoryImage} />
+              </picture> : <Image src={image} alt="" width={72} height={72} className={styles.categoryImage} />}
+              <span>{label}</span>
+            </Link>
+          ))}
         </nav>
         <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
-          <nav aria-label="Shop by occasion" className="flex flex-wrap items-center gap-x-5 gap-y-2"><span className="text-[11px] tracking-[0.1em] text-muted uppercase">For the moment</span>{stylingLooks.map((look) => <Link key={look.slug} href={`/styling/${look.slug}`} className="inline-flex min-h-9 items-center text-[13px] text-ink-soft underline decoration-line underline-offset-4 hover:decoration-gold">{look.occasion}</Link>)}<Link href="/custom-orders" className="inline-flex min-h-9 items-center text-[13px] text-ink-soft underline decoration-line underline-offset-4">A personal gift</Link></nav>
-          <nav aria-label="Shop by budget" className="flex flex-wrap items-center gap-2"><span className="mr-2 text-[11px] tracking-[0.1em] text-muted uppercase">Your budget</span>{budgetLimits.map((max) => <Link key={max} href={budgetHref(max)} className={`inline-flex min-h-9 items-center rounded-full border px-3 text-[12px] ${filters.price?.max === max && filters.price.min === 0 ? "border-gold bg-gold-mist text-gold-deep" : "border-line text-ink-soft hover:border-gold"}`}>Under {formatMoney(max * 100, ctx.currency)}</Link>)}</nav>
+          <nav aria-label="Shop by occasion" className="flex flex-wrap items-center gap-x-5 gap-y-2"><span className="text-[11px] tracking-[0.1em] text-muted uppercase">For the moment</span>{stylingLooks.map((look) => <Link key={look.slug} href={`/styling/${look.slug}`} className="inline-flex min-h-9 items-center text-[13px] text-ink-soft underline decoration-line underline-offset-4 hover:decoration-gold">{look.occasion}</Link>)}<Link href="/custom-orders" className="inline-flex min-h-9 items-center text-[13px] text-ink-soft underline decoration-line underline-offset-4 lg:hover:decoration-gold">A personal gift</Link></nav>
+          <nav aria-label="Shop by budget" className="flex flex-wrap items-center gap-2"><span className="mr-2 text-[11px] tracking-[0.1em] text-muted uppercase">Your budget</span>{budgetLimits.map((max) => <Link key={max} href={budgetHref(max)} aria-current={filters.price?.max === max && filters.price.min === 0 ? "page" : undefined} className={`${styles.budgetLink} inline-flex min-h-9 items-center rounded-full border px-3 text-[12px] ${filters.price?.max === max && filters.price.min === 0 ? "border-gold bg-gold-mist text-gold-deep" : "border-line text-ink-soft hover:border-gold"}`}>Under {formatMoney(max * 100, ctx.currency)}</Link>)}</nav>
         </div>
       </div>}
 

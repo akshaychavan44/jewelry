@@ -114,3 +114,14 @@ test("bulk updates use one SQL statement and preserve counter operators", async 
   assert.ok(calls[0].params[1] instanceof Date);
   assert.deepEqual(calls[0].params.slice(2), ["seller-1", "ACTIVE"]);
 });
+
+
+test("unsupported compound filters cannot execute an unscoped read or delete", async () => {
+  let queries = 0;
+  const executor: SqlExecutor = { async query<R>(): Promise<R[]> { queries++; return []; } };
+  const delegate = new ModelDelegate("WishlistItem", SCHEMA_META.WishlistItem, executor, () => { throw new Error("Unexpected relation"); });
+  const where = { userId_unknown: { userId: "buyer-1", unknown: "piece-1" } };
+  await assert.rejects(delegate.findUnique({ where }), /Unsupported filter/);
+  await assert.rejects(delegate.deleteMany({ where }), /Unsupported filter/);
+  assert.equal(queries, 0);
+});

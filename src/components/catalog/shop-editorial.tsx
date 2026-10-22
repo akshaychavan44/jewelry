@@ -105,6 +105,7 @@ export function ShopProductGrid({
           : null;
         return (
           <Fragment key={product.id}>
+            <div className={styles.productSlot} style={{ order: index * 2 }}>
             <ProductCard
               product={product}
               saved={savedIds?.has(product.id)}
@@ -112,8 +113,18 @@ export function ShopProductGrid({
               presentation="catalog"
               sizes="(min-width: 1320px) 403px, (min-width: 768px) 33vw, 50vw"
             />
+            </div>
+      {editorial && index === 2 && <Link href="/shop/rings" className={styles.ringFeature}>
+        <div className={styles.ringCopy}>
+          <span className={styles.eyebrow}>The ring edit</span>
+          <h2>A little brilliance.<br />A lasting impression.</h2>
+          <p>Discover rings to treasure, from everyday signatures to forever pieces.</p>
+          <span className={styles.action}>Explore rings<ArrowUpRight aria-hidden className="size-4" /></span>
+        </div>
+        <div className={styles.ringImage}><Image src="/media/collections/forever-bands.png" alt="Gold and diamond rings resting on champagne silk" fill sizes="(min-width: 768px) 55vw, 100vw" /></div>
+      </Link>}
             {feature && (
-              <Link href={feature.href} className={styles.gridFeature}>
+              <Link href={feature.href} className={styles.gridFeature} style={{ order: index * 2 + 1 }}>
                 <div className={styles.featureCopy}>
                   <span className={styles.eyebrow}>{feature.eyebrow}</span>
                   <h3>{feature.title}</h3>

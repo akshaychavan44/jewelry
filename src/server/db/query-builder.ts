@@ -145,6 +145,25 @@ export function buildWhereClause(
       continue;
     }
 
+    // Only declared compound unique keys may expand into scalar predicates.
+    // Silently ignoring these objects would turn a scoped lookup into SELECT ... LIMIT 1.
+    const compoundFields = meta.compoundKeys?.[key];
+    if (compoundFields) {
+      if (!value || typeof value !== "object" || Array.isArray(value) || value instanceof Date) {
+        throw new Error(`Invalid compound filter: ${meta.table}.${key}`);
+      }
+      const fields = value as Record<string, unknown>;
+      if (Object.keys(fields).length !== compoundFields.length || compoundFields.some(field =>
+        !Object.hasOwn(fields, field) || fields[field] == null ||
+        !["string", "number", "boolean", "bigint"].includes(typeof fields[field])
+      )) {
+        throw new Error(`Invalid compound filter: ${meta.table}.${key}`);
+      }
+      const scalarWhere = Object.fromEntries(compoundFields.map(field => [field, fields[field]]));
+      conditions.push(`(${buildWhereClause(scalarWhere, meta, collector, tableAlias)})`);
+      continue;
+    }
+
     const relation = meta.relations[key];
     if (relation) {
       const targetMeta = SCHEMA_META[relation.model];
@@ -258,8 +277,12 @@ export function buildWhereClause(
           const list = Array.isArray(opVal) ? opVal : [opVal];
           const p = collector.add(list);
           conditions.push(`${col} @> ${p}`);
+        } else if (op === "isEmpty" && meta.arrayFields?.has(key) && typeof opVal === "boolean") {
+          conditions.push(`cardinality(${col}) ${opVal ? "=" : ">"} 0`);
         } else if (op === "mode") {
           // handled in contains / startsWith
+        } else {
+          throw new Error(`Unsupported filter operator: ${meta.table}.${key}.${op}`);
         }
       }
     } else {

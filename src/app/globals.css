@@ -364,3 +364,38 @@
 .btn-gold:hover {
   background: var(--color-gold) !important;
 }
+
+/* A single clean wordmark moves from the black intro into its permanent slot. */
+@media (min-width: 1024px) {
+  html[data-brand-intro="running"] { overflow: hidden; }
+  html[data-brand-intro="running"]::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: #000;
+    animation: brand-intro-backdrop 4s linear both;
+  }
+  html[data-brand-intro="running"] [data-brand-header] {
+    z-index: 9999;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: transparent;
+    box-shadow: none;
+    transition: none;
+    pointer-events: none;
+  }
+  html[data-brand-intro="running"] [data-brand-wordmark] { opacity: 0; transform-origin: center; will-change: transform, opacity; }
+  html[data-brand-intro="running"] [data-brand-header] * { pointer-events: none; }
+  html[data-brand-intro="running"] [data-brand-intro-hide],
+  html[data-brand-intro="running"] [data-brand-header] [data-brand-description] { animation: brand-intro-controls 4s linear both; }
+  @keyframes brand-intro-backdrop { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes brand-intro-controls { 0%, 86% { opacity: 0; } 100% { opacity: 1; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-brand-intro="running"]::before { display: none; }
+  html[data-brand-intro="running"] [data-brand-wordmark] { opacity: 1; }
+  html[data-brand-intro="running"] [data-brand-intro-hide],
+  html[data-brand-intro="running"] [data-brand-header] [data-brand-description] { animation: none; }
+}

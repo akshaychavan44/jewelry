@@ -10,10 +10,10 @@ export async function toggleWishlist(productId: string): Promise<ToggleResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, requiresAuth: true, message: "Sign in to save pieces." };
 
-  const existing = await db.wishlistItem.findUnique({ where: { userId_productId: { userId: user.id, productId } } });
+  const existing = await db.wishlistItem.findFirst({ where: { userId: user.id, productId } });
   if (existing) {
     await db.$transaction(async (tx) => {
-      await tx.wishlistItem.delete({ where: { id: existing.id } });
+      await tx.wishlistItem.delete({ where: { id: existing.id, userId: user.id, productId } });
       await tx.product.update({ where: { id: productId }, data: { wishlistCount: { decrement: 1 } } });
     });
   } else {
@@ -31,8 +31,8 @@ export async function toggleWishlist(productId: string): Promise<ToggleResult> {
 export async function toggleFavoriteStore(sellerId: string): Promise<ToggleResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, requiresAuth: true, message: "Sign in to follow jewelers." };
-  const existing = await db.favoriteStore.findUnique({ where: { userId_sellerId: { userId: user.id, sellerId } } });
-  if (existing) await db.favoriteStore.delete({ where: { id: existing.id } });
+  const existing = await db.favoriteStore.findFirst({ where: { userId: user.id, sellerId } });
+  if (existing) await db.favoriteStore.delete({ where: { id: existing.id, userId: user.id, sellerId } });
   else await db.favoriteStore.create({ data: { userId: user.id, sellerId } });
   revalidatePath("/account/favorite-stores");
   return { ok: true, saved: !existing };

@@ -38,7 +38,7 @@ export async function SiteFooter({ staticNavigation = false }: { staticNavigatio
             </nav>
           ))}
         </div>
-        <div className={styles.wordmark} aria-hidden="true"><Image src="/brand/jewelrex-logo.png" alt="" width={1984} height={793} unoptimized className="block h-auto w-full max-w-[960px] object-contain" /></div>
+        <div className={styles.wordmark} aria-hidden="true"><Image src="/brand/jewelrex-logo.png" alt="" width={1984} height={793} unoptimized className="block h-auto w-full max-w-[960px] object-contain mx-auto" /></div>
         <div className={styles.bottom}>
           <p>© {new Date().getFullYear()} {siteConfig.name}. An independent jewelry directory & showcase. All purchases and arrangements are made directly with each jeweler.</p>
           <div className={styles.legal}>

@@ -91,6 +91,7 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler, se
 
   return (
     <header
+      data-brand-header
       className={cn(
         "sticky top-0 z-40",
         styles.header,
@@ -101,7 +102,7 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler, se
     >
       <div className={cn(styles.bar, "h-[72px] md:h-[84px]")}>
         {/* Left: navigation */}
-        <div className="flex items-center gap-7">
+        <div data-brand-intro-hide className="flex items-center gap-7">
           <button type="button" className="-ml-2 grid size-10 place-items-center lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open menu">
             <Menu className="size-5" strokeWidth={1.5} />
           </button>
@@ -142,11 +143,11 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler, se
 
         {/* Centre: wordmark */}
         <div className={styles.centerBrand}>
-          <Logo className={styles.wordmark} />
+          <Logo videoWordmark className={styles.wordmark} />
         </div>
 
         {/* Right: utilities */}
-        <div className={styles.utilities}>
+        <div data-brand-intro-hide className={styles.utilities}>
           <CurrencyMenu currency={currency} className={styles.currencyControl} />
           <button type="button" onClick={() => setSearchOpen(true)} className={cn(navLink, styles.searchButton, "inline-flex items-center gap-2 p-2")} aria-label="Search">
             <span className="hidden xl:inline">Search jewelry</span>

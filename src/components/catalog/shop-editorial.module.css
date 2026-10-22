@@ -65,3 +65,53 @@
   .photograph { transition: none; }
   .edit:hover .photograph, .gridFeature:hover .photograph { transform: none; }
 }
+
+.discoveryPanel { margin-bottom: 32px; padding: 24px; border: 1px solid var(--color-line); border-radius: 20px; background: #fcf9f4; }
+.categories { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding-bottom: 22px; margin-bottom: 18px; border-bottom: 1px solid var(--color-line); }
+.category { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 68px; padding: 8px 14px; border: 1px solid var(--color-line); border-radius: 999px; color: var(--color-ink); font-family: Georgia, serif; font-size: 17px; white-space: nowrap; }
+.category:hover { border-color: var(--color-gold-deep); background: #f3ecdf; }
+.category[aria-current="page"] { background: #30291f; color: #fff8ea; border-color: #8c7048; }
+.category:focus-visible, .ringFeature:focus-visible { outline: 2px solid var(--color-gold-deep); outline-offset: 4px; }
+.categoryImage { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; object-fit: cover; }
+.productSlot { min-width: 0; }
+.ringFeature { grid-column: 1 / -1; order: 5; display: grid; grid-template-columns: 1fr 1.15fr; min-width: 0; overflow: hidden; border: 1px solid #e7dac7; border-radius: 12px; background: #f5eee3; }
+.ringCopy { padding: clamp(28px, 4vw, 58px); align-self: center; }
+.ringCopy h2 { margin-top: 16px; font-size: clamp(32px, 3.5vw, 50px); line-height: 1.08; }
+.ringCopy p { max-width: 33ch; margin-top: 18px; font-size: 14px; line-height: 1.8; color: var(--color-ink-soft); }
+.ringImage { position: relative; min-height: 420px; }
+.ringImage img { object-fit: cover; object-position: center 20%; }
+@media (max-width: 1100px) { .categories { display: flex; overflow-x: auto; padding: 3px 3px 20px; } .category { flex: 0 0 auto; min-width: 152px; } }
+@media (max-width: 767px) {
+.discoveryPanel { padding: 18px 14px; border-radius: 16px; }
+.category { min-height: 58px; min-width: 142px; font-size: 16px; gap: 10px; }
+.categoryImage { width: 38px; height: 38px; }
+.ringFeature { order: 3; grid-template-columns: 1fr; }
+.ringCopy { padding: 30px 26px; }
+.ringCopy h2 { font-size: clamp(32px, 7vw, 42px); }
+.ringImage { min-height: 0; aspect-ratio: 5 / 4; }
+}
+
+/* The desktop collection navigation is an open editorial row, not a set of pills. */
+@media (min-width: 1024px) {
+  .discoveryPanel { border: 0; border-radius: 0; padding: 0 0 8px; background: transparent; }
+  .categories { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; overflow: visible; border-bottom: 0; padding: 0; margin-bottom: 22px; }
+  .category { position: relative; justify-content: flex-start; min-width: 0; min-height: 92px; gap: 12px; padding: 8px 0 14px; border: 0; border-radius: 0; font-family: var(--font-display); font-size: 21px; }
+  .category:hover, .category[aria-current="page"] { background: transparent; color: var(--color-gold-deep); }
+  .category::after { content: ""; position: absolute; left: 84px; right: 0; bottom: 4px; height: 1px; background: transparent; }
+  .category[aria-current="page"]::after { background: var(--color-gold-deep); }
+  .categoryImage { width: 72px; height: 72px; border-radius: 6px; object-fit: contain; object-position: center; }
+  .category picture { flex-shrink: 0; }
+  .budgetLink { border: 0; border-radius: 0; padding: 0 8px; background: transparent; }
+  .budgetLink:hover { color: var(--color-gold-deep); text-decoration: underline; text-underline-offset: 5px; }
+  .budgetLink[aria-current="page"] { color: var(--color-gold-deep); text-decoration: underline; text-underline-offset: 5px; }
+}
+
+@media (min-width: 1024px) {
+  .category[href="/shop"] .categoryImage { object-fit: cover; object-position: 25% center; }
+  .category[href="/shop/vintage"] .categoryImage { object-fit: cover; }
+}
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .category { gap: 8px; font-size: 18px; }
+  .categoryImage { width: 56px; height: 56px; }
+  .category::after { left: 64px; }
+}

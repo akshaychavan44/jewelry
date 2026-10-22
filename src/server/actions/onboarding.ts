@@ -63,7 +63,7 @@ export async function saveStoreProfileAction(_: StepState, formData: FormData): 
   try {
     const user = await sellerUser();
     const parsed = storeSchema.safeParse(raw);
-    if (!parsed.success) return { ok: false, fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
+    if (!parsed.success) return { ok: false, message: "Please correct the highlighted fields before continuing.", fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
     const d = parsed.data;
     await saveStoreProfile(user.id, {
       storeName: d.storeName,
@@ -98,7 +98,7 @@ export async function updateStoreProfileAction(_: StepState, formData: FormData)
   try {
     const user = await sellerUser();
     const parsed = storeSchema.safeParse(raw);
-    if (!parsed.success) return { fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
+    if (!parsed.success) return { ok: false, message: "Please correct the highlighted fields before saving.", fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
     const d = parsed.data;
     await saveStoreProfile(user.id, {
       storeName: d.storeName,
@@ -140,7 +140,7 @@ export async function saveBusinessAction(_: StepState, formData: FormData): Prom
   try {
     const user = await sellerUser();
     const parsed = businessSchema.safeParse(raw);
-    if (!parsed.success) return { ok: false, fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
+    if (!parsed.success) return { ok: false, message: "Please correct the highlighted fields before continuing.", fieldErrors: z.flattenError(parsed.error).fieldErrors, values: raw };
 
     const existing = await db.sellerProfile.findUnique({
       where: { userId: user.id },

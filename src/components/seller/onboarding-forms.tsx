@@ -52,6 +52,14 @@ export function StoreProfileForm({
   const err = (k: string) => state.fieldErrors?.[k];
   const ra = store.returnAddress;
 
+  useEffect(() => {
+    if (state.ok !== false) return;
+    const firstKey = Object.keys(state.fieldErrors ?? {})[0];
+    const target = firstKey ? document.getElementById(firstKey) : document.getElementById("store-profile-error");
+    target?.focus();
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [state]);
+
   const [values, setValues] = useState<Record<string, string>>(() => ({
     storeName: store.storeName ?? "",
     tagline: store.tagline ?? "",
@@ -190,14 +198,14 @@ export function StoreProfileForm({
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2" noValidate>
-      {state.ok ? <p className="rounded-[2px] bg-moss-mist px-4 py-2.5 text-[13.5px] text-moss sm:col-span-2">{state.message}</p> : <FormError message={state.message} />}
+      {state.ok ? <p className="rounded-[2px] bg-moss-mist px-4 py-2.5 text-[13.5px] text-moss sm:col-span-2">{state.message}</p> : <div id="store-profile-error" tabIndex={-1} className="sm:col-span-2"><FormError message={state.message} /></div>}
       <Field label="Store name" htmlFor="storeName" error={err("storeName")} className="sm:col-span-2">
         <Input id="storeName" name="storeName" value={values.storeName} onChange={handleChange} aria-invalid={!!err("storeName")} required />
       </Field>
-      <Field label="Tagline" htmlFor="tagline" optional hint="One line shown under your name, e.g. “Hand-set bridal diamonds from Paris”." className="sm:col-span-2">
+      <Field label="Tagline" htmlFor="tagline" error={err("tagline")} optional hint="One line shown under your name, e.g. “Hand-set bridal diamonds from Paris”." className="sm:col-span-2">
         <Input id="tagline" name="tagline" value={values.tagline} onChange={handleChange} maxLength={120} />
       </Field>
-      <Field label="Your story" htmlFor="bio" optional className="sm:col-span-2">
+      <Field label="Your story" htmlFor="bio" error={err("bio")} optional className="sm:col-span-2">
         <Textarea id="bio" name="bio" value={values.bio} onChange={handleChange} className="min-h-32" />
       </Field>
       <Field label="Logo" htmlFor="logo" optional hint={store.logoUrl ? "Uploaded — choose a file to replace it." : "Square PNG, JPG or SVG."}>
@@ -218,7 +226,7 @@ export function StoreProfileForm({
       <Field label="City" htmlFor="city" error={err("city")}>
         <Input id="city" name="city" value={values.city} onChange={handleChange} aria-invalid={!!err("city")} required />
       </Field>
-      <Field label="Default currency" htmlFor="defaultCurrency" hint="Used for custom request budgets.">
+      <Field label="Default currency" htmlFor="defaultCurrency" error={err("defaultCurrency")} hint="Used for custom request budgets.">
         <NativeSelect id="defaultCurrency" name="defaultCurrency" value={values.defaultCurrency} onChange={handleChange}>
           {SUPPORTED_CURRENCIES.map((c) => (
             <option key={c} value={c}>
@@ -227,10 +235,10 @@ export function StoreProfileForm({
           ))}
         </NativeSelect>
       </Field>
-      <Field label="Founded" htmlFor="foundedYear" optional>
+      <Field label="Founded" htmlFor="foundedYear" error={err("foundedYear")} optional>
         <Input id="foundedYear" name="foundedYear" inputMode="numeric" value={values.foundedYear} onChange={handleChange} />
       </Field>
-      <Field label="Specialities" htmlFor="specialties" optional hint="Comma-separated, e.g. Bridal, Art Deco, Coloured gemstones" className="sm:col-span-2">
+      <Field label="Specialities" htmlFor="specialties" error={err("specialties")} optional hint="Comma-separated, e.g. Bridal, Art Deco, Coloured gemstones" className="sm:col-span-2">
         <Input id="specialties" name="specialties" value={values.specialties} onChange={handleChange} />
       </Field>
 
@@ -240,19 +248,19 @@ export function StoreProfileForm({
         <Field label="Street address" htmlFor="ra_line1" error={err("ra_line1")} className="sm:col-span-2">
           <Input id="ra_line1" name="ra_line1" value={values.ra_line1} onChange={handleChange} aria-invalid={!!err("ra_line1")} required />
         </Field>
-        <Field label="Suite / floor" htmlFor="ra_line2" optional>
+        <Field label="Suite / floor" htmlFor="ra_line2" error={err("ra_line2")} optional>
           <Input id="ra_line2" name="ra_line2" value={values.ra_line2} onChange={handleChange} />
         </Field>
         <Field label="City" htmlFor="ra_city" error={err("ra_city")}>
           <Input id="ra_city" name="ra_city" value={values.ra_city} onChange={handleChange} aria-invalid={!!err("ra_city")} required />
         </Field>
-        <Field label="State / region" htmlFor="ra_region" optional>
+        <Field label="State / region" htmlFor="ra_region" error={err("ra_region")} optional>
           <Input id="ra_region" name="ra_region" value={values.ra_region} onChange={handleChange} />
         </Field>
         <Field label="Postal code" htmlFor="ra_postalCode" error={err("ra_postalCode")}>
           <Input id="ra_postalCode" name="ra_postalCode" value={values.ra_postalCode} onChange={handleChange} aria-invalid={!!err("ra_postalCode")} required />
         </Field>
-        <Field label="Business phone" htmlFor="ra_phone" optional>
+        <Field label="Business phone" htmlFor="ra_phone" error={err("ra_phone")} optional>
           <Input id="ra_phone" name="ra_phone" type="tel" value={values.ra_phone} onChange={handleChange} />
         </Field>
       </fieldset>

@@ -4,6 +4,8 @@ import type { Role } from "@/lib/domain-enums";
 
 let role: Role = "BUYER";
 let registering = false;
+let invalidCredentials = false;
+const createdUsers: { role: Role; marketingOptIn: boolean }[] = [];
 const signIns: { provider: string; options: Record<string, unknown> }[] = [];
 const views: string[] = [];
 class Redirect extends Error { constructor(public destination: string) { super(destination); } }
@@ -14,7 +16,7 @@ mock.module("next/navigation", { namedExports: { redirect: (path: string) => { t
 mock.module("next/cache", { namedExports: { revalidatePath: () => {} } });
 mock.module("next/headers", { namedExports: { cookies: async () => ({ delete: () => {} }) } });
 mock.module("@/server/auth", { namedExports: {
-  signIn: async (provider: string, options: Record<string, unknown>) => { signIns.push({ provider, options }); return "/"; },
+  signIn: async (provider: string, options: Record<string, unknown>) => { signIns.push({ provider, options }); return invalidCredentials ? "/login?error=CredentialsSignin" : "/"; },
   signOut: async () => {}, unstable_update: async () => {},
 } });
 mock.module("@/server/auth/session", { namedExports: { requireUser: async () => ({ id: "fixture", role }) } });
@@ -22,7 +24,7 @@ mock.module("@/server/account-view", { namedExports: { setAccountView: async (vi
 mock.module("@/server/services/cart", { namedExports: { mergeGuestCart: async () => {} } });
 mock.module("@/server/db", { namedExports: { db: { user: {
   findFirst: async () => registering ? null : ({ id: "fixture", role }),
-  create: async ({ data }: { data: { role: Role } }) => ({ id: "fixture-new", ...data }),
+  create: async ({ data }: { data: { role: Role; marketingOptIn: boolean } }) => { createdUsers.push(data); return { id: "fixture-new", ...data }; },
 } } } });
 
 const { loginAction, registerAction } = await import("./auth");
@@ -71,4 +73,49 @@ test("social sign-in defaults to the platform and preserves only safe local retu
     assert.equal(signIns.at(-1)?.options.redirectTo, destination);
     assert.equal(views.at(-1), "customer");
   }
+});
+
+
+test("short registration passwords show a field error before account creation", async () => {
+  for (const intent of ["buyer", "seller"]) {
+    const form = loginForm(intent);
+    form.set("name", "Fixture Account"); form.set("password", "Ab123");
+    const before = createdUsers.length;
+    const result = await registerAction({}, form);
+    assert.ok(result.fieldErrors?.password?.includes("Use at least 8 characters."));
+    assert.equal(createdUsers.length, before);
+  }
+});
+
+test("invalid email and duplicate registration return field errors", async () => {
+  for (const intent of ["buyer", "seller"]) {
+    const form = loginForm(intent); form.set("name", "Fixture Account");
+    form.set("email", "invalid");
+    assert.ok((await registerAction({}, form)).fieldErrors?.email?.length);
+    form.set("email", "fixture@example.com");
+    assert.match((await registerAction({}, form)).fieldErrors?.email?.[0] ?? "", /already exists/);
+  }
+});
+
+test("all login portals show errors for invalid email, missing password and incorrect credentials", async () => {
+  for (const intent of ["buyer", "seller", "admin"]) {
+    const form = loginForm(intent); form.set("email", "invalid");
+    assert.ok((await loginAction({}, form)).fieldErrors?.email?.length);
+    form.set("email", "fixture@example.com"); form.set("password", "");
+    assert.ok((await loginAction({}, form)).fieldErrors?.password?.length);
+    form.set("password", "wrong"); invalidCredentials = true;
+    try { assert.equal((await loginAction({}, form)).error, "Email or password is incorrect."); }
+    finally { invalidCredentials = false; }
+  }
+});
+
+test("jeweler signup cannot opt into marketing while customers retain their choice", async () => {
+  registering = true;
+  try {
+    for (const [intent, consent, expected] of [["seller", "on", false], ["buyer", "on", true], ["buyer", "", false]] as const) {
+      const form = loginForm(intent); form.set("name", "Fixture Account"); form.set("marketing", consent);
+      await assert.rejects(registerAction({}, form), error => error instanceof Redirect);
+      assert.equal(createdUsers.at(-1)?.marketingOptIn, expected);
+    }
+  } finally { registering = false; }
 });

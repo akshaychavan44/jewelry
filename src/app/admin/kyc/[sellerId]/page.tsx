@@ -10,6 +10,7 @@ import { countryName } from "@/lib/regions";
 import { DOCUMENT_REVIEW_STATUS, KYC_DOCUMENT_LABELS, VERIFICATION_STATUS } from "@/lib/status";
 import { humanize } from "@/lib/utils";
 import { requireAdmin } from "@/server/auth/session";
+import { getDirectorySettings } from "@/server/services/jeweler-directory";
 import { getKycReview } from "@/server/services/admin";
 
 export const metadata: Metadata = { title: "Verification file" };
@@ -54,6 +55,7 @@ export default async function KycReviewPage({ params }: { params: Promise<{ sell
   const pending = seller.verificationStatus === "PENDING";
   const live = seller.verificationStatus === "APPROVED" || seller.verificationStatus === "SUSPENDED";
   const addr = seller.returnAddress;
+  const contacts = await getDirectorySettings(seller.id);
 
   return (
     <>
@@ -106,6 +108,13 @@ export default async function KycReviewPage({ params }: { params: Promise<{ sell
             </div>
             <Facts
               rows={[
+                ["Business phone", addr?.phone],
+                ["Public email", contacts.publicEmail],
+                ["WhatsApp", contacts.whatsapp],
+                ["Instagram", contacts.instagram],
+                ["Facebook", contacts.facebook],
+                ["YouTube", contacts.youtube],
+                ["Google Maps", contacts.maps],
                 ["Founded", seller.foundedYear],
                 ["Specialties", seller.specialties.join(", ")],
                 ["Website", seller.website && <a href={seller.website} target="_blank" rel="noreferrer" className="underline underline-offset-2">{seller.website.replace(/^https?:\/\//, "")}</a>],

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useTransition } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FormError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -62,13 +62,14 @@ export function Divider({ label = "or with email" }: { label?: string }) {
 
 export function LoginForm({ intent, callbackUrl, initialError }: { intent: LoginIntent; callbackUrl?: string; initialError?: string }) {
   const [state, action] = useActionState<AuthFormState, FormData>(loginAction, { error: initialError });
+  const [email, setEmail] = useState("");
   return (
     <form action={action} className="space-y-5" noValidate>
       <input type="hidden" name="intent" value={intent} />
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
       <FormError message={state.error} />
       <Field label="Email" htmlFor="email" error={state.fieldErrors?.email}>
-        <Input id="email" name="email" type="email" autoComplete="email" required aria-invalid={!!state.fieldErrors?.email} />
+        <Input id="email" name="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required aria-invalid={!!state.fieldErrors?.email} />
       </Field>
       <Field label="Password" htmlFor="password" error={state.fieldErrors?.password}>
         <Input id="password" name="password" type="password" autoComplete="current-password" required aria-invalid={!!state.fieldErrors?.password} />
@@ -83,24 +84,26 @@ export function LoginForm({ intent, callbackUrl, initialError }: { intent: Login
 
 export function RegisterForm({ intent, callbackUrl }: { intent: "buyer" | "seller"; callbackUrl?: string }) {
   const [state, action] = useActionState<AuthFormState, FormData>(registerAction, {});
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   return (
     <form action={action} className="space-y-4" noValidate>
       <input type="hidden" name="intent" value={intent} />
       <input type="hidden" name="callbackUrl" value={callbackUrl ?? ""} />
       <FormError message={state.error} />
       <Field label="Full name" htmlFor="name" error={state.fieldErrors?.name}>
-        <Input id="name" name="name" autoComplete="name" required aria-invalid={!!state.fieldErrors?.name} />
+        <Input id="name" name="name" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} required aria-invalid={!!state.fieldErrors?.name} />
       </Field>
       <Field label="Email" htmlFor="email" error={state.fieldErrors?.email}>
-        <Input id="email" name="email" type="email" autoComplete="email" required aria-invalid={!!state.fieldErrors?.email} />
+        <Input id="email" name="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required aria-invalid={!!state.fieldErrors?.email} />
       </Field>
       <Field label="Password" htmlFor="password" hint="At least 8 characters, with a letter and a number." error={state.fieldErrors?.password}>
         <Input id="password" name="password" type="password" autoComplete="new-password" required aria-invalid={!!state.fieldErrors?.password} />
       </Field>
-      <label className="flex items-start gap-3 text-[13.5px] text-ink-soft">
+      {intent === "buyer" && <label className="flex items-start gap-3 text-[13.5px] text-ink-soft">
         <input type="checkbox" name="marketing" className="mt-1 size-4 accent-[#7b8069]" />
         Send me new arrivals and private sales. You can unsubscribe at any time.
-      </label>
+      </label>}
       <SubmitButton size="lg" className="w-full" pendingLabel="Creating your account…">
         {intent === "seller" ? "Create jeweler account" : "Create account"}
       </SubmitButton>

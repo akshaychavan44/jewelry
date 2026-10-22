@@ -94,7 +94,7 @@ export async function registerAction(_: AuthFormState, formData: FormData): Prom
       email,
       passwordHash: await bcrypt.hash(password, 12),
       role: intent === "seller" ? "SELLER" : "BUYER",
-      marketingOptIn: marketing,
+      marketingOptIn: intent === "buyer" && marketing,
     },
   });
 

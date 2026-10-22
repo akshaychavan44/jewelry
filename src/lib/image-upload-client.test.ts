@@ -47,3 +47,20 @@ test("reference limits allow 9 MB across three images but reject excess count, s
   assert.match(referenceImagesError([{ ...image, size: 0 }])!, /non-empty/);
   assert.match(referenceImagesError([{ ...image, type: "application/pdf" }])!, /JPEG, PNG or WebP/);
 });
+
+
+test("production branding uploads fail clearly when cloud storage is unavailable", async context => {
+  context.mock.method(globalThis, "fetch", async () => Response.json({ uploadthing: false }));
+  const previous = process.env.NODE_ENV;
+  Object.assign(process.env, { NODE_ENV: "production" });
+  try {
+    const form = new FormData();
+    form.set("logo", new File(["fixture"], "logo.png", { type: "image/png" }));
+    await assert.rejects(uploadFormImages(form, { logo: "STORE_BRANDING" }), /uploads are temporarily unavailable/);
+    assert.ok(form.get("logo") instanceof File);
+    assert.equal(form.get("logo_fileId"), null);
+  } finally {
+    if (previous === undefined) Reflect.deleteProperty(process.env, "NODE_ENV");
+    else Object.assign(process.env, { NODE_ENV: previous });
+  }
+});

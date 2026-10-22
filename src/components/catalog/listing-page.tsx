@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ProductGrid } from "@/components/catalog/product-card";
+import { ShopCollectionMosaic, ShopProductGrid } from "./shop-editorial";
 import { EmptyState, Pagination } from "@/components/ui/display";
 import type { Category } from "@/server/db/model-types";
 import { CERTIFICATION_FILTERS, GEMSTONES, LABS, METAL_OPTIONS, METALS } from "@/lib/jewelry";
@@ -14,6 +14,7 @@ import { Gem, Sparkles } from "lucide-react";
 import { stylingLooks } from "@/config/styling";
 import { convertMinor, formatMoney, toMajor } from "@/lib/money";
 import { ShopDiscovery } from "./discovery";
+import styles from "./shop-editorial.module.css";
 
 const symbolFor = (currency: string) =>
   new Intl.NumberFormat("en", { style: "currency", currency, currencyDisplay: "narrowSymbol" }).formatToParts(0).find((p) => p.type === "currency")?.value ?? currency;
@@ -50,6 +51,9 @@ export async function ListingPage({
     getListingFacets(categoryIds, sellerId),
     getWishlistProductIds(user?.id),
   ]);
+  const showEditorial = !sellerId && !filters.q && filters.page === 1
+    && activeFilterCount(filters) === 0 && filters.sort === "featured"
+    && result.items.length > 0;
 
   const count = (list: { value: string; count: number }[], v: string) => list.find((x) => x.value === v)?.count;
   const groups = {
@@ -93,9 +97,10 @@ export async function ListingPage({
   };
 
   return (
-    <div className="shell pt-6 pb-24 sm:pt-8">
+    <div className={`shell pt-6 pb-24 sm:pt-8 ${isShop && showEditorial ? styles.imageFirst : ""}`}>
+      {isShop && showEditorial && <h1 className="sr-only hidden lg:block">{title}</h1>}
       {/* â”€â”€ Breadcrumb â”€â”€ */}
-      <nav aria-label="Breadcrumb" className="mb-4 text-[12px] text-muted">
+      <nav aria-label="Breadcrumb" className={`mb-4 text-[12px] text-muted ${styles.desktopIntro}`}>
         <ol className="flex flex-wrap items-center gap-1.5">
           <li>
             <Link href="/" className="transition-colors hover:text-ink">Home</Link>
@@ -110,7 +115,7 @@ export async function ListingPage({
       </nav>
 
       {/* â”€â”€ Header Area â”€â”€ */}
-      <header className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <header className={`mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between ${styles.desktopIntro}`}>
         <div>
           {isShop && <p className="eyebrow mb-3 text-gold-deep">Independent jewelry, thoughtfully discovered</p>}
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
@@ -135,6 +140,8 @@ export async function ListingPage({
           <Sparkles className="size-3.5" /> Looking for bespoke / custom design?
         </Link>
       </header>
+
+      {isShop && showEditorial && <ShopCollectionMosaic />}
 
       {isShop && <div className="mb-8 space-y-5 border-y border-line py-5">
         <nav aria-label="Jewelry categories" className="flex flex-wrap gap-2">
@@ -191,10 +198,10 @@ export async function ListingPage({
           {/* Product Grid / Empty State */}
           {result.items.length ? (
             <>
-              <ProductGrid
+              <ShopProductGrid
                 products={result.items}
                 savedIds={saved}
-                columns="three"
+                editorial={isShop && showEditorial}
               />
               <div className="mt-14">
                 <Pagination page={result.page} pageCount={result.pageCount} hrefFor={hrefFor} />

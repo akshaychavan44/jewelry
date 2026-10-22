@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import type { ProductCard as ProductCardData } from "@/server/services/catalog";
 import { WishlistButton } from "./save-buttons";
+import styles from "./shop-editorial.module.css";
 
 export function ProductCard({
   product: p,
@@ -13,6 +14,7 @@ export function ProductCard({
   className,
   sizes = "(min-width: 1024px) 33vw, 50vw",
   showPrice = true,
+  presentation = "portrait",
 }: {
   product: ProductCardData;
   saved?: boolean;
@@ -20,6 +22,7 @@ export function ProductCard({
   className?: string;
   sizes?: string;
   showPrice?: boolean;
+  presentation?: "portrait" | "catalog";
 }) {
   const flag = p.sold
     ? "Sold"
@@ -40,7 +43,7 @@ export function ProductCard({
     <article className={cn("relative min-w-0", className)}>
       <Link href={`/product/${p.slug}`} className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-4 focus-visible:ring-offset-ivory">
         {/* ── Product Media Frame ── */}
-        <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-sand">
+        <div className={cn("relative overflow-hidden rounded-xl bg-sand", presentation === "catalog" ? "aspect-square" : "aspect-[3/4]")}>
           {p.image.url?.trim() ? (
             <Image
               src={p.image.url}
@@ -49,7 +52,9 @@ export function ProductCard({
               loading={priority ? "eager" : "lazy"}
               sizes={sizes}
               className={cn(
-                "object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]",
+                presentation === "catalog"
+                  ? styles.catalogImage
+                  : "object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]",
                 p.sold && "grayscale-[35%]",
               )}
             />
@@ -77,7 +82,7 @@ export function ProductCard({
         {/* ── Product Information ── */}
         <div className="pt-3 sm:pt-3.5">
           {/* Product Title */}
-          <h3 className="line-clamp-2 font-sans text-[13px] leading-snug font-medium tracking-normal text-ink group-hover:text-gold-deep sm:text-[14px]">
+          <h3 className={cn("line-clamp-2 font-sans text-[13px] leading-snug font-medium tracking-normal text-ink group-hover:text-gold-deep sm:text-[14px]", presentation === "catalog" && "min-h-[2.75em]")}>
             {p.title}
           </h3>
           <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-muted sm:text-[12px]">{METALS[p.metal].label} · {p.seller.name}</p>

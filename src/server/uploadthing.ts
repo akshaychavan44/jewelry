@@ -41,7 +41,7 @@ function imageRoute(visibility: "PUBLIC" | "PRIVATE") {
       try {
         if (file.customId !== metadata.key || file.size !== metadata.sizeBytes) throw new Error("Upload metadata did not match.");
         const { ufsUrl } = await api.generateSignedURL(file.key, { expiresIn: 120 });
-        const response = await fetch(ufsUrl, { cache: "no-store" });
+        const response = await fetch(ufsUrl, { cache: "no-store", signal: AbortSignal.timeout(15_000) });
         if (!response.ok) throw new Error("Unable to verify the uploaded image.");
         const bytes = Buffer.from(await response.arrayBuffer());
         if (bytes.length !== metadata.sizeBytes || !validImageContent(bytes, metadata.mimeType)) throw new Error("The file content does not match its image type.");

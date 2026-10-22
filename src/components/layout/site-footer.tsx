@@ -12,6 +12,7 @@ import { getAccountView } from "@/server/account-view";
 export async function SiteFooter({ staticNavigation = false }: { staticNavigation?: boolean } = {}) {
   const user = staticNavigation ? null : await getCurrentUser();
   const isJeweler = user?.role === "SELLER" && await getAccountView(user.role) === "seller";
+  const isAdmin = user?.role === "ADMIN";
   return (
     <footer id="site-footer" className={styles.footer}>
       <Image src="/media/footer-jewelry.webp" alt="" fill sizes="100vw" className={styles.background} />
@@ -34,7 +35,11 @@ export async function SiteFooter({ staticNavigation = false }: { staticNavigatio
           {footerNav.map((group) => (
             <nav key={group.title} aria-label={`Footer ${group.title}`} className={styles.navigation}>
               <h3>{group.title}</h3>
-              <ul>{group.links.filter(link => !isJeweler || link.href !== "/jeweler/login").map((link) => <li key={link.href}><Link href={isJeweler && link.href === "/sell" ? "/seller" : link.href}>{isJeweler && link.href === "/sell" ? "My Dashboard" : link.label}</Link></li>)}</ul>
+              <ul>{group.links.filter(link => {
+                if (isAdmin && (link.href === "/sell" || link.href === "/jeweler/login")) return false;
+                if (isJeweler && link.href === "/jeweler/login") return false;
+                return true;
+              }).map((link) => <li key={link.href}><Link href={isJeweler && link.href === "/sell" ? "/seller" : link.href}>{isJeweler && link.href === "/sell" ? "My Dashboard" : link.label}</Link></li>)}</ul>
             </nav>
           ))}
         </div>
@@ -44,7 +49,7 @@ export async function SiteFooter({ staticNavigation = false }: { staticNavigatio
           <div className={styles.legal}>
             <Link href="/help/terms">Terms</Link>
             <Link href="/help/privacy">Privacy</Link>
-            <Link href={isJeweler ? "/seller" : "/sell"}>{isJeweler ? "My Dashboard" : "List your business"}</Link>
+            {!isAdmin && <Link href={isJeweler ? "/seller" : "/sell"}>{isJeweler ? "My Dashboard" : "List your business"}</Link>}
             <FooterBackToTop />
           </div>
         </div>

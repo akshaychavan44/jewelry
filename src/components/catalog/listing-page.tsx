@@ -98,7 +98,7 @@ export async function ListingPage({
   };
 
   return (
-    <div className={`shell pt-6 pb-24 sm:pt-8 ${isShop && showEditorial ? styles.imageFirst : ""}`}>
+    <div className={`shell pt-6 pb-10 sm:pt-8 sm:pb-14 ${isShop && showEditorial ? styles.imageFirst : ""}`}>
       {isShop && showEditorial && <h1 className="sr-only hidden lg:block">{title}</h1>}
       {/* â”€â”€ Breadcrumb â”€â”€ */}
       <nav aria-label="Breadcrumb" className={`mb-4 text-[12px] text-muted ${styles.desktopIntro}`}>
@@ -219,9 +219,11 @@ export async function ListingPage({
                 savedIds={saved}
                 editorial={isShop && showEditorial}
               />
-              <div className="mt-14">
-                <Pagination page={result.page} pageCount={result.pageCount} hrefFor={hrefFor} />
-              </div>
+              {result.pageCount > 1 && (
+                <div className="mt-10 sm:mt-12">
+                  <Pagination page={result.page} pageCount={result.pageCount} hrefFor={hrefFor} />
+                </div>
+              )}
             </>
           ) : (
             <EmptyState icon={<Gem />} title="Nothing matches those filters">

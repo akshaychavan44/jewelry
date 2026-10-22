@@ -3,9 +3,12 @@ import { mock, test } from "node:test";
 import { referenceImagesError, REFERENCE_IMAGE_MAX_BYTES } from "./reference-images";
 
 let failUpload = false;
+let stalledSignal: AbortSignal | undefined;
+let stallUpload = false;
 const uploaded: { endpoint: string; purpose: string }[] = [];
 mock.module("uploadthing/client", { namedExports: { genUploader: () => ({
-  uploadFiles: async (endpoint: string, options: { input: { purpose: string }; files: File[] }) => {
+  uploadFiles: async (endpoint: string, options: { input: { purpose: string }; files: File[]; signal?: AbortSignal }) => {
+    if (stallUpload) { stalledSignal = options.signal; return new Promise<never>(() => {}); }
     if (failUpload) throw new Error("Upload interrupted");
     uploaded.push({ endpoint, purpose: options.input.purpose });
     return [{ serverData: { fileId: `fixture-${uploaded.length}`, url: null } }];
@@ -63,4 +66,25 @@ test("production branding uploads fail clearly when cloud storage is unavailable
     if (previous === undefined) Reflect.deleteProperty(process.env, "NODE_ENV");
     else Object.assign(process.env, { NODE_ENV: previous });
   }
+});
+
+
+test("a stalled document confirmation times out, cancels upload and keeps the file for retry", async context => {
+  context.mock.timers.enable({ apis: ["setTimeout"] });
+  context.mock.method(globalThis, "fetch", async () => Response.json({ uploadthing: true }));
+  stallUpload = true;
+  try {
+    const form = new FormData();
+    form.set("document", new File(["fixture"], "tax.png", { type: "image/png" }));
+    const pending = uploadFormImages(form, { document: "KYC_DOCUMENT" });
+    const rejected = assert.rejects(pending, /tax.png: upload or verification timed out/);
+    // Let the provider configuration response finish before advancing the upload timer.
+    for (let i = 0; i < 30 && !stalledSignal; i++) await Promise.resolve();
+    assert.ok(stalledSignal);
+    context.mock.timers.tick(90_000);
+    await rejected;
+    assert.equal(stalledSignal.aborted, true);
+    assert.ok(form.get("document") instanceof File);
+    assert.equal(form.get("document_fileId"), null);
+  } finally { stallUpload = false; stalledSignal = undefined; }
 });

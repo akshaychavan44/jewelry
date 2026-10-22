@@ -153,7 +153,7 @@ export function HeaderClient({ categories, currency, user, isApprovedJeweler, se
             <span className="hidden xl:inline">Search jewelry</span>
             <Search className="size-[18px] md:size-4" strokeWidth={1.6} />
           </button>
-          {user?.role !== "BUYER" && !(user?.role === "SELLER" && !sellerView) && <Link
+          {user?.role !== "BUYER" && user?.role !== "ADMIN" && !(user?.role === "SELLER" && !sellerView) && <Link
             href={user?.role === "SELLER" ? "/seller" : user ? "/seller/onboarding" : "/register?intent=seller"}
             className={cn(styles.listBusinessButton, "caps hidden md:inline-flex")}
           >
@@ -367,7 +367,6 @@ function AccountMenu({ user, accountView }: { user: Props["user"]; accountView: 
             : user.role === "ADMIN"
             ? [
                 { href: "/admin", label: "Admin console", icon: Shield },
-                { href: "/account", label: "My account", icon: LayoutDashboard },
               ]
             : [
                 { href: "/seller", label: "My account", icon: LayoutDashboard },

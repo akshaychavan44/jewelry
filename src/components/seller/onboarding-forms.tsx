@@ -12,6 +12,7 @@ import { CURRENCIES, SUPPORTED_CURRENCIES } from "@/lib/money";
 import { COUNTRY_CODES, countryName } from "@/lib/regions";
 import { cn } from "@/lib/utils";
 import { uploadFormImages } from "@/lib/image-upload-client";
+import { withRequestDeadline } from "@/lib/request-deadline";
 import { uploadKycDocuments } from "@/lib/kyc-upload-client";
 import {
   saveBusinessAction,
@@ -299,8 +300,16 @@ export function BusinessForm({
   userId: string;
 }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const [isPending, setPending] = useState(false);
   const [state, setState] = useState<StepState>({});
+  const [uploadStatus, setUploadStatus] = useState("");
+  useEffect(() => {
+    if (!state.message) return;
+    const error = document.getElementById("business-form-error");
+    error?.focus();
+    error?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [state]);
   const err = (k: string) => state.fieldErrors?.[k];
   const [bizValues, setBizValues] = useState({
     legalBusinessName: values.legalBusinessName ?? "",
@@ -352,6 +361,7 @@ export function BusinessForm({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isPending) return;
 
     const errors: Record<string, string[]> = {};
     if (!bizValues.legalBusinessName || bizValues.legalBusinessName.trim().length < 2) {
@@ -382,10 +392,17 @@ export function BusinessForm({
     const formElement = e.currentTarget;
     const formData = new FormData(formElement);
 
+    setPending(true);
     startTransition(async () => {
       try {
-        await uploadKycDocuments(formData);
-        const res = await saveBusinessAction({}, formData);
+        setState({});
+        await uploadKycDocuments(formData, setUploadStatus);
+        setUploadStatus("Saving business details…");
+        const res = await withRequestDeadline(
+          () => saveBusinessAction({}, formData),
+          45_000,
+          "Saving is taking longer than expected. Refresh this page to check whether your details were saved before trying again.",
+        );
         setState(res);
         if (res.ok) {
           try {
@@ -417,13 +434,16 @@ export function BusinessForm({
           ok: false,
           message: err instanceof Error ? err.message : "Failed to save verification. Please try again.",
         });
+      } finally {
+        setPending(false);
+        setUploadStatus("");
       }
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-5 sm:grid-cols-2" noValidate>
-      <FormError message={state.message} />
+      <div id="business-form-error" tabIndex={-1} className="sm:col-span-2"><FormError message={state.message} /></div>
       <Field label="Registered business name" htmlFor="legalBusinessName" error={err("legalBusinessName")} className="sm:col-span-2">
         <Input id="legalBusinessName" name="legalBusinessName" value={bizValues.legalBusinessName} onChange={handleBizChange} aria-invalid={!!err("legalBusinessName")} required />
       </Field>
@@ -469,6 +489,7 @@ export function BusinessForm({
         ))}
         <p className="text-[12.5px] text-muted">JPG, PNG or WebP images up to 12 MB. Documents are stored privately and seen only by Jewelrex&rsquo;s verification team.</p>
       </fieldset>
+      {isPending && uploadStatus && <p role="status" className="break-words text-[13px] text-ink-soft sm:col-span-2">{uploadStatus}</p>}
       <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
         <Link
           href="/seller/onboarding?step=1"
@@ -477,7 +498,7 @@ export function BusinessForm({
           Back
         </Link>
         <Button type="submit" size="lg" pending={isPending}>
-          {isPending ? "Uploading…" : "Save and continue"}
+          {isPending ? (uploadStatus === "Saving business details…" ? "Saving…" : "Uploading…") : "Save and continue"}
         </Button>
       </div>
     </form>

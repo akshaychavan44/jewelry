@@ -65,8 +65,8 @@ export function CollectionShowcase() {
             <div className={styles.editorial}>
               <Image src={collection.editorial} alt={collection.editorialAlt} fill
                 sizes="(max-width: 700px) 52vw, (max-width: 1000px) 55vw, 36vw" />
-              <div className={styles.shade} aria-hidden />
-              <p className={styles.caption}>{collection.caption}</p>
+              {collection.id !== "diamonds" && <div className={styles.shade} aria-hidden />}
+              <p className={collection.id === "diamonds" ? `${styles.caption} ${styles.unshadedCaption}` : styles.caption}>{collection.caption}</p>
             </div>
             <Link href={collection.href} className={styles.detail} aria-label={collection.cta}>
               <Image src={collection.detail} alt={collection.detailAlt} fill
